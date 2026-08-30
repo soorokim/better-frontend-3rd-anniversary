@@ -53,8 +53,10 @@ npm run test:e2e
 npm run build
 ```
 
-모든 명령은 새 checkout에서 추가 수동 설정 없이 실행되어야 한다. 통합·종단 테스트용
-데이터베이스는 운영 volume과 분리한다.
+단위 테스트는 `NODE_ENV=test`에서 실행한다. 통합·종단 테스트는 운영 volume과 분리한
+데이터베이스와 테스트 전용 환경 변수가 필요하다. 컨테이너에서 Playwright를 실행할 때는
+브라우저가 접근할 수 있는 주소를 `PLAYWRIGHT_BASE_URL`에 넣고, 이 주소는 앱을 빌드할 때의
+`APP_ORIGIN`과 정확히 같아야 한다.
 
 ## Scenario 1: First Entry and Avatar
 
@@ -142,15 +144,17 @@ npm run build
 
 운영 공개 전 다음 흐름을 별도 빈 데이터베이스에서 한 번 성공시킨다.
 
-```bash
-docker compose exec -T db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc > backups/event.dump
-docker compose exec -T db createdb -U "$POSTGRES_USER" restore_check
-docker compose exec -T db pg_restore -U "$POSTGRES_USER" -d restore_check --clean --if-exists < backups/event.dump
+```powershell
+pwsh ./scripts/backup.ps1 -RetentionDays 0
+pwsh ./scripts/restore.ps1 `
+  -BackupFile ./backups/<backup>.dump `
+  -TargetDatabase restore_check `
+  -Confirmation "RESTORE restore_check"
 ```
 
-복구한 데이터베이스에서 참가자 수, 답변 수, 현재 아바타 관계를 원본과 비교한다. 백업 파일은
-서버 밖에도 한 벌 보관한다. 실제 구현에서는 비밀번호가 명령 기록에 노출되지 않도록 Compose
-secret과 컨테이너 내부 인증 설정을 사용한다.
+복구한 데이터베이스에서 참가자 수, 답변 수, 현재 아바타 관계를 원본과 비교한다. 이미 있는
+DB에 복구할 때는 스크립트가 만드는 사전 백업도 확인한다. 백업 파일은 서버 밖에도 한 벌
+보관한다. 업데이트는 `DEPLOY_HEALTH_URL`을 지정해 `scripts/deploy.sh`로 실행한다.
 
 ## Contract References
 
@@ -231,3 +235,22 @@ secret과 컨테이너 내부 인증 설정을 사용한다.
 - 테스트가 만든 참가자 4명과 연결된 감사 기록 2개만 정확히 삭제했다. 앱과 DB 컨테이너는
   정리 뒤에도 healthy 상태다. 픽셀 캐릭터는 외부 이미지 파츠가 아닌 자체 HTML/CSS이며,
   현재 배포하는 제3자 UI 에셋이 없다는 점을 `THIRD_PARTY_NOTICES.md`에 기록했다.
+
+## Clean Installation & Recovery Validation Record (2026-08-30)
+
+- 서버의 기존 checkout이나 volume을 재사용하지 않고 새 clone, 새 Compose project, 새 빈
+  volume, 별도 포트로 처음부터 설치했다. PostgreSQL은 healthy, migrate는 종료 코드 0,
+  앱은 `NODE_ENV=production`과 healthy 상태였고 시드 결과는 행사·질문·관리자 각각 1건이었다.
+- 새 checkout에서 typecheck, ESLint, 단위 테스트 18건, 통합 테스트 10개 파일 26건,
+  Playwright 7건, 20개 라우트의 운영 빌드가 모두 통과했다. 단위·통합 테스트 컨테이너에는
+  Compose의 운영 기본값을 덮는 `NODE_ENV=test`가 필요하다는 차이를 위 명령 설명에 반영했다.
+- 컨테이너 안의 Playwright에서 host loopback은 앱에 닿지 않았다. 브라우저가 접근할 수 있는
+  서버 주소를 `PLAYWRIGHT_BASE_URL`과 빌드 시 `APP_ORIGIN`에 똑같이 지정한 뒤 7건이 모두
+  통과했다. 매번 새 테스트 컨테이너를 쓰면 브라우저 설치도 같은 실행 안에서 해야 한다.
+- `scripts/backup.ps1`로 custom-format 덤프를 만들고 크기, SHA-256 복사 일치, 판독 가능 여부,
+  파일 권한 `600`을 확인했다. 참가자 4명·답변 2개·아바타 관계 4개가 새 복구 DB에 그대로
+  들어왔다. 기존 복구 DB에 임시 테이블을 넣고 다시 복구했을 때 사전 백업이 생성되고 임시
+  테이블은 남지 않았다.
+- `scripts/deploy.sh`를 새 clone에서 실행해 fast-forward 확인, 이미지 빌드, 배포 전 백업,
+  마이그레이션, 앱 교체, 컨테이너와 HTTP health gate까지 통과했다. HTTPS origin으로 별도
+  이미지를 빌드한 결과 HSTS와 `upgrade-insecure-requests`도 빌드 산출물에 포함됐다.
