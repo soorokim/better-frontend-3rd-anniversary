@@ -2,8 +2,8 @@ import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 
 import { hash, verify } from '@node-rs/argon2';
 import { getEnv } from '@/lib/config/env';
 
-function peppered(secret: string): Buffer {
-  return createHmac('sha256', getEnv().AUTH_PEPPER).update(secret, 'utf8').digest();
+function peppered(secret: string): string {
+  return createHmac('sha256', getEnv().AUTH_PEPPER).update(secret, 'utf8').digest('base64url');
 }
 
 export function randomToken(bytes = 32): string { return randomBytes(bytes).toString('base64url'); }
