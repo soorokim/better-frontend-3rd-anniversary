@@ -43,7 +43,7 @@ description: "대화 아바타 작업을 현재 서비스에 통합하고 배포
 - [X] T007 `db/schema.ts`, `app/admin/page.tsx`, `README.md`, `docs/DEPLOYMENT.md` 충돌을 해결해 진행자 엔티티·화면·운영 절차와 대화 프로필 엔티티·현황 화면을 모두 보존한다.
 - [X] T008 [P] `package.json`, `package-lock.json`, `THIRD_PARTY_NOTICES.md`, `public/avatar-parts/README.md`를 현재 기준선과 대화 아바타 의존성·라이선스가 함께 맞도록 정리한다.
 - [X] T009 [P] `db/schema.ts`의 최종 모델에 진행자 테이블, 대화 프로필 테이블, conversation 아바타 연결과 `participant_register` 제한 action이 모두 포함되고 이벤트·배치·별칭 관계가 일치하도록 통합한다.
-- [ ] T010 재배치 뒤 `npm ci`, lint, typecheck, build, 단위 테스트와 Python 분석 테스트를 실행하고 결과 및 남은 충돌 0건을 `specs/004-conversation-avatar-readiness/integration-inventory.md`에 기록한다.
+- [X] T010 재배치 뒤 `npm ci`, lint, typecheck, build, 단위 테스트와 Python 분석 테스트를 실행하고 결과 및 남은 충돌 0건을 `specs/004-conversation-avatar-readiness/integration-inventory.md`에 기록한다.
 
 **Checkpoint**: `codex/conversation-avatar`가 현재 메인 기준선을 포함하고, 양쪽 기능의 소스가 한 작업 트리에서 빌드된다.
 

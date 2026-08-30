@@ -77,3 +77,19 @@ avatar 연결, `participant_register` action과 batch/event 및 profile/batch �
 `0002_conversation_profiles.sql`과 journal의 임시 `0002_conversation_profiles` tag는 이
 체크포인트에서 이름을 바꾸지 않았다. 두 `0002` 충돌을 실제로 없애고 최종 SQL과 journal을
 생성하는 작업은 계획대로 US1의 T014~T015에서 수행한다.
+
+### T010 정적·단위 검증
+
+- 통합 커밋: `4fe3c0cb4dec1f49b88f6f43d1ec2d3176be61ff`
+- `npm ci`: 통과. 잠금 파일대로 481개 패키지를 설치했다.
+- `npm run lint`: 통과
+- `npm run typecheck`: 통과
+- `npm run build`: 통과. 진행자·프로젝터, 대화 프로필 관리자 API, 대화 아바타 경로를 모두 생성했다.
+- `npm test -- --reporter=dot`: 12개 파일, 57개 테스트 통과
+- `npm run test:analysis`: 2개 테스트 통과
+- `git diff --check`: 통과
+- 미해결 Git 충돌과 conflict marker: 0건
+
+`npm ci`의 audit 요약에는 moderate 4건과 high 5건이 남았다. 이 명령은 의존성 잠금의
+재현 여부를 확인하기 위한 것이므로 자동 `npm audit fix`나 breaking upgrade는 적용하지 않았다.
+PostgreSQL integration과 Playwright E2E는 이 체크포인트 범위가 아니며 US1 이후에 실행한다.
