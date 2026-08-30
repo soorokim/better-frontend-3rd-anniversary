@@ -153,7 +153,7 @@ PIN을 초기화해 참가자가 안전하게 새 PIN을 설정하도록 돕는�
 - [X] T057 [US3] 관리자 PIN 초기화와 참가자 새 PIN 완료 계약을 `app/api/admin/participants/[participantId]/pin-reset/route.ts` 및 `app/api/participants/pin-reset/complete/route.ts`에 구현한다
 - [X] T058 [P] [US3] 관리자 로그인과 제출 상태 목록을 `app/admin/login/page.tsx`, `app/admin/page.tsx`, `components/admin/ParticipantList.tsx`에 구현한다
 - [X] T059 [US3] 재인증 확인, 일회용 코드 1회 표시, reset code 새 PIN 폼을 `components/admin/PinResetDialog.tsx` 및 `app/(public)/reset-pin/page.tsx`에 구현한다
-- [ ] T060 [US3] T048~T051을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 4·5 결과를 기록한다
+- [X] T060 [US3] T048~T051을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 4·5 결과를 기록한다
 
 **Checkpoint**: 진행자가 데이터베이스를 직접 만지지 않고 현장에서 참가자의 입장 문제를 복구할 수 있다.
 
