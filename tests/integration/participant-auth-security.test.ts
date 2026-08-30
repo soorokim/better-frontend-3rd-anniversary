@@ -9,7 +9,7 @@ let currentToken: string | undefined;
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => currentToken ? { value: currentToken } : undefined }) }));
 
 const registration = (inviteCode = 'test-invite-code-1234', nickname = '보안') => new Request('http://localhost:3000/api/participants/register', {
-  method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.20' },
+  method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': '127.0.0.20' },
   body: JSON.stringify({ inviteCode, nickname, pin: '123456', pinConfirmation: '123456' }),
 });
 
@@ -44,7 +44,7 @@ describe('participant authentication security', () => {
     const { POST: login } = await import('@/app/api/participants/login/route');
     const failures = [];
     for (let index = 0; index < 4; index += 1) {
-      const bad = await login(new Request('http://localhost:3000/api/participants/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.21' }, body: JSON.stringify({ inviteCode: 'test-invite-code-1234', nickname: '보안', pin: '000000' }) }));
+      const bad = await login(new Request('http://localhost:3000/api/participants/login', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': '127.0.0.21' }, body: JSON.stringify({ inviteCode: 'test-invite-code-1234', nickname: '보안', pin: '000000' }) }));
       failures.push({ status: bad.status, body: await bad.json(), retryAfter: bad.headers.get('retry-after') });
     }
     expect(failures.slice(0, 2).map(({ status }) => status)).toEqual([401, 401]);

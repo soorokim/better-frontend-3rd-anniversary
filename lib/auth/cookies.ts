@@ -6,7 +6,7 @@ type CookieValue = Partial<ResponseCookie> & { value: string };
 
 export function authCookiePolicy(origin = getEnv().APP_ORIGIN) {
   const secure = new URL(origin).protocol === 'https:';
-  const base = { secure, sameSite: 'lax' as const, path: '/' };
+  const base = { secure, sameSite: 'strict' as const, path: '/' };
 
   return {
     names: authCookieNames(secure),

@@ -14,7 +14,7 @@ const cookieNames = authCookieNames(false);
 
 function request(path: string, body: unknown) {
   return new Request(`http://localhost:3000${path}`, {
-    method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '127.0.0.10' }, body: JSON.stringify(body),
+    method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': '127.0.0.10' }, body: JSON.stringify(body),
   });
 }
 
