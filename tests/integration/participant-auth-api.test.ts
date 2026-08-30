@@ -30,7 +30,7 @@ describe('participant authentication API contract', () => {
   beforeEach(async () => {
     await database.reset();
     const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
-    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: '프론트' }]);
+    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: '프론트', aliases: ['예전프론트'] }]);
     sessionCookie = undefined;
   });
   afterAll(async () => database?.close());
@@ -38,7 +38,7 @@ describe('participant authentication API contract', () => {
   it('registers, returns the current participant, logs out, and logs back in', async () => {
     const { POST: register } = await import('@/app/api/participants/register/route');
     const registered = await register(request('/api/participants/register', {
-      inviteCode: 'test-invite-code-1234', nickname: '프론트', pin: '123456', pinConfirmation: '123456',
+      inviteCode: 'test-invite-code-1234', nickname: '예전프론트', pin: '123456', pinConfirmation: '123456',
     }));
     expect(registered.status).toBe(201);
     expect(await registered.json()).toMatchObject({ nickname: '프론트', avatar: { catalogVersion: 'pixel-parts-v1' } });
@@ -62,9 +62,15 @@ describe('participant authentication API contract', () => {
 
     const { POST: login } = await import('@/app/api/participants/login/route');
     const loggedIn = await login(request('/api/participants/login', {
-      inviteCode: 'test-invite-code-1234', nickname: ' 프론트 ', pin: '123456',
+      inviteCode: 'test-invite-code-1234', nickname: ' 예전프론트 ', pin: '123456',
     }));
     expect(loggedIn.status).toBe(200);
     expect(await loggedIn.json()).toMatchObject({ id: currentBody.id, nickname: '프론트', avatar: currentBody.avatar });
+
+    const canonicalLogin = await login(request('/api/participants/login', {
+      inviteCode: 'test-invite-code-1234', nickname: '프론트', pin: '123456',
+    }));
+    expect(canonicalLogin.status).toBe(200);
+    expect(await canonicalLogin.json()).toMatchObject({ id: currentBody.id, nickname: '프론트', avatar: currentBody.avatar });
   });
 });

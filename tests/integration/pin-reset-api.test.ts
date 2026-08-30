@@ -1,9 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { and, eq, isNull } from 'drizzle-orm';
-import { adminSessions, pinResetGrants } from '@/db/schema';
+import { adminSessions, answers, participants, pinResetGrants } from '@/db/schema';
+import { registerParticipant } from '@/lib/auth/participant-service';
 import { issueSession } from '@/lib/auth/session';
+import { claimConversationProfile } from '@/lib/db/repositories/conversation-profiles';
 import { createTestDatabase } from '@/tests/helpers/database';
-import { adminFactory, eventFactory, participantFactory } from '@/tests/helpers/factories';
+import { conversationProfileBatchFactory } from '@/tests/helpers/conversation-profiles';
+import { adminFactory, answerFactory, eventFactory, participantFactory, questionFactory } from '@/tests/helpers/factories';
 
 let adminCookie: string | undefined;
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => adminCookie ? { value: adminCookie } : undefined }) }));
@@ -18,6 +21,8 @@ describe('PIN reset API contract', () => {
 
   async function setup() {
     const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' }); const admin = await adminFactory(database.db, event.id); const participant = await participantFactory(database.db, event.id, { nicknameDisplay: '초기화대상', nicknameKey: '초기화대상' });
+    const { profiles } = await conversationProfileBatchFactory(database.db, event.id, [{ nickname: '초기화대상' }]);
+    await claimConversationProfile(profiles[0].id, participant.id, database.db);
     const session = await issueSession('admin', admin.id, admin.authVersion); adminCookie = session.token;
     await database.db.update(adminSessions).set({ csrfHash: (await import('@/lib/security/csrf')).csrfDigest(csrf) }).where(eq(adminSessions.adminId, admin.id));
     return { event, admin, participant };
@@ -50,5 +55,52 @@ describe('PIN reset API contract', () => {
     for (let index = 0; index < 4; index++) expect((await complete.POST(json('/api/participants/pin-reset/complete', { ...payload, resetCode: '00000000' }, `127.0.1.${index + 1}`))).status).toBe(401);
     expect((await complete.POST(json('/api/participants/pin-reset/complete', { ...payload, resetCode: '00000000' }, '127.0.1.5'))).status).toBe(410);
     expect((await complete.POST(json('/api/participants/pin-reset/complete', { ...payload, resetCode: limited.resetCode }))).status).toBe(410);
+  });
+
+  it('completes a reset through an approved alias without replacing participant data', async () => {
+    const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
+    const admin = await adminFactory(database.db, event.id);
+    await conversationProfileBatchFactory(database.db, event.id, [{
+      nickname: '대표닉',
+      aliases: ['가입별칭'],
+    }]);
+    const registered = await registerParticipant({
+      inviteCode: 'test-invite-code-1234',
+      nickname: '가입별칭',
+      pin: '123456',
+      ipAddress: '127.0.0.41',
+    });
+    const question = await questionFactory(database.db, event.id);
+    const answer = await answerFactory(database.db, registered.view.id, question.id);
+    const [before] = await database.db.select().from(participants)
+      .where(eq(participants.id, registered.view.id));
+
+    const session = await issueSession('admin', admin.id, admin.authVersion);
+    adminCookie = session.token;
+    await database.db.update(adminSessions)
+      .set({ csrfHash: (await import('@/lib/security/csrf')).csrfDigest(csrf) })
+      .where(eq(adminSessions.adminId, admin.id));
+    const issue = await import('@/app/api/admin/participants/[participantId]/pin-reset/route');
+    const issued = await issue.POST(
+      json(`/api/admin/participants/${before.id}/pin-reset`, {}),
+      { params: Promise.resolve({ participantId: before.id }) },
+    );
+    const { resetCode } = await issued.json() as { resetCode: string };
+
+    const complete = await import('@/app/api/participants/pin-reset/complete/route');
+    const response = await complete.POST(json('/api/participants/pin-reset/complete', {
+      inviteCode: 'test-invite-code-1234',
+      nickname: '가입별칭',
+      resetCode,
+      newPin: '654321',
+      newPinConfirmation: '654321',
+    }, '127.0.0.42'));
+    expect(response.status).toBe(204);
+
+    const [after] = await database.db.select().from(participants).where(eq(participants.id, before.id));
+    const [storedAnswer] = await database.db.select().from(answers).where(eq(answers.id, answer.id));
+    expect(after.id).toBe(before.id);
+    expect(after.currentAvatarId).toBe(before.currentAvatarId);
+    expect(storedAnswer).toMatchObject({ id: answer.id, participantId: before.id });
   });
 });

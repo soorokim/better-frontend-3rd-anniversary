@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
-import { participantSessions, participants } from '@/db/schema';
+import { events, participantSessions, participants } from '@/db/schema';
 import { authCookieNames } from '@/lib/auth/cookie-names';
 import { createTestDatabase } from '@/tests/helpers/database';
-import { eventFactory } from '@/tests/helpers/factories';
+import { eventFactory, participantFactory } from '@/tests/helpers/factories';
 import { conversationProfileBatchFactory } from '@/tests/helpers/conversation-profiles';
 
 let currentToken: string | undefined;
@@ -20,7 +20,10 @@ describe('participant authentication security', () => {
   beforeEach(async () => {
     await database.reset();
     const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
-    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: 'Player' }, { nickname: '보안' }]);
+    await conversationProfileBatchFactory(database.db, event.id, [
+      { nickname: 'Player' },
+      { nickname: '보안', aliases: ['교차로그인'] },
+    ]);
     currentToken = undefined;
   });
   afterAll(async () => database?.close());
@@ -63,5 +66,36 @@ describe('participant authentication security', () => {
     await database.db.update(participantSessions).set({ expiresAt: new Date(0) }).where(eq(participantSessions.id, session.id));
     const { GET } = await import('@/app/api/me/route');
     expect((await GET()).status).toBe(401);
+  });
+
+  it('does not select either account when a direct nickname collides with another account alias', async () => {
+    const { POST: register } = await import('@/app/api/participants/register/route');
+    expect((await register(registration(undefined, '보안'))).status).toBe(201);
+    const [event] = await database.db.select().from(events).limit(1);
+    await participantFactory(database.db, event.id, {
+      nicknameDisplay: '교차로그인',
+      nicknameKey: '교차로그인',
+    });
+
+    const { POST: login } = await import('@/app/api/participants/login/route');
+    async function rejected(nickname: string, ip: string) {
+      const response = await login(new Request('http://localhost:3000/api/participants/login', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          origin: 'http://localhost:3000',
+          'x-forwarded-for': ip,
+        },
+        body: JSON.stringify({
+          inviteCode: 'test-invite-code-1234',
+          nickname,
+          pin: '123456',
+        }),
+      }));
+      return { status: response.status, body: await response.json() };
+    }
+
+    expect(await rejected('교차로그인', '127.0.0.25')).toEqual(await rejected('미등록로그인', '127.0.0.26'));
+    expect(await database.db.select().from(participants)).toHaveLength(2);
   });
 });

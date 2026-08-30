@@ -85,17 +85,17 @@ description: "대화 아바타 작업을 현재 서비스에 통합하고 배포
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T021 [P] [US2] 정식 닉네임·승인 별칭의 단일 해석, 직접 닉네임과 별칭의 교차 계정 충돌, 비활성 배치 제외를 검증하는 실패 테스트를 `tests/integration/conversation-profile-repository.test.ts`에 작성한다.
-- [ ] T022 [P] [US2] 승인 별칭 PIN 초기화 성공과 participant·answer·current avatar 보존, 미등록·충돌 이름 각 20회의 동일한 외부 오류와 계정 변경 0건을 검증하는 실패 테스트를 `tests/integration/pin-reset-api.test.ts`와 `tests/integration/pin-reset-security.test.ts`에 작성한다.
-- [ ] T023 [P] [US2] 승인 별칭 가입 → 관리자 초기화 코드 발급 → 같은 별칭으로 PIN 변경 → 재로그인 → 기존 답변·아바타 확인 흐름을 `tests/e2e/admin-recovery.spec.ts`에 작성한다.
+- [X] T021 [P] [US2] 정식 닉네임·승인 별칭의 단일 해석, 직접 닉네임과 별칭의 교차 계정 충돌, 비활성 배치 제외를 검증하는 실패 테스트를 `tests/integration/conversation-profile-repository.test.ts`에 작성한다.
+- [X] T022 [P] [US2] 승인 별칭 PIN 초기화 성공과 participant·answer·current avatar 보존, 미등록·충돌 이름 각 20회의 동일한 외부 오류와 계정 변경 0건을 검증하는 실패 테스트를 `tests/integration/pin-reset-api.test.ts`와 `tests/integration/pin-reset-security.test.ts`에 작성한다.
+- [X] T023 [P] [US2] 승인 별칭 가입 → 관리자 초기화 코드 발급 → 같은 별칭으로 PIN 변경 → 재로그인 → 기존 답변·아바타 확인 흐름을 `tests/e2e/admin-recovery.spec.ts`에 작성한다.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] 활성 batch·event·profile 일치를 확인하고 `resolved | not_found | ambiguous`를 반환하는 공통 이름 해석 함수를 `lib/db/repositories/conversation-profiles.ts`에 구현한다.
-- [ ] T025 [P] [US2] 가입과 로그인이 T024의 이름 해석·활성 프로필 규칙을 공유하고 충돌 시 자동 계정 선택을 하지 않도록 `lib/auth/participant-service.ts`를 수정한다.
-- [ ] T026 [P] [US2] PIN 초기화 완료가 T024로 참가자 ID를 해석하고 정식 닉네임·별칭 모두에서 같은 grant와 계정을 사용하도록 `lib/auth/pin-reset-service.ts`를 수정한다.
-- [ ] T027 [US2] 미등록·충돌·잘못된 PIN 및 reset code가 계정 존재를 드러내지 않는 계약을 유지하도록 `app/api/participants/login/route.ts`, `app/api/participants/pin-reset/complete/route.ts`, `lib/validation/auth.ts`를 `specs/004-conversation-avatar-readiness/contracts/openapi.yaml`과 맞춘다.
-- [ ] T028 [US2] T021~T023과 기존 로그인·PIN 초기화 회귀 테스트를 실행하고 같은 participant·answer·avatar 식별자 보존 결과를 `specs/004-conversation-avatar-readiness/validation/us2-alias-recovery.md`에 기록한다.
+- [X] T024 [US2] 활성 batch·event·profile 일치를 확인하고 `resolved | not_found | ambiguous`를 반환하는 공통 이름 해석 함수를 `lib/db/repositories/conversation-profiles.ts`에 구현한다.
+- [X] T025 [P] [US2] 가입과 로그인이 T024의 이름 해석·활성 프로필 규칙을 공유하고 충돌 시 자동 계정 선택을 하지 않도록 `lib/auth/participant-service.ts`를 수정한다.
+- [X] T026 [P] [US2] PIN 초기화 완료가 T024로 참가자 ID를 해석하고 정식 닉네임·별칭 모두에서 같은 grant와 계정을 사용하도록 `lib/auth/pin-reset-service.ts`를 수정한다.
+- [X] T027 [US2] 미등록·충돌·잘못된 PIN 및 reset code가 계정 존재를 드러내지 않는 계약을 유지하도록 `app/api/participants/login/route.ts`, `app/api/participants/pin-reset/complete/route.ts`, `lib/validation/auth.ts`를 `specs/004-conversation-avatar-readiness/contracts/openapi.yaml`과 맞춘다.
+- [X] T028 [US2] T021~T023과 기존 로그인·PIN 초기화 회귀 테스트를 실행하고 같은 participant·answer·avatar 식별자 보존 결과를 `specs/004-conversation-avatar-readiness/validation/us2-alias-recovery.md`에 기록한다.
 
 **Checkpoint**: 참가자는 가입에 사용한 어떤 승인 이름으로도 기존 계정을 안전하게 복구할 수 있다.
 

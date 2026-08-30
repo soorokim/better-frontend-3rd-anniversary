@@ -3,6 +3,7 @@ import {
   conversationProfileAliases,
   conversationProfileBatches,
   conversationProfiles,
+  participants,
 } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import type { Transaction } from '@/lib/db/transaction';
@@ -24,15 +25,59 @@ export async function findConversationProfile(
 ) {
   const [row] = await executor.select({ profile: conversationProfiles })
     .from(conversationProfileAliases)
-    .innerJoin(conversationProfiles, eq(conversationProfileAliases.profileId, conversationProfiles.id))
-    .innerJoin(conversationProfileBatches, eq(conversationProfileAliases.batchId, conversationProfileBatches.id))
+    .innerJoin(conversationProfiles, and(
+      eq(conversationProfileAliases.profileId, conversationProfiles.id),
+      eq(conversationProfileAliases.batchId, conversationProfiles.batchId),
+    ))
+    .innerJoin(conversationProfileBatches, and(
+      eq(conversationProfiles.batchId, conversationProfileBatches.id),
+      eq(conversationProfiles.eventId, conversationProfileBatches.eventId),
+    ))
     .where(and(
       eq(conversationProfileBatches.eventId, eventId),
+      eq(conversationProfiles.eventId, eventId),
       eq(conversationProfileBatches.status, 'active'),
       eq(conversationProfileAliases.aliasKey, aliasKey),
     ))
     .limit(1);
   return row?.profile;
+}
+
+export type ParticipantNameResolution =
+  | { status: 'resolved'; participantId: string; profileId: string }
+  | { status: 'not_found' }
+  | { status: 'ambiguous' };
+
+export async function resolveParticipantName(
+  eventId: string,
+  nicknameKey: string,
+  executor: Executor = db,
+): Promise<ParticipantNameResolution> {
+  const [profile, directParticipants] = await Promise.all([
+    findConversationProfile(eventId, nicknameKey, executor),
+    executor.select({ id: participants.id }).from(participants).where(and(
+      eq(participants.eventId, eventId),
+      eq(participants.nicknameKey, nicknameKey),
+    )).limit(2),
+  ]);
+  if (!profile) return { status: 'not_found' };
+  const directIds = new Set(directParticipants.map(({ id }) => id));
+  if (directIds.size > 1) return { status: 'ambiguous' };
+  if (!profile.claimedParticipantId) {
+    const directParticipantId = directParticipants[0]?.id;
+    if (directParticipantId && nicknameKey === profile.nicknameKey) {
+      return { status: 'resolved', participantId: directParticipantId, profileId: profile.id };
+    }
+    return directParticipantId ? { status: 'ambiguous' } : { status: 'not_found' };
+  }
+  if (directIds.size === 1 && !directIds.has(profile.claimedParticipantId)) {
+    return { status: 'ambiguous' };
+  }
+  return {
+    status: 'resolved',
+    participantId: profile.claimedParticipantId,
+    profileId: profile.id,
+  };
 }
 
 export async function findConversationProfileById(profileId: string, executor: Executor = db) {

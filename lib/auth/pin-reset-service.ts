@@ -2,7 +2,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { participantSessions, participants } from '@/db/schema';
 import { getEnv } from '@/lib/config/env';
 import { createAuditEvent } from '@/lib/db/repositories/audit';
-import { findEventBySlug, findParticipantByNickname } from '@/lib/db/repositories/participants';
+import { resolveParticipantName } from '@/lib/db/repositories/conversation-profiles';
+import { findEventBySlug } from '@/lib/db/repositories/participants';
 import { consumeGrant, createPinResetGrant, findActiveGrantForUpdate, recordGrantFailure, revokeActiveGrants } from '@/lib/db/repositories/pin-reset';
 import { inTransaction } from '@/lib/db/transaction';
 import { AppError } from '@/lib/http/errors';
@@ -36,22 +37,27 @@ export async function completePinReset(input: { inviteCode: string; nickname: st
     throw new AppError(failure?.blocked ? 'rate_limited' : 'invalid_credentials', failure?.blocked ? '잠시 기다린 뒤 다시 시도해 주세요.' : '초기화 정보를 확인해 주세요.', failure?.blocked ? 429 : 401, undefined, failure?.retryAfter || undefined);
   }
   if (!event || !(await verifySecret(event.inviteCodeHash, input.inviteCode))) return invalidAttempt();
-  const participant = await findParticipantByNickname(event.id, nickname.key);
-  if (!participant) return invalidAttempt();
+  const resolution = await resolveParticipantName(event.id, nickname.key);
+  if (resolution.status !== 'resolved') return invalidAttempt();
   const newPinHash = await hashSecret(input.newPin);
   const result = await inTransaction(async (tx) => {
-    const [lockedParticipant] = await tx.select({ id: participants.id }).from(participants).where(eq(participants.id, participant.id)).for('update').limit(1);
+    const confirmedResolution = await resolveParticipantName(event.id, nickname.key, tx);
+    if (confirmedResolution.status !== 'resolved' || confirmedResolution.participantId !== resolution.participantId) {
+      return { outcome: 'invalid' as const };
+    }
+    const participantId = resolution.participantId;
+    const [lockedParticipant] = await tx.select({ id: participants.id }).from(participants).where(eq(participants.id, participantId)).for('update').limit(1);
     if (!lockedParticipant) return { outcome: 'gone' as const };
-    const grant = await findActiveGrantForUpdate(participant.id, tx);
+    const grant = await findActiveGrantForUpdate(participantId, tx);
     if (!grant) return { outcome: 'gone' as const };
     if (!(await verifySecret(grant.codeHash, input.resetCode))) {
       const failures = grant.failureCount + 1; await recordGrantFailure(grant.id, failures, tx);
-      await createAuditEvent({ eventId: event.id, adminId: grant.createdByAdminId, action: 'pin_reset_completed', targetParticipantId: participant.id, outcome: 'failure' }, tx);
+      await createAuditEvent({ eventId: event.id, adminId: grant.createdByAdminId, action: 'pin_reset_completed', targetParticipantId: participantId, outcome: 'failure' }, tx);
       return { outcome: failures >= 5 ? 'gone' as const : 'invalid' as const };
     }
-    await tx.update(participants).set({ pinHash: newPinHash, updatedAt: new Date() }).where(eq(participants.id, participant.id));
+    await tx.update(participants).set({ pinHash: newPinHash, updatedAt: new Date() }).where(eq(participants.id, participantId));
     await consumeGrant(grant.id, tx);
-    await createAuditEvent({ eventId: event.id, adminId: grant.createdByAdminId, action: 'pin_reset_completed', targetParticipantId: participant.id, outcome: 'success' }, tx);
+    await createAuditEvent({ eventId: event.id, adminId: grant.createdByAdminId, action: 'pin_reset_completed', targetParticipantId: participantId, outcome: 'success' }, tx);
     return { outcome: 'success' as const };
   });
   if (result.outcome === 'gone') throw new AppError('reset_grant_gone', '초기화 코드가 만료되었거나 더 이상 사용할 수 없습니다.', 410);

@@ -15,6 +15,7 @@ import {
   claimConversationProfile,
   findActiveConversationProfileBatch,
   findConversationProfile,
+  resolveParticipantName,
 } from '@/lib/db/repositories/conversation-profiles';
 import { inTransaction } from '@/lib/db/transaction';
 import { AppError, UnauthorizedError } from '@/lib/http/errors';
@@ -121,7 +122,13 @@ export async function registerParticipant(input: ParticipantAuthInput) {
       const profile = await findConversationProfile(event.id, requestedNickname.key, tx);
       if (!profile) throw new AppError('nickname_not_invited', '단톡방에서 사용한 닉네임인지 확인해 주세요.', 403, 'nickname');
       if (profile.claimedParticipantId) throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');
-      if (await findParticipantByNickname(event.id, profile.nicknameKey, tx)) {
+      const [requestedNameOwner, canonicalNameOwner] = await Promise.all([
+        findParticipantByNickname(event.id, requestedNickname.key, tx),
+        requestedNickname.key === profile.nicknameKey
+          ? Promise.resolve(undefined)
+          : findParticipantByNickname(event.id, profile.nicknameKey, tx),
+      ]);
+      if (requestedNameOwner || canonicalNameOwner) {
         throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');
       }
       const created = await createParticipantWithAvatar({
@@ -151,9 +158,10 @@ export async function loginParticipant(input: ParticipantAuthInput) {
   const subject = throttleSubject(event.id, nickname.key, input.ipAddress);
   const throttle = await readThrottle('participant_login', subject);
   if (throttle.blocked) throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, throttle.retryAfter);
-  const profile = await findConversationProfile(event.id, nickname.key);
-  const participant = await findParticipantByNickname(event.id, nickname.key)
-    ?? (profile?.claimedParticipantId ? await findParticipantById(profile.claimedParticipantId) : undefined);
+  const resolution = await resolveParticipantName(event.id, nickname.key);
+  const participant = resolution.status === 'resolved'
+    ? await findParticipantById(resolution.participantId)
+    : undefined;
   if (!participant || !(await verifySecret(participant.pinHash, input.pin))) {
     const failure = await recordFailure('participant_login', subject);
     throw new AppError('invalid_credentials', failure.blocked ? '잠시 기다린 뒤 다시 시도해 주세요.' : '입장 정보를 확인해 주세요.', failure.blocked ? 429 : 401, undefined, failure.retryAfter || undefined);
