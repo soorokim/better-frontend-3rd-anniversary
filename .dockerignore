@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.git/
+.dockerignore
+Dockerfile*
+*.log*
+.env*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+specs/
+.agents/
+.specify/
+backups/
+secrets/

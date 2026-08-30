@@ -1,0 +1,491 @@
+openapi: 3.1.0
+info:
+  title: Frontend Chat 3rd Anniversary API
+  version: 1.0.0
+  description: 1차 행사 입장, 답변, 진행자 운영을 위한 서버 계약
+servers:
+  - url: /
+paths:
+  /api/health:
+    get:
+      summary: 서비스 상태 확인
+      operationId: getHealth
+      responses:
+        '200':
+          description: 애플리케이션과 데이터 저장소 사용 가능
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    const: ok
+
+  /api/participants/register:
+    post:
+      summary: 새 참가자 등록
+      operationId: registerParticipant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 등록 완료 및 참가자 세션 발급
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantView'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/GenericAuthError' }
+        '409':
+          description: 이미 등록된 닉네임
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/participants/login:
+    post:
+      summary: 참가자 재입장
+      operationId: loginParticipant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 완료 및 참가자 세션 발급
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantView'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/GenericAuthError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/participants/logout:
+    post:
+      summary: 참가자 로그아웃
+      operationId: logoutParticipant
+      security:
+        - participantSession: []
+      parameters:
+        - $ref: '#/components/parameters/CsrfHeader'
+      responses:
+        '204': { description: 세션 폐기 완료 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CsrfError' }
+
+  /api/participants/pin-reset/complete:
+    post:
+      summary: 일회용 코드로 새 PIN 설정
+      operationId: completePinReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePinResetRequest'
+      responses:
+        '204': { description: 새 PIN 설정 완료, 일반 로그인 필요 }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/GenericAuthError' }
+        '410':
+          description: 초기화 코드 만료·사용·폐기
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/me:
+    get:
+      summary: 현재 참가자와 로비 상태 조회
+      operationId: getCurrentParticipant
+      security:
+        - participantSession: []
+      responses:
+        '200':
+          description: 참가자 로비 정보
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/question/current:
+    get:
+      summary: 현재 공개된 3주년 질문 조회
+      operationId: getCurrentQuestion
+      security:
+        - participantSession: []
+      responses:
+        '200':
+          description: 공개된 질문
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: 공개된 질문 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/answer/current:
+    get:
+      summary: 현재 참가자의 답변 조회
+      operationId: getCurrentAnswer
+      security:
+        - participantSession: []
+      responses:
+        '200':
+          description: 저장된 답변
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: 저장된 답변 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: 현재 질문 답변 저장 또는 수정
+      operationId: putCurrentAnswer
+      security:
+        - participantSession: []
+      parameters:
+        - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+      responses:
+        '200':
+          description: 답변 저장 또는 수정 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerView'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CsrfError' }
+        '409':
+          description: 질문이 더 이상 답변 가능 상태가 아님
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/login:
+    post:
+      summary: 진행자 로그인
+      operationId: loginAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, minLength: 15 }
+      responses:
+        '200':
+          description: 관리자 세션 발급
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authenticated]
+                properties:
+                  authenticated: { const: true }
+        '401': { $ref: '#/components/responses/GenericAuthError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /api/admin/logout:
+    post:
+      summary: 진행자 로그아웃
+      operationId: logoutAdmin
+      security:
+        - adminSession: []
+      parameters:
+        - $ref: '#/components/parameters/CsrfHeader'
+      responses:
+        '204': { description: 관리자 세션 폐기 완료 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CsrfError' }
+
+  /api/admin/participants:
+    get:
+      summary: 참가자와 제출 상태 목록
+      operationId: listParticipants
+      security:
+        - adminSession: []
+      responses:
+        '200':
+          description: 닉네임 순 참가자 목록
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [participants]
+                properties:
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminParticipantView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/participants/{participantId}/pin-reset:
+    post:
+      summary: 참가자 PIN 초기화 및 일회용 코드 발급
+      operationId: resetParticipantPin
+      security:
+        - adminSession: []
+      parameters:
+        - name: participantId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [password]
+              properties:
+                password:
+                  type: string
+                  minLength: 15
+                  description: 민감 작업 재인증용 관리자 비밀번호
+      responses:
+        '201':
+          description: 기존 세션 폐기 및 일회용 코드 발급. 응답은 저장하거나 로그하지 않는다.
+          headers:
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resetCode, expiresAt]
+                properties:
+                  resetCode:
+                    type: string
+                    pattern: '^\d{8}$'
+                  expiresAt:
+                    type: string
+                    format: date-time
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: 참가자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    participantSession:
+      type: apiKey
+      in: cookie
+      name: __Host-participant_session
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: __Host-admin_session
+
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema: { type: string, minLength: 32 }
+
+  responses:
+    ValidationError:
+      description: 입력값 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    GenericAuthError:
+      description: 인증 정보 불일치
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: 유효한 세션 없음
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 해당 작업 권한 없음
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    CsrfError:
+      description: 상태 변경 요청 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: 재시도 제한 적용
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            field: { type: string }
+
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, pin, pinConfirmation]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        pin: { type: string, pattern: '^\d{6}$' }
+        pinConfirmation: { type: string, pattern: '^\d{6}$' }
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, pin]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        pin: { type: string, pattern: '^\d{6}$' }
+
+    CompletePinResetRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, resetCode, newPin, newPinConfirmation]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 100 }
+        resetCode: { type: string, pattern: '^\d{8}$' }
+        newPin: { type: string, pattern: '^\d{6}$' }
+        newPinConfirmation: { type: string, pattern: '^\d{6}$' }
+
+    AvatarView:
+      type: object
+      additionalProperties: false
+      required: [generatorVersion, catalogVersion, traits]
+      properties:
+        generatorVersion: { type: string }
+        catalogVersion: { type: string }
+        traits:
+          type: object
+          additionalProperties: { type: string }
+
+    ParticipantView:
+      type: object
+      additionalProperties: false
+      required: [id, nickname, avatar]
+      properties:
+        id: { type: string, format: uuid }
+        nickname: { type: string }
+        avatar: { $ref: '#/components/schemas/AvatarView' }
+
+    LobbyView:
+      allOf:
+        - $ref: '#/components/schemas/ParticipantView'
+        - type: object
+          required: [answerStatus]
+          properties:
+            answerStatus:
+              type: string
+              enum: [not-submitted, submitted, question-unavailable]
+
+    QuestionView:
+      type: object
+      additionalProperties: false
+      required: [id, prompt, status]
+      properties:
+        id: { type: string, format: uuid }
+        prompt: { type: string, maxLength: 500 }
+        status: { type: string, const: published }
+
+    AnswerView:
+      type: object
+      additionalProperties: false
+      required: [id, questionId, content, submittedAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        questionId: { type: string, format: uuid }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        submittedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AdminParticipantView:
+      type: object
+      additionalProperties: false
+      required: [id, nickname, avatar, answerStatus, joinedAt]
+      properties:
+        id: { type: string, format: uuid }
+        nickname: { type: string }
+        avatar: { $ref: '#/components/schemas/AvatarView' }
+        answerStatus:
+          type: string
+          enum: [not-submitted, submitted]
+        joinedAt: { type: string, format: date-time }
