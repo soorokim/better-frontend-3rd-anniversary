@@ -44,3 +44,4 @@ next-env.d.ts
 /playwright-report/
 /.auth/
 /backups/
+/.deploy.lock/

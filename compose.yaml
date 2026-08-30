@@ -40,12 +40,16 @@ services:
     restart: "no"
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
     restart: unless-stopped
     env_file:
       - path: .env
         required: false
     environment:
+      NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-frontend_chat}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-frontend_chat}
       AUTH_PEPPER: ${AUTH_PEPPER:?set AUTH_PEPPER}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET}

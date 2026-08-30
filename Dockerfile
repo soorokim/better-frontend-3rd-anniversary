@@ -5,7 +5,8 @@ RUN npm ci
 
 FROM node:22-bookworm-slim AS builder
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ARG APP_ORIGIN=http://localhost:3000
+ENV NEXT_TELEMETRY_DISABLED=1 APP_ORIGIN=${APP_ORIGIN}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

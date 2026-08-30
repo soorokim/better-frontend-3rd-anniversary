@@ -19,24 +19,16 @@
 git clone <repository-url>
 cd <repository-directory>
 cp .env.example .env
-mkdir -p secrets backups
+mkdir -p backups
 ```
 
-`.env.example`의 설명에 따라 행사 제목, 도메인, 관리자 이름 같은 비밀이 아닌 값을 설정한다.
-다음 비밀 파일은 저장소에 커밋하지 않는다.
-
-```text
-secrets/postgres_password
-secrets/invite_code
-secrets/auth_pepper
-secrets/admin_password
-```
-
-각 파일에는 해당 원문 값 하나와 마지막 줄바꿈만 둔다. 초대 코드는 16자 이상의 무작위 값,
-관리자 비밀번호는 15자 이상의 무작위 값이어야 한다.
+`.env.example`의 설명에 따라 행사 제목과 공개 주소를 설정하고 모든 placeholder 비밀값을
+바꾼다. 초대 코드는 16자 이상, 관리자 비밀번호는 15자 이상이어야 하며 pepper와 session
+secret은 각각 32자 이상의 서로 다른 무작위 값으로 만든다. `.env`는 저장소에 커밋하지 않고
+Linux 서버에서는 `chmod 600 .env`로 배포 계정만 읽을 수 있게 둔다.
 
 ```bash
-docker compose config
+docker compose config --quiet
 docker compose up -d --build
 docker compose ps
 ```
