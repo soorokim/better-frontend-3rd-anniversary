@@ -33,7 +33,7 @@ services:
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
-    command: sh -c "npm ci && npm run db:migrate && npm run db:seed"
+    command: sh -c "npm ci --include=dev && npm run db:migrate && npm run db:seed"
     depends_on:
       db:
         condition: service_healthy
