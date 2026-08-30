@@ -9,6 +9,7 @@ describe('auth cookie policy', () => {
       participant: '__Host-participant_session',
       participantCsrf: '__Host-participant_csrf',
       admin: '__Host-admin_session',
+      adminCsrf: '__Host-admin_csrf',
     });
     expect(policy.session('token', new Date(1)).secure).toBe(true);
     expect(policy.csrf('token', new Date(1))).toMatchObject({ secure: true, httpOnly: false, path: '/' });
@@ -21,6 +22,7 @@ describe('auth cookie policy', () => {
       participant: 'participant_session',
       participantCsrf: 'participant_csrf',
       admin: 'admin_session',
+      adminCsrf: 'admin_csrf',
     });
     expect(policy.session('token', new Date(1)).secure).toBe(false);
     expect(policy.expired(false)).toMatchObject({ secure: false, httpOnly: false, path: '/' });

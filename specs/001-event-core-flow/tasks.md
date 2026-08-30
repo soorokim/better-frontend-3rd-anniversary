@@ -138,21 +138,21 @@ PIN을 초기화해 참가자가 안전하게 새 PIN을 설정하도록 돕는�
 
 > **NOTE: 아래 테스트를 먼저 작성하고 실패를 확인한 뒤 구현한다.**
 
-- [ ] T048 [P] [US3] 관리자 로그인·로그아웃·참가자 목록 권한 계약 테스트를 `tests/integration/admin-api.test.ts`에 작성한다
-- [ ] T049 [P] [US3] PIN 초기화 재인증·일회용·10분 만료·5회 실패·재발급 계약 테스트를 `tests/integration/pin-reset-api.test.ts`에 작성한다
-- [ ] T050 [P] [US3] auth_version 증가, 모든 기존 세션 폐기, 감사 기록의 비밀값 제외 테스트를 `tests/integration/pin-reset-security.test.ts`에 작성한다
-- [ ] T051 [P] [US3] 참가자 관리자 접근 거부와 관리자 목록→PIN 초기화→새 PIN 로그인 종단 테스트를 `tests/e2e/admin-recovery.spec.ts`에 작성한다
+- [X] T048 [P] [US3] 관리자 로그인·로그아웃·참가자 목록 권한 계약 테스트를 `tests/integration/admin-api.test.ts`에 작성한다
+- [X] T049 [P] [US3] PIN 초기화 재인증·일회용·10분 만료·5회 실패·재발급 계약 테스트를 `tests/integration/pin-reset-api.test.ts`에 작성한다
+- [X] T050 [P] [US3] auth_version 증가, 모든 기존 세션 폐기, 감사 기록의 비밀값 제외 테스트를 `tests/integration/pin-reset-security.test.ts`에 작성한다
+- [X] T051 [P] [US3] 참가자 관리자 접근 거부와 관리자 목록→PIN 초기화→새 PIN 로그인 종단 테스트를 `tests/e2e/admin-recovery.spec.ts`에 작성한다
 
 ### Implementation for User Story 3
 
-- [ ] T052 [P] [US3] 관리자 계정·세션·참가자 제출 목록 저장 접근을 `lib/db/repositories/admin.ts`에 구현한다
-- [ ] T053 [P] [US3] PinResetGrant와 AuditEvent 생성·만료·폐기 저장 접근을 `lib/db/repositories/pin-reset.ts` 및 `lib/db/repositories/audit.ts`에 구현한다
-- [ ] T054 [US3] 관리자 인증, 짧은 세션, 민감 작업 재인증을 `lib/auth/admin-service.ts`에 구현한다
-- [ ] T055 [US3] PIN 초기화 트랜잭션과 새 PIN 완료 흐름을 `lib/auth/pin-reset-service.ts`에 구현한다
-- [ ] T056 [US3] 관리자 로그인·로그아웃·참가자 목록 계약을 `app/api/admin/login/route.ts`, `app/api/admin/logout/route.ts`, `app/api/admin/participants/route.ts`에 구현한다
-- [ ] T057 [US3] 관리자 PIN 초기화와 참가자 새 PIN 완료 계약을 `app/api/admin/participants/[participantId]/pin-reset/route.ts` 및 `app/api/participants/pin-reset/complete/route.ts`에 구현한다
-- [ ] T058 [P] [US3] 관리자 로그인과 제출 상태 목록을 `app/admin/login/page.tsx`, `app/admin/page.tsx`, `components/admin/ParticipantList.tsx`에 구현한다
-- [ ] T059 [US3] 재인증 확인, 일회용 코드 1회 표시, reset code 새 PIN 폼을 `components/admin/PinResetDialog.tsx` 및 `app/(public)/reset-pin/page.tsx`에 구현한다
+- [X] T052 [P] [US3] 관리자 계정·세션·참가자 제출 목록 저장 접근을 `lib/db/repositories/admin.ts`에 구현한다
+- [X] T053 [P] [US3] PinResetGrant와 AuditEvent 생성·만료·폐기 저장 접근을 `lib/db/repositories/pin-reset.ts` 및 `lib/db/repositories/audit.ts`에 구현한다
+- [X] T054 [US3] 관리자 인증, 짧은 세션, 민감 작업 재인증을 `lib/auth/admin-service.ts`에 구현한다
+- [X] T055 [US3] PIN 초기화 트랜잭션과 새 PIN 완료 흐름을 `lib/auth/pin-reset-service.ts`에 구현한다
+- [X] T056 [US3] 관리자 로그인·로그아웃·참가자 목록 계약을 `app/api/admin/login/route.ts`, `app/api/admin/logout/route.ts`, `app/api/admin/participants/route.ts`에 구현한다
+- [X] T057 [US3] 관리자 PIN 초기화와 참가자 새 PIN 완료 계약을 `app/api/admin/participants/[participantId]/pin-reset/route.ts` 및 `app/api/participants/pin-reset/complete/route.ts`에 구현한다
+- [X] T058 [P] [US3] 관리자 로그인과 제출 상태 목록을 `app/admin/login/page.tsx`, `app/admin/page.tsx`, `components/admin/ParticipantList.tsx`에 구현한다
+- [X] T059 [US3] 재인증 확인, 일회용 코드 1회 표시, reset code 새 PIN 폼을 `components/admin/PinResetDialog.tsx` 및 `app/(public)/reset-pin/page.tsx`에 구현한다
 - [ ] T060 [US3] T048~T051을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 4·5 결과를 기록한다
 
 **Checkpoint**: 진행자가 데이터베이스를 직접 만지지 않고 현장에서 참가자의 입장 문제를 복구할 수 있다.

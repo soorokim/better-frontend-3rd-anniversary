@@ -9,3 +9,10 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   inviteCode: z.string().min(16), nickname: z.string(), pin: pinSchema,
 }).strict();
+
+export const adminLoginSchema = z.object({ username: z.string().min(1).max(80), password: z.string().min(15) }).strict();
+export const adminReauthenticationSchema = z.object({ password: z.string().min(15).optional() }).strict();
+export const completePinResetSchema = z.object({
+  inviteCode: z.string().min(16), nickname: z.string(), resetCode: resetCodeSchema,
+  newPin: pinSchema, newPinConfirmation: pinSchema,
+}).strict().refine(({ newPin, newPinConfirmation }) => newPin === newPinConfirmation, { path: ['newPinConfirmation'], message: 'PIN이 서로 다릅니다.' });

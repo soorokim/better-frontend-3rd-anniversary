@@ -36,6 +36,7 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
     <div className="auth-actions">
       <button className="game-button" type="submit" disabled={state.kind==='loading'}>{registering?'캐릭터 만나기':'로비로 돌아가기'}</button>
       <Link href={registering?'/login':'/join'}>{registering?'이미 참여했나요?':'처음 오셨나요?'}</Link>
+      {!registering?<Link href="/reset-pin">PIN을 잊었나요?</Link>:null}
     </div>
   </form>;
 }
