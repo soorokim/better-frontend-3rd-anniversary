@@ -4,6 +4,7 @@ import { participantSessions, participants } from '@/db/schema';
 import { authCookieNames } from '@/lib/auth/cookie-names';
 import { createTestDatabase } from '@/tests/helpers/database';
 import { eventFactory } from '@/tests/helpers/factories';
+import { conversationProfileBatchFactory } from '@/tests/helpers/conversation-profiles';
 
 let currentToken: string | undefined;
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => currentToken ? { value: currentToken } : undefined }) }));
@@ -16,7 +17,12 @@ const registration = (inviteCode = 'test-invite-code-1234', nickname = '보안')
 describe('participant authentication security', () => {
   let database: Awaited<ReturnType<typeof createTestDatabase>>;
   beforeAll(async () => { database = await createTestDatabase(); });
-  beforeEach(async () => { await database.reset(); await eventFactory(database.db, { slug: 'frontend-chat-3rd' }); currentToken = undefined; });
+  beforeEach(async () => {
+    await database.reset();
+    const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
+    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: 'Player' }, { nickname: '보안' }]);
+    currentToken = undefined;
+  });
   afterAll(async () => database?.close());
 
   it('rejects a bad invite without creating a participant and throttles repeated attempts', async () => {

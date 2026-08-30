@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const pinSchema = z.string().regex(/^\d{6}$/, 'PIN은 숫자 6자리여야 합니다.');
+export const invitationSchema = z.object({ inviteCode: z.string().min(16) }).strict();
 export const resetCodeSchema = z.string().regex(/^\d{8}$/, '초기화 코드는 숫자 8자리여야 합니다.');
 export const registerSchema = z.object({
   inviteCode: z.string().min(16), nickname: z.string(), pin: pinSchema, pinConfirmation: pinSchema,

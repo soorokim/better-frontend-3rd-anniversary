@@ -1,6 +1,6 @@
 # 프론트엔드 단톡방 3주년
 
-공통 초대 코드로 입장한 참가자가 닉네임과 PIN을 만들고, 닉네임에서 결정적으로 생성된 픽셀 캐릭터를 받아 3주년 질문에 답하는 작은 행사 서비스다. 다시 로그인하면 기존 답변을 불러와 수정할 수 있고, 진행자는 관리자 화면에서 참가자와 제출 여부를 확인하고 PIN 초기화 코드를 발급할 수 있다.
+공통 초대 코드로 입장한 참가자가 단톡방에서 사용한 승인 닉네임과 PIN을 만들고, 미리 분석한 대화 특징으로 고정 픽셀 캐릭터와 개발자 프로필을 받아 3주년 질문에 답하는 작은 행사 서비스다. 다시 로그인하면 같은 캐릭터와 기존 답변을 불러와 수정할 수 있고, 진행자는 관리자 화면에서 참가자와 제출 여부, 대화 프로필 준비 상태를 확인하고 PIN 초기화 코드를 발급할 수 있다.
 
 ## 바로 실행하기
 
@@ -45,10 +45,30 @@ npm run build
 
 통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 참가자 흐름은 [기본 기능 quickstart](specs/001-event-core-flow/quickstart.md), 진행자 화면은 [발표 기능 quickstart](specs/002-presenter-results/quickstart.md)에 검증 순서가 있다. API 계약은 [기본 기능 OpenAPI](specs/001-event-core-flow/contracts/openapi.yaml)와 [발표 기능 OpenAPI](specs/002-presenter-results/contracts/openapi.yaml)를 참고하면 된다.
 
+## 대화 기반 아바타 준비
+
+신규 가입은 활성 대화 프로필 배치가 있어야 열린다. 카카오 원문이 있는 LXC에서 메시지가 있는 비시스템 사용자 전원을 분석하고, 닉네임 충돌 목록을 사용자 승인으로 정리한 뒤, user ID가 없는 JSON만 행사 서버로 가져온다.
+
+```bash
+npm run test:analysis
+npm run avatar:validate -- /secure-transfer/profiles.json
+npm run avatar:import -- /secure-transfer/profiles.json
+```
+
+Node.js를 호스트에 설치하지 않은 Docker 서버에서는 검증된 JSON이 있는 호스트 폴더를 읽기 전용으로 붙여 같은 명령을 실행한다.
+
+```bash
+docker compose run --rm \
+  -v /srv/avatar-transfer:/secure-transfer:ro \
+  migrate sh -c 'npm ci --include=dev && npm run avatar:validate -- /secure-transfer/profiles.json && npm run avatar:import -- /secure-transfer/profiles.json'
+```
+
+전체 분석·별칭 승인·백업·import 순서는 [대화 아바타 quickstart](specs/003-conversation-avatar/quickstart.md), 별칭 파일 형식은 [분석 도구 안내](scripts/README.md)에 있다. `AVATAR_HASH_KEY`는 아카이브 LXC에서만 주입하며 앱 컨테이너에는 필요 없다.
+
 ## 중요한 운영 메모
 
 - `.env`와 `backups/`는 Git에 커밋하지 않는다.
 - `AUTH_PEPPER`와 `SESSION_SECRET`은 설치 뒤 함부로 바꾸지 않는다. 기존 인증 정보와 세션에 영향을 준다.
 - 최초 시드는 빈 DB에 관리자 계정을 만든다. 이미 생성된 관리자의 비밀번호는 `.env` 변경이나 재시드만으로 바뀌지 않는다.
 - 데이터베이스 포트는 Compose에서 호스트에 공개하지 않는다.
-- 픽셀 캐릭터는 외부 이미지가 아니라 자체 HTML/CSS로 그린다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.
+- 픽셀 캐릭터는 대화 HMAC에서 확정한 고정 조합을 DiceBear Pixel Art SVG로 서버에서 직접 렌더링한다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.

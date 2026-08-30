@@ -4,6 +4,7 @@ import { participantSessions } from '@/db/schema';
 import { authCookieNames } from '@/lib/auth/cookie-names';
 import { createTestDatabase } from '@/tests/helpers/database';
 import { eventFactory } from '@/tests/helpers/factories';
+import { conversationProfileBatchFactory } from '@/tests/helpers/conversation-profiles';
 
 let sessionCookie: string | undefined;
 vi.mock('next/headers', () => ({
@@ -28,7 +29,8 @@ describe('participant authentication API contract', () => {
   beforeAll(async () => { database = await createTestDatabase(); });
   beforeEach(async () => {
     await database.reset();
-    await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
+    const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
+    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: '프론트' }]);
     sessionCookie = undefined;
   });
   afterAll(async () => database?.close());

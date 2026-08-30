@@ -10,8 +10,10 @@ const timestamps = {
 
 export const avatarSourceKind = pgEnum('avatar_source_kind', ['nickname', 'conversation']);
 export const questionStatus = pgEnum('question_status', ['draft', 'published', 'closed']);
-export const throttleAction = pgEnum('throttle_action', ['invite', 'participant_login', 'admin_login', 'pin_reset']);
+export const throttleAction = pgEnum('throttle_action', ['invite', 'participant_login', 'admin_login', 'pin_reset', 'participant_register']);
 export const auditOutcome = pgEnum('audit_outcome', ['success', 'failure']);
+export const conversationProfileBatchStatus = pgEnum('conversation_profile_batch_status', ['staged', 'active', 'superseded', 'failed']);
+export const conversationProfileAliasKind = pgEnum('conversation_profile_alias_kind', ['canonical', 'approved_alias', 'discovered']);
 
 export const events = pgTable('events', {
   id: uuid('id').defaultRandom().primaryKey(), slug: text('slug').notNull(), title: text('title').notNull(),
@@ -25,13 +27,90 @@ export const participants = pgTable('participants', {
   authVersion: integer('auth_version').default(1).notNull(), currentAvatarId: uuid('current_avatar_id'), ...timestamps,
 }, (t) => [uniqueIndex('participants_event_nickname_uq').on(t.eventId, t.nicknameKey), index('participants_event_idx').on(t.eventId), check('participants_auth_version_check', sql`${t.authVersion} >= 1`)]);
 
+export type ConversationProfileData = {
+  adjectiveCandidates: string[];
+  nounCandidates: string[];
+  signals: Record<string, number>;
+  selectedAdjective: string | null;
+  selectedNoun: string | null;
+  className: string | null;
+  item: string;
+  defaultStatus: string;
+  easterEggStatuses: string[];
+  displayHash: string;
+  avatarSeed: string;
+  avatarOptions: Record<string, string>;
+  generatorVersion: string;
+};
+
+export const conversationProfileBatches = pgTable('conversation_profile_batches', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  schemaVersion: text('schema_version').notNull(),
+  sourceVersion: text('source_version').notNull(),
+  selectionMode: text('selection_mode').notNull(),
+  sourceUserCount: integer('source_user_count').notNull(),
+  profileCount: integer('profile_count').notNull(),
+  mergedSourceRowCount: integer('merged_source_row_count').default(0).notNull(),
+  payloadDigest: text('payload_digest').notNull(),
+  status: conversationProfileBatchStatus('status').default('staged').notNull(),
+  failureReason: text('failure_reason'),
+  importedAt: timestamp('imported_at', { withTimezone: true }).defaultNow().notNull(),
+  activatedAt: timestamp('activated_at', { withTimezone: true }),
+}, (t) => [
+  uniqueIndex('conversation_profile_batches_event_payload_uq').on(t.eventId, t.payloadDigest),
+  uniqueIndex('conversation_profile_batches_one_active_uq').on(t.eventId).where(sql`${t.status} = 'active'`),
+  index('conversation_profile_batches_event_idx').on(t.eventId),
+  check('conversation_profile_batches_counts_check', sql`${t.sourceUserCount} >= ${t.profileCount} and ${t.profileCount} >= 1 and ${t.mergedSourceRowCount} >= 0`),
+  check('conversation_profile_batches_digest_check', sql`${t.payloadDigest} ~ '^[0-9a-f]{64}$'`),
+]);
+
+export const conversationProfiles = pgTable('conversation_profiles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  batchId: uuid('batch_id').notNull().references(() => conversationProfileBatches.id, { onDelete: 'cascade' }),
+  eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  nicknameDisplay: text('nickname_display').notNull(),
+  nicknameKey: text('nickname_key').notNull(),
+  sourceVersion: text('source_version').notNull(),
+  sourceDigest: text('source_digest').notNull(),
+  sourceRowCount: integer('source_row_count').default(1).notNull(),
+  profileData: jsonb('profile_data').$type<ConversationProfileData>().notNull(),
+  claimedParticipantId: uuid('claimed_participant_id').references(() => participants.id, { onDelete: 'set null' }),
+  claimedAt: timestamp('claimed_at', { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex('conversation_profiles_batch_nickname_uq').on(t.batchId, t.nicknameKey),
+  uniqueIndex('conversation_profiles_claimed_participant_uq').on(t.claimedParticipantId).where(sql`${t.claimedParticipantId} is not null`),
+  index('conversation_profiles_batch_idx').on(t.batchId),
+  index('conversation_profiles_event_idx').on(t.eventId),
+  check('conversation_profiles_source_rows_check', sql`${t.sourceRowCount} >= 1`),
+  check('conversation_profiles_digest_check', sql`${t.sourceDigest} ~ '^[0-9a-f]{64}$'`),
+]);
+
+export const conversationProfileAliases = pgTable('conversation_profile_aliases', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  batchId: uuid('batch_id').notNull().references(() => conversationProfileBatches.id, { onDelete: 'cascade' }),
+  profileId: uuid('profile_id').notNull().references(() => conversationProfiles.id, { onDelete: 'cascade' }),
+  displayAlias: text('display_alias').notNull(),
+  aliasKey: text('alias_key').notNull(),
+  kind: conversationProfileAliasKind('kind').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('conversation_profile_aliases_batch_key_uq').on(t.batchId, t.aliasKey),
+  index('conversation_profile_aliases_profile_idx').on(t.profileId),
+]);
+
 export const avatarAssignments = pgTable('avatar_assignments', {
   id: uuid('id').defaultRandom().primaryKey(), participantId: uuid('participant_id').notNull().references(() => participants.id, { onDelete: 'cascade' }),
   sourceKind: avatarSourceKind('source_kind').notNull(), sourceVersion: text('source_version').notNull(), sourceDigest: text('source_digest').notNull(),
   generatorVersion: text('generator_version').notNull(), catalogVersion: text('catalog_version').notNull(),
   selectedTraits: jsonb('selected_traits').$type<Record<string, string>>().notNull(), supersedesId: uuid('supersedes_id'),
+  conversationProfileId: uuid('conversation_profile_id').references(() => conversationProfiles.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-}, (t) => [index('avatar_participant_idx').on(t.participantId)]);
+}, (t) => [
+  index('avatar_participant_idx').on(t.participantId),
+  uniqueIndex('avatar_participant_source_digest_uq').on(t.participantId, t.sourceKind, t.sourceDigest),
+]);
 
 export const questions = pgTable('questions', {
   id: uuid('id').defaultRandom().primaryKey(), eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),

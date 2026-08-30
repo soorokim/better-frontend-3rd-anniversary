@@ -12,7 +12,11 @@ export async function POST(request: Request) {
     if (!verifyOrigin(request, getEnv().APP_ORIGIN)) throw new AppError('csrf_error', '요청을 확인할 수 없습니다. 새로고침 뒤 다시 시도해 주세요.', 403);
     const input = registerSchema.parse(await request.json());
     const result = await registerParticipant({ ...input, ipAddress: clientIp(request) });
-    const response = NextResponse.json(result.view, { status: 201 });
+    const response = NextResponse.json({
+      ...result.view,
+      participant: { id: result.view.id, nickname: result.view.nickname },
+      reveal: { enabled: true, minDurationMs: 3000, maxDurationMs: 5000, serverProgress: false },
+    }, { status: 201 });
     const cookies = authCookiePolicy();
     response.cookies.set(cookies.names.participant, result.session.token, cookies.session(result.session.token, result.session.expiresAt));
     response.cookies.set(cookies.names.participantCsrf, result.session.csrfToken, cookies.csrf(result.session.csrfToken, result.session.expiresAt));

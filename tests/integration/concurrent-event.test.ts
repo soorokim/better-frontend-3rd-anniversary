@@ -12,6 +12,7 @@ import { loginParticipant, registerParticipant } from '@/lib/auth/participant-se
 import { closeDatabase } from '@/lib/db/client';
 import { createTestDatabase } from '@/tests/helpers/database';
 import { eventFactory, questionFactory } from '@/tests/helpers/factories';
+import { conversationProfileBatchFactory } from '@/tests/helpers/conversation-profiles';
 
 const PARTICIPANT_COUNT = 30;
 const SHARED_IP = '192.0.2.30';
@@ -50,6 +51,10 @@ describe('30-participant concurrent event use', () => {
 
   it('keeps registrations, avatars, logins, and owned answers intact on one venue IP', async () => {
     const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
+    await conversationProfileBatchFactory(database.db, event.id, loadParticipants.map(({ nickname }, index) => ({
+      nickname,
+      digest: (index + 1).toString(16).padStart(64, '0'),
+    })));
     const question = await questionFactory(database.db, event.id);
     const startedAt = performance.now();
 

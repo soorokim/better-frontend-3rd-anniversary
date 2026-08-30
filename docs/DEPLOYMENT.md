@@ -156,6 +156,25 @@ curl -sS -D - -o /dev/null http://127.0.0.1:3000/api/health
 
 ## 7. 업데이트
 
+### 대화 프로필을 처음 활성화하거나 갱신할 때
+
+코드 배포와 대화 분석은 분리한다. 먼저 이 문서의 백업 명령으로 PostgreSQL dump를 만들고 읽기 검사를 통과시킨다. 카카오 원문이 있는 LXC에서만 전체 분석과 `merge_review` 확인을 끝낸 뒤, 원본 user ID가 없는 최종 JSON만 앱 서버의 제한된 임시 경로로 복사한다.
+
+```bash
+npm run avatar:validate -- /secure-transfer/profiles.json
+npm run avatar:import -- /secure-transfer/profiles.json
+```
+
+호스트에 Node.js를 설치하지 않은 운영 서버에서는 저장소가 마운트되는 `migrate` 서비스를 일회용 도구로 사용한다.
+
+```bash
+docker compose run --rm \
+  -v /srv/avatar-transfer:/secure-transfer:ro \
+  migrate sh -c 'npm ci --include=dev && npm run avatar:validate -- /secure-transfer/profiles.json && npm run avatar:import -- /secure-transfer/profiles.json'
+```
+
+import는 새 배치를 한 트랜잭션으로 저장한 뒤 활성화한다. 실패하면 이전 활성 배치를 그대로 사용한다. 성공 후 `/admin`에서 원본 사용자 행 수, 프로필 수, 승인 병합 별칭을 확인하고 승인 닉네임 하나로 가입·재로그인을 시험한다. 이전 DB 상태로 돌아가야 할 때는 volume을 지우지 말고 이 문서의 새 검증 DB 복구 절차로 직전 dump부터 확인한다. 자세한 분석 순서는 [대화 아바타 quickstart](../specs/003-conversation-avatar/quickstart.md)를 따른다.
+
 업데이트 전에 앱과 DB가 healthy인지 확인한다. 서버 checkout은 upstream이 연결된 브랜치에 있어야 하고, `.env`가 있어야 하며, Git 작업 트리는 추적되지 않은 파일까지 깨끗해야 한다. `.env`와 `backups/`는 원래 `.gitignore`에 포함되므로 작업 트리를 더럽히지 않는다.
 
 ```bash

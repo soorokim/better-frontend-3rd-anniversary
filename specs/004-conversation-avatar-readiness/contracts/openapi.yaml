@@ -1,0 +1,246 @@
+openapi: 3.1.0
+info:
+  title: Better Frontend 3rd Anniversary - Avatar Readiness API Delta
+  version: 0.2.0
+  description: 승인 이름 해석과 가입 제한 때문에 달라지는 참가자 인증 계약만 정의한다.
+servers:
+  - url: https://3rd-anniversery.better-frontend.club
+paths:
+  /api/participants/register:
+    post:
+      summary: 승인된 정식 닉네임 또는 별칭으로 참가자를 등록한다
+      operationId: registerParticipantWithApprovedName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 참가자와 확정 대화 아바타가 생성되고 세션 cookie가 설정됨
+          headers:
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSuccess'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidInvitation'
+        '403':
+          description: 활성 배치의 승인 이름이 아님
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '409':
+          description: 이미 가입되었거나 다른 요청이 프로필을 선점함
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: 행사 또는 활성 전체 프로필 배치가 아직 준비되지 않음
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/participants/login:
+    post:
+      summary: 정식 닉네임 또는 같은 참가자의 승인 별칭으로 로그인한다
+      operationId: loginParticipantWithApprovedName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 같은 participant 계정으로 로그인하고 세션 cookie가 설정됨
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantView'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: 승인 이름을 찾지 못하거나 충돌하거나 PIN이 일치하지 않음. 세 경우는 같은 외부 문구를 쓴다.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /api/participants/pin-reset/complete:
+    post:
+      summary: 정식 닉네임 또는 승인 별칭과 일회용 코드로 같은 계정의 PIN을 바꾼다
+      operationId: completePinResetWithApprovedName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePinResetRequest'
+      responses:
+        '204':
+          description: PIN 변경 완료. participant, answer, avatar 연결은 유지됨
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: 초대 코드, 승인 이름 또는 reset code가 올바르지 않음. 이름의 부재와 충돌은 같은 외부 문구를 쓴다.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '410':
+          description: 올바르게 해석된 계정의 grant가 만료·사용·폐기됨
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, pin, pinConfirmation]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 24, description: Unicode grapheme 기준 최대 24자 }
+        pin: { type: string, pattern: '^\d{6}$' }
+        pinConfirmation:
+          type: string
+          pattern: '^\d{6}$'
+          description: pin과 같아야 한다
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, pin]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 24, description: Unicode grapheme 기준 최대 24자 }
+        pin: { type: string, pattern: '^\d{6}$' }
+
+    CompletePinResetRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, resetCode, newPin, newPinConfirmation]
+      properties:
+        inviteCode: { type: string, minLength: 16 }
+        nickname: { type: string, minLength: 1, maxLength: 24, description: Unicode grapheme 기준 최대 24자 }
+        resetCode: { type: string, pattern: '^\d{8}$' }
+        newPin: { type: string, pattern: '^\d{6}$' }
+        newPinConfirmation:
+          type: string
+          pattern: '^\d{6}$'
+          description: newPin과 같아야 한다
+
+    RegisterSuccess:
+      allOf:
+        - $ref: '#/components/schemas/ParticipantView'
+        - type: object
+          required: [participant, reveal]
+          properties:
+            participant:
+              type: object
+              additionalProperties: false
+              required: [id, nickname]
+              properties:
+                id: { type: string, format: uuid }
+                nickname: { type: string }
+            reveal:
+              type: object
+              additionalProperties: false
+              required: [enabled, minDurationMs, maxDurationMs, serverProgress]
+              properties:
+                enabled: { const: true }
+                minDurationMs: { const: 3000 }
+                maxDurationMs: { const: 5000 }
+                serverProgress: { const: false }
+
+    ParticipantView:
+      type: object
+      required: [id, nickname, avatar]
+      properties:
+        id: { type: string, format: uuid }
+        nickname: { type: string }
+        avatar:
+          $ref: '#/components/schemas/DeveloperAvatar'
+
+    DeveloperAvatar:
+      type: object
+      required: [sourceKind, generatorVersion, catalogVersion, traits, statuses, displayHash, avatarUrl]
+      properties:
+        sourceKind: { type: string, enum: [nickname, conversation] }
+        generatorVersion: { type: string }
+        catalogVersion: { type: string }
+        traits:
+          type: object
+          additionalProperties: { type: string }
+        className: { type: [string, 'null'] }
+        item: { type: string }
+        status: { type: string }
+        statuses:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: string }
+        displayHash: { type: string, pattern: '^[0-9A-F]{4}-[0-9A-F]{4}$' }
+        avatarUrl: { type: string, format: uri-reference }
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - validation_error
+                - csrf_error
+                - invalid_invitation
+                - invalid_credentials
+                - nickname_not_invited
+                - nickname_taken
+                - profile_batch_not_ready
+                - reset_grant_gone
+                - rate_limited
+                - internal_error
+            message: { type: string }
+            field: { type: string }
+            retryAfterSeconds:
+              type: integer
+              minimum: 1
+              description: rate_limited일 때 Retry-After header와 같은 남은 대기 시간
+
+  responses:
+    ValidationError:
+      description: 입력값이 올바르지 않음
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    InvalidInvitation:
+      description: 초대 코드가 올바르지 않음
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: 이 출처와 이름 조합의 요청이 잠시 제한됨. 다른 이름이나 출처는 별도 범위다.
+      headers:
+        Retry-After:
+          required: true
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }

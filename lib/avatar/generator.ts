@@ -32,3 +32,8 @@ export function generateAvatar(sourceVersion: string, source: string) {
     traits,
   };
 }
+
+export function generateAvatarFromDigest(sourceVersion: string, sourceDigest: string) {
+  const generated = generateAvatar(sourceVersion, sourceDigest);
+  return { ...generated, sourceDigest };
+}

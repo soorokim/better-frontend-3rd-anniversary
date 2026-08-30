@@ -1,0 +1,10 @@
+{
+  "schema_version": "kakao-participant-aliases-v2",
+  "profiles": [
+    {
+      "join_nickname": "예시개발자",
+      "aliases": ["예시개발자/React", "예시개발자/Next.js"],
+      "source_user_ids": [101, 205]
+    }
+  ]
+}

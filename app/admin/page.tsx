@@ -5,6 +5,8 @@ import { AdminLogoutButton } from '@/components/admin/AdminLogoutButton';
 import { GamePanel } from '@/components/game-ui/GamePanel';
 import { requireAdmin } from '@/lib/auth/authorization';
 import { adminParticipantList } from '@/lib/auth/admin-service';
+import { adminAvatarProfileSummary } from '@/lib/auth/admin-service';
+import { AvatarProfileStatus } from '@/components/admin/AvatarProfileStatus';
 
 export default async function AdminPage() {
   let auth: Awaited<ReturnType<typeof requireAdmin>>;
@@ -14,6 +16,8 @@ export default async function AdminPage() {
     redirect('/admin/login');
   }
   const participants = await adminParticipantList(auth.admin.eventId);
+  const avatarProfiles = await adminAvatarProfileSummary(auth.admin.eventId);
+
   return (
     <main className="game-shell admin-shell">
       <GamePanel title="Party Status">
@@ -25,6 +29,9 @@ export default async function AdminPage() {
           <AdminLogoutButton />
         </div>
         <Link className="game-button mt-6" href="/admin/presenter">답변 발표 진행하기</Link>
+      </GamePanel>
+      <GamePanel>
+        <AvatarProfileStatus summary={avatarProfiles} />
       </GamePanel>
       <GamePanel>
         <ParticipantList participants={participants} />

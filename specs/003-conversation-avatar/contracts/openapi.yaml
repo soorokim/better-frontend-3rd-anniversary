@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  title: Better Frontend 3rd Anniversary - Conversation Avatar API
+  version: 0.1.0
+  description: 변경되는 가입 및 운영자 프로필 조회 계약만 정의한다.
+servers:
+  - url: https://3rd-anniversery.better-frontend.club
+paths:
+  /api/invitations/verify:
+    post:
+      summary: 닉네임과 PIN 단계로 이동하기 전에 공통 초대 코드를 확인한다
+      operationId: verifyParticipantInvitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [inviteCode]
+              properties:
+                inviteCode:
+                  type: string
+                  minLength: 16
+      responses:
+        '200':
+          description: 초대 코드가 유효하며 다음 입력 단계를 열 수 있음
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [verified]
+                properties:
+                  verified: { const: true }
+        '401':
+          description: 초대 코드가 올바르지 않음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: 초대 코드 확인 요청 횟수 제한
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: 초대 코드는 맞지만 검증된 전체 프로필 배치가 아직 준비되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/participants/register:
+    post:
+      summary: 승인된 대화 프로필을 사용해 참가자를 등록한다
+      operationId: registerParticipantWithConversationProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 참가자와 확정 프로필이 생성 또는 연결됨
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSuccess'
+        '400':
+          description: 입력값이 올바르지 않음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 초대 코드가 올바르지 않음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 활성 배치에 포함된 승인 닉네임이 아님
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 이미 가입되었거나 다른 계정에 선점된 닉네임
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: 요청 횟수 제한
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: 검증된 전체 프로필 배치가 아직 준비되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/admin/avatar-profiles:
+    get:
+      summary: 활성 전원 배치와 참가자별 프로필 준비 상태를 확인한다
+      operationId: listConversationAvatarProfiles
+      security:
+        - adminSession: []
+      responses:
+        '200':
+          description: 원문과 개인별 메시지 수를 제외한 운영 상태
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProfileSummary'
+        '401':
+          description: 운영자 인증 필요
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: admin_session
+  schemas:
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [inviteCode, nickname, pin, pinConfirmation]
+      properties:
+        inviteCode:
+          type: string
+          minLength: 1
+        nickname:
+          type: string
+          minLength: 1
+          maxLength: 40
+        pin:
+          type: string
+          pattern: '^\d{6}$'
+        pinConfirmation:
+          type: string
+          pattern: '^\d{6}$'
+          description: pin과 같아야 한다
+    RegisterSuccess:
+      type: object
+      additionalProperties: false
+      required: [participant, avatar, reveal]
+      properties:
+        participant:
+          type: object
+          additionalProperties: false
+          required: [id, nickname]
+          properties:
+            id: { type: string, format: uuid }
+            nickname: { type: string }
+        avatar:
+          $ref: '#/components/schemas/DeveloperAvatar'
+        reveal:
+          type: object
+          additionalProperties: false
+          required: [enabled, minDurationMs, maxDurationMs, serverProgress]
+          properties:
+            enabled: { const: true }
+            minDurationMs: { const: 3000 }
+            maxDurationMs: { const: 5000 }
+            serverProgress: { const: false }
+    DeveloperAvatar:
+      type: object
+      additionalProperties: false
+      required: [className, item, status, statuses, displayHash, avatarUrl, generatorVersion]
+      properties:
+        className: { type: [string, 'null'] }
+        item: { type: string }
+        status: { type: string }
+        statuses:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { type: string }
+        displayHash:
+          type: string
+          pattern: '^[0-9A-F]{4}-[0-9A-F]{4}$'
+        avatarUrl:
+          type: string
+          format: uri-reference
+        generatorVersion: { type: string }
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                - validation_error
+                - csrf_error
+                - invalid_invitation
+                - nickname_not_invited
+                - profile_batch_not_ready
+                - nickname_taken
+                - rate_limited
+                - internal_error
+            message: { type: string }
+            field: { type: string }
+    AdminProfileSummary:
+      type: object
+      additionalProperties: false
+      required: [activeBatch, counts, profiles]
+      properties:
+        activeBatch:
+          oneOf:
+            - type: 'null'
+            - type: object
+              additionalProperties: false
+              required: [id, schemaVersion, sourceVersion, selectionMode, sourceUserCount, profileCount, activatedAt]
+              properties:
+                id: { type: string, format: uuid }
+                schemaVersion: { type: string }
+                sourceVersion: { type: string }
+                selectionMode: { const: all-non-system-message-authors }
+                sourceUserCount: { type: integer, minimum: 1 }
+                profileCount: { type: integer, minimum: 1 }
+                activatedAt: { type: string, format: date-time }
+        counts:
+          type: object
+          additionalProperties: false
+          required: [ready, claimed, mergedSourceRows]
+          properties:
+            ready: { type: integer, minimum: 0 }
+            claimed: { type: integer, minimum: 0 }
+            mergedSourceRows: { type: integer, minimum: 0 }
+        profiles:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, nickname, aliases, sourceRowCount, claimed, generatorVersion]
+            properties:
+              id: { type: string, format: uuid }
+              nickname: { type: string }
+              aliases:
+                type: array
+                items: { type: string }
+              sourceRowCount: { type: integer, minimum: 1 }
+              claimed: { type: boolean }
+              generatorVersion: { type: string }

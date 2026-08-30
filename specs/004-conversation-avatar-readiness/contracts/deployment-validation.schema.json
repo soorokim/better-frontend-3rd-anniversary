@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3rd-anniversery.better-frontend.club/schemas/deployment-validation.schema.json",
+  "title": "Conversation Avatar Deployment Validation Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidateCommit",
+    "baselineCommit",
+    "environment",
+    "iteration",
+    "startedAt",
+    "finishedAt",
+    "migration",
+    "checks",
+    "preservedCounts",
+    "outcome"
+  ],
+  "properties": {
+    "candidateCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "baselineCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "environment": { "enum": ["clean-install", "existing-upgrade"] },
+    "iteration": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "after": {
+          "type": "array",
+          "items": { "type": "string" },
+          "prefixItems": [
+            { "const": "0001_event_core" },
+            { "const": "0002_presenter_results" },
+            { "const": "0003_conversation_profiles" }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gitClean",
+        "lint",
+        "typecheck",
+        "build",
+        "unit",
+        "analysis",
+        "integration",
+        "e2e",
+        "aliasPinRecovery",
+        "registrationThrottle",
+        "reducedMotion",
+        "liveRegion",
+        "presenterRegression"
+      ],
+      "properties": {
+        "gitClean": { "$ref": "#/$defs/result" },
+        "lint": { "$ref": "#/$defs/result" },
+        "typecheck": { "$ref": "#/$defs/result" },
+        "build": { "$ref": "#/$defs/result" },
+        "unit": { "$ref": "#/$defs/result" },
+        "analysis": { "$ref": "#/$defs/result" },
+        "integration": { "$ref": "#/$defs/result" },
+        "e2e": { "$ref": "#/$defs/result" },
+        "aliasPinRecovery": { "$ref": "#/$defs/result" },
+        "registrationThrottle": { "$ref": "#/$defs/result" },
+        "reducedMotion": { "$ref": "#/$defs/result" },
+        "liveRegion": { "$ref": "#/$defs/result" },
+        "presenterRegression": { "$ref": "#/$defs/result" }
+      }
+    },
+    "preservedCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["participantsBefore", "participantsAfter", "answersBefore", "answersAfter", "presentationSessionsBefore", "presentationSessionsAfter", "presentationItemsBefore", "presentationItemsAfter"],
+      "properties": {
+        "participantsBefore": { "type": "integer", "minimum": 0 },
+        "participantsAfter": { "type": "integer", "minimum": 0 },
+        "answersBefore": { "type": "integer", "minimum": 0 },
+        "answersAfter": { "type": "integer", "minimum": 0 },
+        "presentationSessionsBefore": { "type": "integer", "minimum": 0 },
+        "presentationSessionsAfter": { "type": "integer", "minimum": 0 },
+        "presentationItemsBefore": { "type": "integer", "minimum": 0 },
+        "presentationItemsAfter": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "outcome": { "enum": ["pass", "fail"] },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 300 },
+      "description": "비밀값, 실제 닉네임, IP, 답변이나 대화 원문을 넣지 않는다."
+    }
+  },
+  "$defs": {
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "durationMs": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

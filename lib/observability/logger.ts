@@ -1,4 +1,4 @@
-const redactedKeys = /password|pin|invite|reset.?code|token|session|csrf|answer|content|snapshot|nickname|author|avatar/i;
+const redactedKeys = /password|pin|invite|reset.?code|token|session|csrf|answer|content|snapshot|nickname|author|avatar|hmac|hash.?key|secret/i;
 
 const presentationCommandTypes = new Set([
   'select_answer',

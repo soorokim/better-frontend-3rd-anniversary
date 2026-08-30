@@ -1,0 +1,44 @@
+{
+  "schema_version": "kakao-profile-analysis-v1",
+  "privacy": { "contains_message_bodies": false, "conversation_digest": "hmac-sha256" },
+  "selection": "all-non-system-message-authors",
+  "source_user_count": 2,
+  "matched_count": 1,
+  "unmatched": [],
+  "alias_suggestions": {},
+  "merge_review": [],
+  "profiles": [
+    {
+      "name": "예시개발자",
+      "source_aliases": ["예시개발자", "예전닉네임"],
+      "source_row_count": 2,
+      "metrics": {
+        "messages": 12,
+        "active_days": 4,
+        "span_days": 10,
+        "messages_per_active_day": 3,
+        "top_day_share": 0.25,
+        "avg_chars": 18.5,
+        "median_chars": 12,
+        "p90_chars": 44,
+        "question_pct": 16.67,
+        "laughter_pct": 8.33,
+        "code_pct": 25,
+        "night_pct": 10,
+        "weekend_pct": 20,
+        "top_hour": 21,
+        "links": 2,
+        "attachments": 1,
+        "links_per_100": 16.67,
+        "attachments_per_100": 8.33,
+        "first_date": "2025-01-01",
+        "last_date": "2025-01-10"
+      },
+      "topic_rates_per_10k_chars": { "backend": 0, "design": 0, "frontend": 42, "infra": 0, "quality": 21, "tools": 10 },
+      "conversation_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "signals": { "attachments": 0.5, "cheer": 0.5, "code": 0.8, "consistency": 0.6, "curiosity": 0.7, "links": 0.6, "night": 0.4, "story": 0.5, "volume": 0.7 },
+      "adjective_candidates": ["코드에 진심인", "호기심 많은", "꾸준한"],
+      "noun_candidates": ["마법사", "픽셀 조각가", "버그 사냥꾼"]
+    }
+  ]
+}

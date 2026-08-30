@@ -60,8 +60,9 @@ function contrast(foreground: string, background: string) {
 }
 
 test('360px keyboard-only participant flow keeps focus visible and announces saves', async ({ page }) => {
+  test.skip(!process.env.TEST_ACCESSIBLE_AVATAR_NICKNAME, '별도 활성 테스트 프로필이 필요합니다.');
   await page.setViewportSize({ width: 360, height: 800 });
-  const nickname = `접근성${`${Date.now()}`.slice(-9)}`;
+  const nickname = process.env.TEST_ACCESSIBLE_AVATAR_NICKNAME!;
 
   await page.goto('/');
   await expectNoHorizontalOverflow(page);
@@ -76,6 +77,12 @@ test('360px keyboard-only participant flow keeps focus visible and announces sav
   await expectKeyboardFocus(inviteInput);
   await page.keyboard.type(inviteCode);
   await page.keyboard.press('Tab');
+  const verifyButton = page.getByRole('button', { name: '초대 코드 확인' });
+  await expectKeyboardFocus(verifyButton);
+  await page.keyboard.press('Enter');
+  const nicknameInput = page.getByLabel('닉네임');
+  await expect(nicknameInput).toBeVisible();
+  await nicknameInput.focus();
   await page.keyboard.type(nickname);
   await page.keyboard.press('Tab');
   await page.keyboard.type('123456');
@@ -115,10 +122,9 @@ test('forms expose meaningful labels and live status regions', async ({ page }) 
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/join');
 
-  for (const name of ['초대 코드', '닉네임', '6자리 PIN', 'PIN 확인']) {
-    await expect(page.getByLabel(name, { exact: true })).toHaveCount(1);
-  }
-  await expect(page.getByRole('button', { name: '캐릭터 만나기' })).toHaveCount(1);
+  await expect(page.getByLabel('초대 코드', { exact: true })).toHaveCount(1);
+  await expect(page.getByLabel('닉네임', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '초대 코드 확인' })).toHaveCount(1);
   await expect(page.getByRole('status')).toHaveAttribute('aria-live', 'polite');
 });
 

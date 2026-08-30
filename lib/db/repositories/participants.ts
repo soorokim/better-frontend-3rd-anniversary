@@ -2,7 +2,6 @@ import { and, eq } from 'drizzle-orm';
 import { answers, avatarAssignments, events, participants, questions } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import type { Transaction } from '@/lib/db/transaction';
-import type { AvatarTraits } from '@/lib/avatar/catalog';
 
 type Executor = typeof db | Transaction;
 
@@ -14,6 +13,12 @@ export async function findEventBySlug(slug: string, executor: Executor = db) {
 export async function findParticipantByNickname(eventId: string, nicknameKey: string, executor: Executor = db) {
   const [participant] = await executor.select().from(participants)
     .where(and(eq(participants.eventId, eventId), eq(participants.nicknameKey, nicknameKey))).limit(1);
+  return participant;
+}
+
+export async function findParticipantById(participantId: string, executor: Executor = db) {
+  const [participant] = await executor.select().from(participants)
+    .where(eq(participants.id, participantId)).limit(1);
   return participant;
 }
 
@@ -32,10 +37,13 @@ export async function createParticipantWithAvatar(input: {
   nicknameRuleVersion: string;
   pinHash: string;
   avatar: {
+    sourceKind: 'nickname' | 'conversation';
+    sourceVersion: string;
     sourceDigest: string;
     generatorVersion: string;
     catalogVersion: string;
-    traits: AvatarTraits;
+    traits: Record<string, string>;
+    conversationProfileId?: string;
   };
 }, executor: Executor) {
   const [participant] = await executor.insert(participants).values({
@@ -47,16 +55,51 @@ export async function createParticipantWithAvatar(input: {
   }).returning();
   const [avatar] = await executor.insert(avatarAssignments).values({
     participantId: participant.id,
-    sourceKind: 'nickname',
-    sourceVersion: input.nicknameRuleVersion,
+    sourceKind: input.avatar.sourceKind,
+    sourceVersion: input.avatar.sourceVersion,
     sourceDigest: input.avatar.sourceDigest,
     generatorVersion: input.avatar.generatorVersion,
     catalogVersion: input.avatar.catalogVersion,
     selectedTraits: input.avatar.traits,
+    conversationProfileId: input.avatar.conversationProfileId,
   }).returning();
   await executor.update(participants).set({ currentAvatarId: avatar.id, updatedAt: new Date() })
     .where(eq(participants.id, participant.id));
   return { participant: { ...participant, currentAvatarId: avatar.id }, avatar };
+}
+
+export async function assignConversationAvatar(input: {
+  participantId: string;
+  supersedesId: string;
+  sourceVersion: string;
+  sourceDigest: string;
+  generatorVersion: string;
+  catalogVersion: string;
+  traits: Record<string, string>;
+  conversationProfileId: string;
+}, executor: Executor) {
+  const [created] = await executor.insert(avatarAssignments).values({
+    participantId: input.participantId,
+    sourceKind: 'conversation',
+    sourceVersion: input.sourceVersion,
+    sourceDigest: input.sourceDigest,
+    generatorVersion: input.generatorVersion,
+    catalogVersion: input.catalogVersion,
+    selectedTraits: input.traits,
+    conversationProfileId: input.conversationProfileId,
+    supersedesId: input.supersedesId,
+  }).onConflictDoNothing().returning();
+
+  const avatar = created ?? (await executor.select().from(avatarAssignments).where(and(
+    eq(avatarAssignments.participantId, input.participantId),
+    eq(avatarAssignments.sourceKind, 'conversation'),
+    eq(avatarAssignments.sourceDigest, input.sourceDigest),
+  )).limit(1))[0];
+  if (!avatar) throw new Error('대화 기반 캐릭터를 저장하지 못했습니다.');
+
+  await executor.update(participants).set({ currentAvatarId: avatar.id, updatedAt: new Date() })
+    .where(eq(participants.id, input.participantId));
+  return avatar;
 }
 
 export async function answerStatusForParticipant(participantId: string, eventId: string, executor: Executor = db) {

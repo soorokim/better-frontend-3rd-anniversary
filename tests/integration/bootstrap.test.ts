@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { events } from '@/db/schema';
+import { conversationProfileAliases, conversationProfileBatches, conversationProfiles, events } from '@/db/schema';
 import { createTestDatabase, TEST_DATABASE_URL } from '../helpers/database';
 
 describe('bootstrap contract', () => {
@@ -16,6 +16,9 @@ describe('bootstrap contract', () => {
       await test.db.insert(events).values({ slug: 'idempotent', title: '행사', inviteCodeHash: 'hash' }).onConflictDoNothing({ target: events.slug });
       await test.db.insert(events).values({ slug: 'idempotent', title: '행사', inviteCodeHash: 'hash' }).onConflictDoNothing({ target: events.slug });
       expect((await test.db.select().from(events)).filter((event) => event.slug === 'idempotent')).toHaveLength(1);
+      expect(await test.db.select().from(conversationProfileBatches)).toEqual([]);
+      expect(await test.db.select().from(conversationProfiles)).toEqual([]);
+      expect(await test.db.select().from(conversationProfileAliases)).toEqual([]);
     } finally { await test.close(); }
   });
 });

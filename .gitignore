@@ -50,3 +50,13 @@ next-env.d.ts
 /.auth/
 /backups/
 /.deploy.lock/
+
+# Private Kakao archive inputs and generated analysis
+/scripts/private/
+/scripts/*-profiles.json
+/scripts/*-merge-review.json
+*.sqlite3
+/scripts/*-batch.log
+__pycache__/
+*.py[cod]
+/.venv/

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://better-frontend.club/schemas/kakao-profile-analysis-v1.json",
+  "title": "Kakao conversation profile analysis batch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "privacy",
+    "selection",
+    "source_user_count",
+    "matched_count",
+    "unmatched",
+    "alias_suggestions",
+    "merge_review",
+    "profiles"
+  ],
+  "properties": {
+    "schema_version": { "const": "kakao-profile-analysis-v1" },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contains_message_bodies", "conversation_digest"],
+      "properties": {
+        "contains_message_bodies": { "const": false },
+        "conversation_digest": { "const": "hmac-sha256" }
+      }
+    },
+    "selection": { "const": "all-non-system-message-authors" },
+    "source_user_count": { "type": "integer", "minimum": 1 },
+    "matched_count": { "type": "integer", "minimum": 0 },
+    "unmatched": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "alias_suggestions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate", "messages", "similarity"],
+          "properties": {
+            "candidate": { "type": "string" },
+            "messages": { "type": "integer", "minimum": 0 },
+            "similarity": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+    "merge_review": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nickname_key", "source_users"],
+        "properties": {
+          "nickname_key": { "type": "string", "minLength": 1 },
+          "source_users": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "$ref": "#/$defs/sourceUserWithCount" }
+          }
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/$defs/profile" }
+    }
+  },
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "source_aliases",
+        "source_row_count",
+        "metrics",
+        "topic_rates_per_10k_chars",
+        "conversation_digest",
+        "signals",
+        "adjective_candidates",
+        "noun_candidates"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "source_aliases": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "source_row_count": { "type": "integer", "minimum": 1 },
+        "metrics": { "$ref": "#/$defs/metrics" },
+        "topic_rates_per_10k_chars": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["backend", "design", "frontend", "infra", "quality", "tools"],
+          "properties": {
+            "backend": { "$ref": "#/$defs/nonNegativeNumber" },
+            "design": { "$ref": "#/$defs/nonNegativeNumber" },
+            "frontend": { "$ref": "#/$defs/nonNegativeNumber" },
+            "infra": { "$ref": "#/$defs/nonNegativeNumber" },
+            "quality": { "$ref": "#/$defs/nonNegativeNumber" },
+            "tools": { "$ref": "#/$defs/nonNegativeNumber" }
+          }
+        },
+        "conversation_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["attachments", "cheer", "code", "consistency", "curiosity", "links", "night", "story", "volume"],
+          "properties": {
+            "attachments": { "$ref": "#/$defs/signal" },
+            "cheer": { "$ref": "#/$defs/signal" },
+            "code": { "$ref": "#/$defs/signal" },
+            "consistency": { "$ref": "#/$defs/signal" },
+            "curiosity": { "$ref": "#/$defs/signal" },
+            "links": { "$ref": "#/$defs/signal" },
+            "night": { "$ref": "#/$defs/signal" },
+            "story": { "$ref": "#/$defs/signal" },
+            "volume": { "$ref": "#/$defs/signal" }
+          }
+        },
+        "adjective_candidates": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "noun_candidates": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "sourceUserWithCount": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user_id", "display_name", "message_count"],
+      "properties": {
+        "user_id": { "type": "integer", "minimum": 1 },
+        "display_name": { "type": "string", "minLength": 1 },
+        "message_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messages", "active_days", "span_days", "messages_per_active_day",
+        "top_day_share", "avg_chars", "median_chars", "p90_chars", "question_pct",
+        "laughter_pct", "code_pct", "night_pct", "weekend_pct", "top_hour",
+        "links", "attachments", "links_per_100", "attachments_per_100",
+        "first_date", "last_date"
+      ],
+      "properties": {
+        "messages": { "type": "integer", "minimum": 1 },
+        "active_days": { "type": "integer", "minimum": 0 },
+        "span_days": { "type": "integer", "minimum": 0 },
+        "messages_per_active_day": { "$ref": "#/$defs/nonNegativeNumber" },
+        "top_day_share": { "$ref": "#/$defs/signal" },
+        "avg_chars": { "$ref": "#/$defs/nonNegativeNumber" },
+        "median_chars": { "$ref": "#/$defs/nonNegativeNumber" },
+        "p90_chars": { "type": "integer", "minimum": 0 },
+        "question_pct": { "$ref": "#/$defs/percentage" },
+        "laughter_pct": { "$ref": "#/$defs/percentage" },
+        "code_pct": { "$ref": "#/$defs/percentage" },
+        "night_pct": { "$ref": "#/$defs/percentage" },
+        "weekend_pct": { "$ref": "#/$defs/percentage" },
+        "top_hour": { "type": ["integer", "null"], "minimum": 0, "maximum": 23 },
+        "links": { "type": "integer", "minimum": 0 },
+        "attachments": { "type": "integer", "minimum": 0 },
+        "links_per_100": { "$ref": "#/$defs/nonNegativeNumber" },
+        "attachments_per_100": { "$ref": "#/$defs/nonNegativeNumber" },
+        "first_date": { "type": ["string", "null"], "format": "date" },
+        "last_date": { "type": ["string", "null"], "format": "date" }
+      }
+    },
+    "signal": { "type": "number", "minimum": 0, "maximum": 1 },
+    "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+    "nonNegativeNumber": { "type": "number", "minimum": 0 }
+  }
+}

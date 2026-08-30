@@ -9,6 +9,7 @@ import { issueSession } from './session';
 import { adminSessions } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import { eq } from 'drizzle-orm';
+import { adminConversationProfileSummary } from '@/lib/db/repositories/conversation-profiles';
 
 const RECENT_AUTH_MS = 5 * 60_000;
 
@@ -33,3 +34,4 @@ export async function requireRecentAdminAuthentication(admin: { passwordHash: st
 }
 
 export function adminParticipantList(eventId: string) { return listAdminParticipants(eventId); }
+export function adminAvatarProfileSummary(eventId: string) { return adminConversationProfileSummary(eventId); }
