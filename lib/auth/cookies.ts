@@ -1,17 +1,23 @@
 import type { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { getEnv } from '@/lib/config/env';
+import { authCookieNames } from './cookie-names';
 
-export const PARTICIPANT_COOKIE = '__Host-participant_session';
-export const PARTICIPANT_CSRF_COOKIE = '__Host-participant_csrf';
-export const ADMIN_COOKIE = '__Host-admin_session';
+type CookieValue = Partial<ResponseCookie> & { value: string };
 
-export function sessionCookie(value: string, expires: Date): Partial<ResponseCookie> & { value: string } {
-  return { value, expires, httpOnly: true, secure: true, sameSite: 'lax', path: '/' };
-}
+export function authCookiePolicy(origin = getEnv().APP_ORIGIN) {
+  const secure = new URL(origin).protocol === 'https:';
+  const base = { secure, sameSite: 'lax' as const, path: '/' };
 
-export const expiredCookie: Partial<ResponseCookie> & { value: string } = {
-  value: '', expires: new Date(0), httpOnly: true, secure: true, sameSite: 'lax', path: '/',
-};
-
-export function csrfCookie(value: string, expires: Date): Partial<ResponseCookie> & { value: string } {
-  return { value, expires, httpOnly: false, secure: true, sameSite: 'lax', path: '/' };
+  return {
+    names: authCookieNames(secure),
+    session(value: string, expires: Date): CookieValue {
+      return { ...base, value, expires, httpOnly: true };
+    },
+    csrf(value: string, expires: Date): CookieValue {
+      return { ...base, value, expires, httpOnly: false };
+    },
+    expired(httpOnly = true): CookieValue {
+      return { ...base, value: '', expires: new Date(0), httpOnly };
+    },
+  };
 }

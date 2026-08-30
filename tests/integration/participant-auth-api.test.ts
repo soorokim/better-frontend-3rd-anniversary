@@ -1,13 +1,16 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { participantSessions } from '@/db/schema';
+import { authCookieNames } from '@/lib/auth/cookie-names';
 import { createTestDatabase } from '@/tests/helpers/database';
 import { eventFactory } from '@/tests/helpers/factories';
 
 let sessionCookie: string | undefined;
 vi.mock('next/headers', () => ({
-  cookies: async () => ({ get: (name: string) => name === '__Host-participant_session' && sessionCookie ? { value: sessionCookie } : undefined }),
+  cookies: async () => ({ get: () => sessionCookie ? { value: sessionCookie } : undefined }),
 }));
+
+const cookieNames = authCookieNames(false);
 
 function request(path: string, body: unknown) {
   return new Request(`http://localhost:3000${path}`, {
@@ -37,8 +40,8 @@ describe('participant authentication API contract', () => {
     }));
     expect(registered.status).toBe(201);
     expect(await registered.json()).toMatchObject({ nickname: '프론트', avatar: { catalogVersion: 'pixel-parts-v1' } });
-    sessionCookie = cookieValue(registered, '__Host-participant_session');
-    const csrf = cookieValue(registered, '__Host-participant_csrf');
+    sessionCookie = cookieValue(registered, cookieNames.participant);
+    const csrf = cookieValue(registered, cookieNames.participantCsrf);
     expect(sessionCookie).toBeTruthy();
     expect(csrf).toBeTruthy();
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
+import { authCookieNames } from '@/lib/auth/cookie-names';
 import { AuthStatus, authMessage, type AuthState } from './AuthStatus';
 
 type ApiError = { error?: { code?: string; message?: string; field?: string } };
@@ -48,7 +49,8 @@ export function LogoutButton() {
   async function logout() {
     setState({ kind:'loading' });
     try {
-      const csrf = readCookie('__Host-participant_csrf');
+      const csrfName = authCookieNames(window.location.protocol === 'https:').participantCsrf;
+      const csrf = readCookie(csrfName);
       const response = await fetch('/api/participants/logout', { method:'POST', headers: csrf ? { 'x-csrf-token':decodeURIComponent(csrf) } : {} });
       if (!response.ok) { setState({ kind:'error', message:'로그아웃하지 못했어요. 새로고침 뒤 다시 시도해 주세요.' }); return; }
       window.location.assign('/login');

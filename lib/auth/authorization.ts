@@ -2,12 +2,12 @@ import { cookies } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { adminAccounts, participants } from '@/db/schema';
 import { db } from '@/lib/db/client';
-import { ADMIN_COOKIE, PARTICIPANT_COOKIE } from './cookies';
+import { authCookiePolicy } from './cookies';
 import { findSession } from './session';
 import { UnauthorizedError } from '@/lib/http/errors';
 
 export async function requireParticipant() {
-  const token = (await cookies()).get(PARTICIPANT_COOKIE)?.value;
+  const token = (await cookies()).get(authCookiePolicy().names.participant)?.value;
   if (!token) throw new UnauthorizedError();
   const session = await findSession('participant', token);
   if (!session) throw new UnauthorizedError();
@@ -17,7 +17,7 @@ export async function requireParticipant() {
 }
 
 export async function requireAdmin() {
-  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
+  const token = (await cookies()).get(authCookiePolicy().names.admin)?.value;
   if (!token) throw new UnauthorizedError();
   const session = await findSession('admin', token);
   if (!session) throw new UnauthorizedError();

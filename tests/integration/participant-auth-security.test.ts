@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { participantSessions, participants } from '@/db/schema';
+import { authCookieNames } from '@/lib/auth/cookie-names';
 import { createTestDatabase } from '@/tests/helpers/database';
 import { eventFactory } from '@/tests/helpers/factories';
 
@@ -52,7 +53,7 @@ describe('participant authentication security', () => {
     expect(Number(failures[2].retryAfter)).toBeGreaterThan(0);
 
     const [session] = await database.db.select().from(participantSessions).limit(1);
-    currentToken = registered.headers.get('set-cookie')?.match(/__Host-participant_session=([^;]+)/)?.[1];
+    currentToken = registered.headers.get('set-cookie')?.match(new RegExp(`${authCookieNames(false).participant}=([^;]+)`))?.[1];
     await database.db.update(participantSessions).set({ expiresAt: new Date(0) }).where(eq(participantSessions.id, session.id));
     const { GET } = await import('@/app/api/me/route');
     expect((await GET()).status).toBe(401);
