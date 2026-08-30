@@ -58,3 +58,22 @@
 - 복구 태그: `conversation-avatar-pre-rebase`
 
 T006~T010에서 충돌 파일, 재배치 후 HEAD와 정적·단위 검증 결과를 이어서 기록한다.
+
+### 재배치와 충돌 해결
+
+- 재배치 기준: `ca9f8fa507a9dbb6077f5ddd1a66a6034a342363`
+- 재배치 직후 HEAD: `2e724a7f06e5cddf889813e88142c7c06e7bfc33`
+- 기준선 ancestor 확인: 통과
+- 복구 태그 대상 유지: `4982246ae2c9a90d887e5bf327fc0513c6fb2a59`
+- 실제 충돌 파일: `.env.example`, `app/admin/page.tsx`, `db/migrations/meta/_journal.json`, `lib/observability/logger.ts`, `package.json`, `tests/helpers/database.ts`
+- 자동 병합 후 별도 확인한 핵심 파일: `README.md`, `docs/DEPLOYMENT.md`, `db/schema.ts`, `package-lock.json`, `THIRD_PARTY_NOTICES.md`, `public/avatar-parts/README.md`
+
+충돌 해결은 개발 전용 demo 설정과 아카이브 HMAC 설명, 진행자 링크와 대화 프로필 현황,
+진행자·대화 프로필 테스트 테이블, 발표 로그와 개인정보 redaction, demo seed와 avatar CLI를
+각각 함께 보존했다. 최종 schema에는 진행자 테이블, 대화 프로필·별칭·배치, conversation
+avatar 연결, `participant_register` action과 batch/event 및 profile/batch 복합 관계를 모두
+포함했다.
+
+`0002_conversation_profiles.sql`과 journal의 임시 `0002_conversation_profiles` tag는 이
+체크포인트에서 이름을 바꾸지 않았다. 두 `0002` 충돌을 실제로 없애고 최종 SQL과 journal을
+생성하는 작업은 계획대로 US1의 T014~T015에서 수행한다.

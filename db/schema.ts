@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
-  type AnyPgColumn, boolean, check, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
+  type AnyPgColumn, boolean, check, foreignKey, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
 } from 'drizzle-orm/pg-core';
 
 const timestamps = {
@@ -58,6 +58,7 @@ export const conversationProfileBatches = pgTable('conversation_profile_batches'
   importedAt: timestamp('imported_at', { withTimezone: true }).defaultNow().notNull(),
   activatedAt: timestamp('activated_at', { withTimezone: true }),
 }, (t) => [
+  uniqueIndex('conversation_profile_batches_id_event_uq').on(t.id, t.eventId),
   uniqueIndex('conversation_profile_batches_event_payload_uq').on(t.eventId, t.payloadDigest),
   uniqueIndex('conversation_profile_batches_one_active_uq').on(t.eventId).where(sql`${t.status} = 'active'`),
   index('conversation_profile_batches_event_idx').on(t.eventId),
@@ -79,10 +80,16 @@ export const conversationProfiles = pgTable('conversation_profiles', {
   claimedAt: timestamp('claimed_at', { withTimezone: true }),
   ...timestamps,
 }, (t) => [
+  uniqueIndex('conversation_profiles_id_batch_uq').on(t.id, t.batchId),
   uniqueIndex('conversation_profiles_batch_nickname_uq').on(t.batchId, t.nicknameKey),
   uniqueIndex('conversation_profiles_claimed_participant_uq').on(t.claimedParticipantId).where(sql`${t.claimedParticipantId} is not null`),
   index('conversation_profiles_batch_idx').on(t.batchId),
   index('conversation_profiles_event_idx').on(t.eventId),
+  foreignKey({
+    name: 'conversation_profiles_batch_event_fk',
+    columns: [t.batchId, t.eventId],
+    foreignColumns: [conversationProfileBatches.id, conversationProfileBatches.eventId],
+  }).onDelete('cascade'),
   check('conversation_profiles_source_rows_check', sql`${t.sourceRowCount} >= 1`),
   check('conversation_profiles_digest_check', sql`${t.sourceDigest} ~ '^[0-9a-f]{64}$'`),
 ]);
@@ -98,6 +105,11 @@ export const conversationProfileAliases = pgTable('conversation_profile_aliases'
 }, (t) => [
   uniqueIndex('conversation_profile_aliases_batch_key_uq').on(t.batchId, t.aliasKey),
   index('conversation_profile_aliases_profile_idx').on(t.profileId),
+  foreignKey({
+    name: 'conversation_profile_aliases_profile_batch_fk',
+    columns: [t.profileId, t.batchId],
+    foreignColumns: [conversationProfiles.id, conversationProfiles.batchId],
+  }).onDelete('cascade'),
 ]);
 
 export const avatarAssignments = pgTable('avatar_assignments', {
