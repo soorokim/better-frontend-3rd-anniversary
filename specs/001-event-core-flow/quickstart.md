@@ -221,3 +221,21 @@ secret과 컨테이너 내부 인증 설정을 사용한다.
   새 PIN 설정, 기존 PIN 로그인 실패, 새 PIN 로그인을 한 흐름에서 확인했다.
 - 검증용 참가자 2명과 연결된 감사 기록 4개를 정확히 골라 삭제했고, 격리 테스트
   데이터베이스도 제거했다. 정리 뒤에도 운영 앱과 데이터베이스는 healthy 상태다.
+
+## Event Readiness Validation Record (2026-08-30)
+
+- 같은 행사장 IP를 쓰는 참가자 30명의 등록, 로그인, 캐릭터 배정, 답변 저장을 겹쳐
+  실행했다. 약 4.7초 안에 끝났고 참가자·캐릭터·답변이 각각 30개씩 정확히 남았으며,
+  다른 참가자에게 연결되거나 사라진 기록은 없었다.
+- 운영 데이터와 분리한 PostgreSQL에서 전체 통합 테스트 10개 파일, 26개 테스트가 모두
+  통과했다. 보안 헤더, Origin·CSRF 경계, 쿠키 속성, 로그 비밀값 제거도 이 묶음에서
+  함께 확인했다.
+- HTTP LAN 배포에서는 CSP, `nosniff`, frame 차단, referrer·permissions 정책과 API의
+  `Cache-Control: no-store, private`가 적용됐다. HTTPS에서만 써야 하는 HSTS와
+  `upgrade-insecure-requests`는 나오지 않는 것도 확인했다.
+- 배포 앱을 대상으로 360px Playwright 7개를 실행해 키보드 가입·답변 저장, 3px 포커스,
+  44px 터치 영역, 텍스트 대비, reduced-motion, 관리자 PIN 복구와 기존 참여 흐름을 모두
+  확인했다.
+- 테스트가 만든 참가자 4명과 연결된 감사 기록 2개만 정확히 삭제했다. 앱과 DB 컨테이너는
+  정리 뒤에도 healthy 상태다. 픽셀 캐릭터는 외부 이미지 파츠가 아닌 자체 HTML/CSS이며,
+  현재 배포하는 제3자 UI 에셋이 없다는 점을 `THIRD_PARTY_NOTICES.md`에 기록했다.

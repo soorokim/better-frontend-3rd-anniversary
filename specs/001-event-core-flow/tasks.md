@@ -163,10 +163,10 @@ PIN을 초기화해 참가자가 안전하게 새 PIN을 설정하도록 돕는�
 
 **Purpose**: 세 스토리가 함께 운영될 때의 접근성, 보안, 동시성, 설치·복구 품질을 검증한다.
 
-- [ ] T061 [P] 30명 동시 등록·로그인·답변 저장 부하 시나리오를 `tests/integration/concurrent-event.test.ts`에 작성하고 기록 손실·교차 저장 여부를 검증한다
-- [ ] T062 [P] 360px, 키보드 전용, 포커스, 대비, reduced-motion 자동 검사를 `tests/e2e/accessibility.spec.ts`에 추가한다
-- [ ] T063 보안 헤더, 민감 응답 `no-store`, 쿠키 속성, CSRF, 로그 비밀값 제외를 `next.config.ts`, `lib/security/headers.ts`, `tests/integration/security-boundaries.test.ts`에서 최종 점검한다
-- [ ] T064 [P] 픽셀 파츠·폰트·아이콘의 라이선스와 출처를 `public/avatar-parts/README.md` 및 `THIRD_PARTY_NOTICES.md`에 기록한다
+- [X] T061 [P] 30명 동시 등록·로그인·답변 저장 부하 시나리오를 `tests/integration/concurrent-event.test.ts`에 작성하고 기록 손실·교차 저장 여부를 검증한다
+- [X] T062 [P] 360px, 키보드 전용, 포커스, 대비, reduced-motion 자동 검사를 `tests/e2e/accessibility.spec.ts`에 추가한다
+- [X] T063 보안 헤더, 민감 응답 `no-store`, 쿠키 속성, CSRF, 로그 비밀값 제외를 `next.config.ts`, `lib/security/headers.ts`, `tests/integration/security-boundaries.test.ts`에서 최종 점검한다
+- [X] T064 [P] 픽셀 파츠·폰트·아이콘의 라이선스와 출처를 `public/avatar-parts/README.md` 및 `THIRD_PARTY_NOTICES.md`에 기록한다
 - [ ] T065 백업·복구·업데이트 스크립트를 `scripts/backup.ps1`, `scripts/restore.ps1`, `scripts/deploy.sh`에 작성한다
 - [ ] T066 Git clone부터 Compose 실행, 관리자 초기화, 백업과 장애 대응을 `README.md` 및 `docs/DEPLOYMENT.md`에 문서화한다
 - [ ] T067 깨끗한 checkout과 빈 volume에서 `specs/001-event-core-flow/quickstart.md` 전체를 실행하고 결과 및 차이를 문서에 반영한다
