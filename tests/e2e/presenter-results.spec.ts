@@ -236,7 +236,7 @@ test('projector follows keyboard-driven changes, preserves a long slide offline,
   await expect(projectorAnswer).toHaveText(secondContent!);
 
   await context.clearCookies();
-  await expect(projector.getByText('진행자 로그인이 만료됐어요.')).toBeVisible({ timeout: 5_000 });
+  await expect(projector.getByRole('heading', { name: '진행자 로그인이 만료됐어요' })).toBeVisible({ timeout: 5_000 });
   await expect(projector.getByRole('link', { name: '진행자 다시 로그인' })).toBeVisible();
   await expect(projector.locator('body')).not.toContainText(boundaryContent);
 });
