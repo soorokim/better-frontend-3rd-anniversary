@@ -67,7 +67,7 @@ quickstart.md
 - [X] T015 [P] [US1] 제출 현황 카드와 답변 후보 목록을 `components/admin/presenter/PresenterSummary.tsx` 및 `components/admin/presenter/AnswerQueue.tsx`에 구현한다
 - [X] T016 [US1] 현재 답변 미리보기와 랜덤·작성자 공개 조작을 `components/admin/presenter/PresenterController.tsx`에 연결한다
 - [X] T017 [US1] 관리자 권한 페이지와 기존 현황판 진입 링크를 `app/admin/presenter/page.tsx` 및 `app/admin/page.tsx`에 추가한다
-- [ ] T018 [US1] T008~T010을 실행하고 P1 독립 흐름의 결과를 `specs/002-presenter-results/quickstart.md` Scenario 1·2에 기록한다
+- [X] T018 [US1] T008~T010을 실행하고 P1 독립 흐름의 결과를 `specs/002-presenter-results/quickstart.md` Scenario 1·2에 기록한다
 
 **Checkpoint**: 프로젝터 전용 화면 없이도 진행자 화면 안에서 첫 답변을 익명으로 골라 이야기하고 작성자를 공개할 수 있다.
 
@@ -99,7 +99,7 @@ quickstart.md
 - [X] T026 [P] [US2] 2초 revision 조회, 단일 in-flight, 재시도 backoff와 세션 만료 상태를 `components/admin/presenter/usePresentationPolling.ts`에 구현한다
 - [X] T027 [P] [US2] 공개 순서·현재·미공개 표시와 이전·다음·직접 재공개·초기화 UI를 `components/admin/presenter/AnswerQueue.tsx`에 구현한다
 - [X] T028 [US2] polling 상태, 새 답변 안내, 모두 공개·연결 끊김·재인증 안내를 `components/admin/presenter/PresenterController.tsx`에 통합한다
-- [ ] T029 [US2] T019~T022 및 기존 답변·PIN 회귀 테스트를 실행하고 결과를 `specs/002-presenter-results/quickstart.md` Scenario 3~6에 기록한다
+- [X] T029 [US2] T019~T022 및 기존 답변·PIN 회귀 테스트를 실행하고 결과를 `specs/002-presenter-results/quickstart.md` Scenario 3~6에 기록한다
 
 **Checkpoint**: 진행자 페이지가 실수로 새로고침되거나 앱이 재시작돼도 공개 순서와 현재 답변을 복구하며, 모든 답변을 안전하게 한 번씩 진행할 수 있다.
 
@@ -130,7 +130,7 @@ quickstart.md
 - [X] T036 [US3] 관리자 권한을 확인하는 프로젝터 전용 페이지를 `app/admin/presenter/screen/page.tsx`에 구현한다
 - [X] T037 [P] [US3] 1,366×768 전체 화면, 긴 텍스트 wrapping·scroll, 3px 포커스와 reduced-motion 스타일을 `app/globals.css`에 추가한다
 - [X] T038 [US3] 새 창 발표 화면 진입과 전체 화면 안내를 `components/admin/presenter/PresenterController.tsx`에 연결한다
-- [ ] T039 [US3] T030~T032를 실행하고 P3 독립 흐름 결과를 `specs/002-presenter-results/quickstart.md` Scenario 7에 기록한다
+- [X] T039 [US3] T030~T032를 실행하고 P3 독립 흐름 결과를 `specs/002-presenter-results/quickstart.md` Scenario 7에 기록한다
 
 **Checkpoint**: 참석자에게는 현재 공개 슬라이드만 보이며, 진행자 조작 화면과 비공개 후보 정보는 프로젝터로 전달되지 않는다.
 
@@ -143,10 +143,10 @@ quickstart.md
 - [X] T040 [P] 발표 command 로그 allowlist와 snapshot·nickname·author·avatar redaction 회귀 검증을 `lib/observability/logger.ts` 및 `tests/unit/presentation-view.test.ts`에 추가한다
 - [X] T041 [P] 관리자 결과·발표 응답의 캐시·권한·CSRF·비밀값 로그 경계를 `tests/integration/security-boundaries.test.ts`에서 최종 점검한다
 - [X] T042 [P] 진행자 페이지 사용법, 프로젝터 준비, 명시적 초기화와 장애 복구를 `README.md` 및 `docs/DEPLOYMENT.md`에 문서화한다
-- [ ] T043 전체 구현과 `specs/002-presenter-results/contracts/openapi.yaml`의 경로·상태 코드·필드가 일치하는지 `specs/002-presenter-results/quickstart.md`에 계약 검증 결과를 기록한다
-- [ ] T044 빈 volume의 격리 Compose에서 마이그레이션, 발표 상태 백업·복구와 앱 재시작을 실행하고 `specs/002-presenter-results/quickstart.md`에 데이터 보존 결과를 기록한다
-- [ ] T045 lint, typecheck, unit, integration, e2e, build와 기존 `001-event-core-flow` 회귀 전체를 실행하고 `specs/002-presenter-results/quickstart.md`에 최종 결과를 기록한다
-- [ ] T046 명세·계획·작업 목록과 실제 구현을 대조해 미완료 작업을 `specs/002-presenter-results/tasks.md`에 추가하거나 완료 표시한다
+- [X] T043 전체 구현과 `specs/002-presenter-results/contracts/openapi.yaml`의 경로·상태 코드·필드가 일치하는지 `specs/002-presenter-results/quickstart.md`에 계약 검증 결과를 기록한다
+- [X] T044 빈 volume의 격리 Compose에서 마이그레이션, 발표 상태 백업·복구와 앱 재시작을 실행하고 `specs/002-presenter-results/quickstart.md`에 데이터 보존 결과를 기록한다
+- [X] T045 lint, typecheck, unit, integration, e2e, build와 기존 `001-event-core-flow` 회귀 전체를 실행하고 `specs/002-presenter-results/quickstart.md`에 최종 결과를 기록한다
+- [X] T046 명세·계획·작업 목록과 실제 구현을 대조해 미완료 작업을 `specs/002-presenter-results/tasks.md`에 추가하거나 완료 표시한다
 
 ---
 

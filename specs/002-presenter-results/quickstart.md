@@ -146,3 +146,37 @@ npm run test:e2e
 - 저장 구조와 트랜잭션: [data-model.md](./data-model.md)
 - 기술 결정: [research.md](./research.md)
 - 요구사항과 성공 기준: [spec.md](./spec.md)
+
+## Implementation Validation (2026-08-30)
+
+운영 서비스와 분리된 빌드 컨테이너, 빈 PostgreSQL volume에서 최종 검증했다. 브라우저
+시나리오는 서로 상태를 이어 쓰므로 매 전체 실행 전에 테스트 DB를 새로 만들고 한 worker로
+실행했다.
+
+| 검증 | 결과 |
+|------|------|
+| 빈 DB 마이그레이션, seed, 마이그레이션 재실행 | 통과 |
+| 단위 테스트 | 7 files, 44 tests 통과 |
+| 실제 PostgreSQL 통합 테스트 | 12 files, 47 tests 통과 |
+| 진행자·프로젝터 E2E | 3 tests 통과 |
+| 기존 모바일 참가자·관리자·접근성 E2E | 7 tests 통과 |
+| lint, typecheck, production build | 통과 |
+| Docker 이미지 빌드와 health check | 통과 |
+
+Scenario 1·2는 관리자 경계, 익명 응답에서 `author` 필드 자체가 빠지는지, 최초 무작위
+공개와 작성자 공개를 단위·통합·브라우저 단계에서 확인했다. Scenario 3~6은 30개 답변을
+중복 없이 모두 공개하고, 이전·다음 이동, 최초 순서를 유지한 직접 재선택, 늦은 제출 반영,
+동시 명령 직렬화와 확인 뒤 초기화를 검증했다. 초기화 뒤에도 원본 참가자와 답변은 남았다.
+
+Scenario 7은 1,366×768 프로젝터 화면에서 1,000자 답변, 줄바꿈, URL과 이모지를 표시하고
+키보드 조작, 오프라인 중 마지막 슬라이드 유지, 온라인 복귀 직후 자동 재연결, 세션 만료 뒤
+비공개 내용 제거까지 확인했다.
+
+OpenAPI의 세 경로(`GET /api/admin/presentation`, `POST
+/api/admin/presentation/commands`, `GET /api/admin/presentation/screen`)를 실제 route와
+대조했다. 성공 응답 필드와 400·401·403·404·409 처리, `no-store, private`, Origin·CSRF
+검증이 계약 및 통합 테스트와 일치했다.
+
+E2E 종료 상태를 백업하고 별도 DB에 복원했을 때 참가자 30, 답변 30, 발표 항목 2, 세션 1,
+현재 항목 1, revision 42가 모두 같았다. 앱 컨테이너 재시작 뒤에도 같은 값과 health 응답이
+유지됐다. 검증이 끝난 뒤 테스트 컨테이너, DB volume과 임시 백업은 제거했다.
