@@ -129,14 +129,18 @@ test('host exhausts 30 answers once, navigates, republishes, reloads, and receiv
   await expect(currentAnswer).toHaveText(lastContent!);
 
   const firstNickname = initialParticipants[0].nickname;
-  await page.getByRole('button', { name: `${firstNickname} 답변 공개` }).click();
+  const firstAnswerButton = page.getByRole('button', { name: `${firstNickname} 답변 공개` });
+  const firstAnswerRowText = await firstAnswerButton.locator('xpath=ancestor::li').textContent();
+  const firstPresentationOrder = firstAnswerRowText?.match(/(\d+)번째 · 공개 완료/)?.[1];
+  expect(firstPresentationOrder).toBeTruthy();
+  await firstAnswerButton.click();
   await expect(currentAnswer).toHaveText(initialParticipants[0].content!);
-  await expect(page.getByText('Memory #1', { exact: true })).toBeVisible();
+  await expect(page.getByText(`Memory #${firstPresentationOrder}`, { exact: true })).toBeVisible();
   expect(previousContent).toBeTruthy();
 
   await page.reload();
   await expect(currentAnswer).toHaveText(initialParticipants[0].content!);
-  await expect(page.getByText('Memory #1', { exact: true })).toBeVisible();
+  await expect(page.getByText(`Memory #${firstPresentationOrder}`, { exact: true })).toBeVisible();
   await expect(page.getByText('익명으로 공개 중')).toBeVisible();
 
   const lateContent = '마지막에 도착한 서른 번째 추억';
