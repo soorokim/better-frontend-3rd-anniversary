@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
-  boolean, check, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
+  type AnyPgColumn, boolean, check, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
 } from 'drizzle-orm/pg-core';
 
 const timestamps = {
@@ -44,6 +44,44 @@ export const answers = pgTable('answers', {
   questionId: uuid('question_id').notNull().references(() => questions.id, { onDelete: 'cascade' }), content: text('content').notNull(),
   submittedAt: timestamp('submitted_at', { withTimezone: true }).defaultNow().notNull(), updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [uniqueIndex('answers_participant_question_uq').on(t.participantId, t.questionId), check('answers_content_length', sql`char_length(btrim(${t.content})) between 1 and 1000`)]);
+
+export const presentationSessions = pgTable('presentation_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  questionId: uuid('question_id').notNull().references(() => questions.id, { onDelete: 'cascade' }),
+  currentItemId: uuid('current_item_id').references((): AnyPgColumn => presentationItems.id, { onDelete: 'set null' }),
+  authorRevealed: boolean('author_revealed').default(false).notNull(),
+  revision: integer('revision').default(0).notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('presentation_sessions_question_uq').on(t.questionId),
+  index('presentation_sessions_event_idx').on(t.eventId),
+  check('presentation_sessions_revision_check', sql`${t.revision} >= 0`),
+]);
+
+export const presentationItems = pgTable('presentation_items', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  presentationSessionId: uuid('presentation_session_id').notNull().references(() => presentationSessions.id, { onDelete: 'cascade' }),
+  answerId: uuid('answer_id').notNull().references(() => answers.id, { onDelete: 'cascade' }),
+  contentSnapshot: text('content_snapshot').notNull(),
+  answerUpdatedAtSnapshot: timestamp('answer_updated_at_snapshot', { withTimezone: true }).notNull(),
+  nicknameSnapshot: text('nickname_snapshot').notNull(),
+  avatarSnapshot: jsonb('avatar_snapshot').$type<{
+    generatorVersion: string;
+    catalogVersion: string;
+    traits: Record<string, string>;
+  }>().notNull(),
+  presentationOrder: integer('presentation_order').notNull(),
+  firstPresentedAt: timestamp('first_presented_at', { withTimezone: true }).defaultNow().notNull(),
+  lastSelectedAt: timestamp('last_selected_at', { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('presentation_items_session_answer_uq').on(t.presentationSessionId, t.answerId),
+  uniqueIndex('presentation_items_session_order_uq').on(t.presentationSessionId, t.presentationOrder),
+  index('presentation_items_answer_idx').on(t.answerId),
+  check('presentation_items_content_length', sql`char_length(btrim(${t.contentSnapshot})) between 1 and 1000`),
+  check('presentation_items_order_check', sql`${t.presentationOrder} > 0`),
+]);
 
 export const participantSessions = pgTable('participant_sessions', {
   id: uuid('id').defaultRandom().primaryKey(), participantId: uuid('participant_id').notNull().references(() => participants.id, { onDelete: 'cascade' }),

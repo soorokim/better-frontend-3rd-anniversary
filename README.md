@@ -23,6 +23,14 @@ curl -fsS http://localhost:3000/api/health
 
 정상이라면 마지막 요청은 `{"status":"ok"}`를 반환한다. 참가자 화면은 `/`, 관리자 로그인은 `/admin/login`이다.
 
+## 행사에서 답변 발표하기
+
+관리자로 로그인한 뒤 `/admin`의 **답변 발표 진행하기**를 누르면 `/admin/presenter`가 열린다. 이 화면은 진행자 노트북에 두고, **발표 화면 새 창으로 열기**로 연 `/admin/presenter/screen`만 프로젝터에 띄운다. 발표 화면 오른쪽 위의 **전체 화면**을 눌러 두면 참가자 목록이나 조작 버튼 없이 질문과 현재 답변만 보인다.
+
+답변은 목록에서 직접 고르거나 아직 공개하지 않은 답변 중 무작위로 고를 수 있다. 새 답변은 진행 중에도 목록에 들어온다. 답변을 처음 띄우면 항상 익명이고, 이야기한 뒤 **작성자 공개**를 눌러 닉네임과 캐릭터를 보여 주는 흐름이 자연스럽다. 이전·다음 이동은 처음 공개한 순서를 따른다.
+
+**발표 기록 초기화**는 한 번 더 확인해야 실행된다. 현재 슬라이드와 공개 순서만 지우며 참가자의 원본 답변, 닉네임, 캐릭터는 지우지 않는다. 행사 중 연결이 잠깐 끊기면 마지막 슬라이드를 그대로 둔 채 자동으로 다시 연결한다. 로그인 만료 안내가 나오면 관리자 로그인을 다시 하고 진행자 화면과 발표 화면을 새로 열면 DB에 저장된 현재 순서와 슬라이드가 복구된다.
+
 도메인 없이 같은 네트워크에서 쓰는 HTTP 설치와 Caddy를 붙인 HTTPS 설치, 업데이트, 백업·복구, 장애 대응은 [배포 안내서](docs/DEPLOYMENT.md)에 정리해 두었다. 운영 데이터를 지우지 않고 복구를 연습하는 절차도 그 문서를 따른다. 운영 도구는 `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`에 있으며, 특히 복구 스크립트는 대상 DB와 정확한 확인 문구를 요구한다.
 
 ## 개발 검증
@@ -35,7 +43,7 @@ npm test
 npm run build
 ```
 
-통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 상세 검증 시나리오는 [기능 quickstart](specs/001-event-core-flow/quickstart.md), API 계약은 [OpenAPI 문서](specs/001-event-core-flow/contracts/openapi.yaml)를 참고하면 된다.
+통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 참가자 흐름은 [기본 기능 quickstart](specs/001-event-core-flow/quickstart.md), 진행자 화면은 [발표 기능 quickstart](specs/002-presenter-results/quickstart.md)에 검증 순서가 있다. API 계약은 [기본 기능 OpenAPI](specs/001-event-core-flow/contracts/openapi.yaml)와 [발표 기능 OpenAPI](specs/002-presenter-results/contracts/openapi.yaml)를 참고하면 된다.
 
 ## 중요한 운영 메모
 

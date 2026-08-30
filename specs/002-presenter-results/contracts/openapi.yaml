@@ -1,0 +1,334 @@
+openapi: 3.1.0
+info:
+  title: Frontend Chat 3rd Anniversary Presenter API
+  version: 1.0.0
+  description: 관리자 결과 확인, 답변 발표 조작과 프로젝터 화면 동기화를 위한 서버 계약
+servers:
+  - url: /
+paths:
+  /api/admin/presentation:
+    get:
+      summary: 진행자 조작 화면 상태 조회
+      operationId: getPresentationController
+      security:
+        - adminSession: []
+      responses:
+        '200':
+          description: 현재 질문, 제출 현황, 답변 후보와 발표 상태
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'no-store, private' }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationControllerView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/QuestionUnavailable' }
+
+  /api/admin/presentation/screen:
+    get:
+      summary: 프로젝터 발표 화면 상태 조회
+      description: 미공개 후보와 작성자 정보를 제외하고 현재 공개 슬라이드만 반환한다.
+      operationId: getPresentationScreen
+      security:
+        - adminSession: []
+      responses:
+        '200':
+          description: 대기 상태 또는 현재 공개 슬라이드
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'no-store, private' }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationScreenView'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/QuestionUnavailable' }
+
+  /api/admin/presentation/commands:
+    post:
+      summary: 발표 상태 변경
+      description: 허용된 진행 명령 하나를 원자적으로 적용하고 최신 조작 화면 상태를 반환한다.
+      operationId: commandPresentation
+      security:
+        - adminSession: []
+      parameters:
+        - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresentationCommand'
+      responses:
+        '200':
+          description: 명령 적용 완료
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'no-store, private' }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationControllerView'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/CsrfError' }
+        '404':
+          description: 현재 질문 또는 관리자 행사에 속한 대상 답변을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 현재 상태에서 적용할 수 없는 명령
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: __Host-admin_session
+
+  parameters:
+    CsrfHeader:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema: { type: string, minLength: 32 }
+
+  responses:
+    ValidationError:
+      description: 입력값 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: 유효한 관리자 세션 없음
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    CsrfError:
+      description: Origin 또는 CSRF 검증 실패
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    QuestionUnavailable:
+      description: 현재 발표할 공개 질문이 없음
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            field: { type: string }
+
+    AvatarView:
+      type: object
+      additionalProperties: false
+      required: [generatorVersion, catalogVersion, traits]
+      properties:
+        generatorVersion: { type: string }
+        catalogVersion: { type: string }
+        traits:
+          type: object
+          additionalProperties: { type: string }
+
+    QuestionView:
+      type: object
+      additionalProperties: false
+      required: [id, prompt]
+      properties:
+        id: { type: string, format: uuid }
+        prompt: { type: string, minLength: 1, maxLength: 500 }
+
+    PresentationSummary:
+      type: object
+      additionalProperties: false
+      required: [total, submitted, notSubmitted]
+      properties:
+        total: { type: integer, minimum: 0, maximum: 30 }
+        submitted: { type: integer, minimum: 0, maximum: 30 }
+        notSubmitted: { type: integer, minimum: 0, maximum: 30 }
+
+    PresentationSessionView:
+      type: object
+      additionalProperties: false
+      required: [revision, currentItemId, authorRevealed, allPresented, updatedAt]
+      properties:
+        revision: { type: integer, minimum: 0 }
+        currentItemId:
+          anyOf:
+            - { type: string, format: uuid }
+            - { type: 'null' }
+        authorRevealed: { type: boolean }
+        allPresented: { type: boolean }
+        updatedAt:
+          anyOf:
+            - { type: string, format: date-time }
+            - { type: 'null' }
+
+    AnswerAuthorView:
+      type: object
+      additionalProperties: false
+      required: [nickname, avatar]
+      properties:
+        nickname: { type: string }
+        avatar: { $ref: '#/components/schemas/AvatarView' }
+
+    PresentationAnswerView:
+      type: object
+      additionalProperties: false
+      required: [id, content, submittedAt, updatedAt, status, presentationOrder, author]
+      properties:
+        id: { type: string, format: uuid }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        submittedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        status:
+          type: string
+          enum: [unpresented, presented, current]
+        presentationOrder:
+          anyOf:
+            - { type: integer, minimum: 1 }
+            - { type: 'null' }
+        author: { $ref: '#/components/schemas/AnswerAuthorView' }
+
+    ControllerSlideView:
+      type: object
+      additionalProperties: false
+      required: [itemId, answerId, content, author, authorRevealed, presentationOrder]
+      properties:
+        itemId: { type: string, format: uuid }
+        answerId: { type: string, format: uuid }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        author: { $ref: '#/components/schemas/AnswerAuthorView' }
+        authorRevealed: { type: boolean }
+        presentationOrder: { type: integer, minimum: 1 }
+
+    PresentationControllerView:
+      type: object
+      additionalProperties: false
+      required: [question, summary, session, currentSlide, answers]
+      properties:
+        question: { $ref: '#/components/schemas/QuestionView' }
+        summary: { $ref: '#/components/schemas/PresentationSummary' }
+        session: { $ref: '#/components/schemas/PresentationSessionView' }
+        currentSlide:
+          anyOf:
+            - { $ref: '#/components/schemas/ControllerSlideView' }
+            - { type: 'null' }
+        answers:
+          type: array
+          maxItems: 30
+          items: { $ref: '#/components/schemas/PresentationAnswerView' }
+
+    WaitingScreenSlide:
+      type: object
+      additionalProperties: false
+      required: [kind]
+      properties:
+        kind: { const: waiting }
+
+    AnonymousAnswerScreenSlide:
+      type: object
+      additionalProperties: false
+      required: [kind, content]
+      properties:
+        kind: { const: answer }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+
+    RevealedAnswerScreenSlide:
+      type: object
+      additionalProperties: false
+      required: [kind, content, author]
+      properties:
+        kind: { const: answer }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        author: { $ref: '#/components/schemas/AnswerAuthorView' }
+
+    PresentationScreenView:
+      type: object
+      additionalProperties: false
+      required: [question, revision, updatedAt, slide]
+      properties:
+        question: { $ref: '#/components/schemas/QuestionView' }
+        revision: { type: integer, minimum: 0 }
+        updatedAt:
+          anyOf:
+            - { type: string, format: date-time }
+            - { type: 'null' }
+        slide:
+          oneOf:
+            - { $ref: '#/components/schemas/WaitingScreenSlide' }
+            - { $ref: '#/components/schemas/AnonymousAnswerScreenSlide' }
+            - { $ref: '#/components/schemas/RevealedAnswerScreenSlide' }
+
+    SelectAnswerCommand:
+      type: object
+      additionalProperties: false
+      required: [type, answerId]
+      properties:
+        type: { const: select_answer }
+        answerId: { type: string, format: uuid }
+
+    SelectRandomCommand:
+      type: object
+      additionalProperties: false
+      required: [type]
+      properties:
+        type: { const: select_random }
+
+    SetAuthorVisibilityCommand:
+      type: object
+      additionalProperties: false
+      required: [type, revealed]
+      properties:
+        type: { const: set_author_visibility }
+        revealed: { type: boolean }
+
+    NavigateCommand:
+      type: object
+      additionalProperties: false
+      required: [type, direction]
+      properties:
+        type: { const: navigate }
+        direction:
+          type: string
+          enum: [previous, next]
+
+    RestartCommand:
+      type: object
+      additionalProperties: false
+      required: [type, confirmed]
+      properties:
+        type: { const: restart }
+        confirmed: { const: true }
+
+    PresentationCommand:
+      oneOf:
+        - { $ref: '#/components/schemas/SelectAnswerCommand' }
+        - { $ref: '#/components/schemas/SelectRandomCommand' }
+        - { $ref: '#/components/schemas/SetAuthorVisibilityCommand' }
+        - { $ref: '#/components/schemas/NavigateCommand' }
+        - { $ref: '#/components/schemas/RestartCommand' }
+      discriminator:
+        propertyName: type
