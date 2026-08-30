@@ -110,12 +110,12 @@ test('host exhausts 30 answers once, navigates, republishes, reloads, and receiv
   const selectedContents = new Set<string>();
   for (let index = 0; index < 29; index += 1) {
     await page.getByRole('button', { name: '무작위 답변 공개' }).click();
+    await expect(page.getByText(`Memory #${index + 1}`, { exact: true })).toBeVisible();
     await expect(currentAnswer).toBeVisible();
     const content = (await currentAnswer.textContent())?.trim();
     expect(content).toBeTruthy();
     expect(selectedContents.has(content!)).toBe(false);
     selectedContents.add(content!);
-    await expect(page.getByText(`Memory #${index + 1}`, { exact: true })).toBeVisible();
   }
   expect(selectedContents.size).toBe(29);
   await expect(page.getByText('모든 답변을 공개했어요.')).toBeVisible();
