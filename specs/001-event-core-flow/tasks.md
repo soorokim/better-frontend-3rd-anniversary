@@ -107,18 +107,18 @@
 
 > **NOTE: 아래 테스트를 먼저 작성하고 실패를 확인한 뒤 구현한다.**
 
-- [ ] T038 [P] [US2] 현재 질문·답변 조회·upsert·닫힌 질문 응답 계약 테스트를 `tests/integration/answer-api.test.ts`에 작성한다
-- [ ] T039 [P] [US2] 답변 소유권, 1~1,000자 검증, 동시 수정과 재시작 지속성 테스트를 `tests/integration/answer-persistence.test.ts`에 작성한다
-- [ ] T040 [P] [US2] 360px 답변 저장→재입장→수정과 저장 실패 복구 종단 테스트를 `tests/e2e/memory-answer.spec.ts`에 작성한다
+- [X] T038 [P] [US2] 현재 질문·답변 조회·upsert·닫힌 질문 응답 계약 테스트를 `tests/integration/answer-api.test.ts`에 작성한다
+- [X] T039 [P] [US2] 답변 소유권, 1~1,000자 검증, 동시 수정과 재시작 지속성 테스트를 `tests/integration/answer-persistence.test.ts`에 작성한다
+- [X] T040 [P] [US2] 360px 답변 저장→재입장→수정과 저장 실패 복구 종단 테스트를 `tests/e2e/memory-answer.spec.ts`에 작성한다
 
 ### Implementation for User Story 2
 
-- [ ] T041 [P] [US2] 공개 질문 조회와 상태 규칙을 `lib/db/repositories/questions.ts` 및 `lib/questions/question-service.ts`에 구현한다
-- [ ] T042 [P] [US2] 참가자 소유 답변 조회·원자적 upsert를 `lib/db/repositories/answers.ts`에 구현한다
-- [ ] T043 [US2] 질문 상태, 답변 길이, 소유권을 적용한 답변 서비스를 `lib/answers/answer-service.ts`에 구현한다
-- [ ] T044 [US2] 현재 질문과 답변 조회·저장 계약을 `app/api/question/current/route.ts` 및 `app/api/answer/current/route.ts`에 구현한다
-- [ ] T045 [US2] 작성 중 텍스트, 마지막 성공본, 저장 상태를 구분하는 폼을 `components/forms/MemoryAnswerForm.tsx`에 구현한다
-- [ ] T046 [US2] 질문 준비 상태와 답변 작성·수정 화면을 `app/(participant)/memory/page.tsx`에 구현하고 로비 제출 상태를 `app/(participant)/lobby/page.tsx`에 연결한다
+- [X] T041 [P] [US2] 공개 질문 조회와 상태 규칙을 `lib/db/repositories/questions.ts` 및 `lib/questions/question-service.ts`에 구현한다
+- [X] T042 [P] [US2] 참가자 소유 답변 조회·원자적 upsert를 `lib/db/repositories/answers.ts`에 구현한다
+- [X] T043 [US2] 질문 상태, 답변 길이, 소유권을 적용한 답변 서비스를 `lib/answers/answer-service.ts`에 구현한다
+- [X] T044 [US2] 현재 질문과 답변 조회·저장 계약을 `app/api/question/current/route.ts` 및 `app/api/answer/current/route.ts`에 구현한다
+- [X] T045 [US2] 작성 중 텍스트, 마지막 성공본, 저장 상태를 구분하는 폼을 `components/forms/MemoryAnswerForm.tsx`에 구현한다
+- [X] T046 [US2] 질문 준비 상태와 답변 작성·수정 화면을 `app/(participant)/memory/page.tsx`에 구현하고 로비 제출 상태를 `app/(participant)/lobby/page.tsx`에 연결한다
 - [ ] T047 [US2] T038~T040을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 3 결과를 기록한다
 
 **Checkpoint**: User Stories 1과 2가 함께 실제 3주년 기록 하나를 끝까지 저장하고 다시 불러온다.
