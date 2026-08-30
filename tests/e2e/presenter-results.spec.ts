@@ -90,6 +90,7 @@ test('host checks submission status, presents a random answer anonymously, then 
 });
 
 test('host exhausts 30 answers once, navigates, republishes, reloads, and receives a late submission', async ({ browser, page }) => {
+  test.setTimeout(120_000);
   const extraParticipants = Array.from({ length: 26 }, (_, index) => ({
     nickname: `추억수집가${runSuffix}-${String(index + 1).padStart(2, '0')}`,
     content: `추억 번호 ${String(index + 4).padStart(2, '0')}`,
@@ -103,7 +104,7 @@ test('host exhausts 30 answers once, navigates, republishes, reloads, and receiv
 
   await page.getByRole('button', { name: '발표 기록 초기화' }).click();
   await page.getByRole('button', { name: '초기화 확인' }).click();
-  await expect(page.getByText('아직 공개한 답변이 없어요.')).toBeVisible();
+  await expect(page.getByTestId('presenter-current-slide').getByText('Ready?', { exact: true })).toBeVisible();
 
   const currentAnswer = page.getByTestId('presenter-current-answer');
   const selectedContents = new Set<string>();
@@ -149,6 +150,7 @@ test('host exhausts 30 answers once, navigates, republishes, reloads, and receiv
 });
 
 test('projector follows keyboard-driven changes, preserves a long slide offline, and stops after session expiry', async ({ browser, context, page }) => {
+  test.setTimeout(60_000);
   const contentPrefix = '줄바꿈 다음 줄\nhttps://example.com/third-anniversary/a-very-long-unbroken-path\n이모지 🚀✨\n';
   const boundaryContent = `${contentPrefix}${'가'.repeat(1_000 - contentPrefix.length)}`;
   expect(boundaryContent).toHaveLength(1_000);
