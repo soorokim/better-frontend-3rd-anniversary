@@ -232,7 +232,6 @@ test('projector follows keyboard-driven changes, preserves a long slide offline,
   await expect(projector.getByText('연결이 잠시 끊겼어요.')).toBeVisible({ timeout: 5_000 });
   await expect(projectorAnswer).toHaveText(secondContent!);
   await context.setOffline(false);
-  await projector.getByRole('button', { name: '지금 다시 연결' }).click();
   await expect(projector.getByLabel('발표 화면 연결됨')).toBeVisible({ timeout: 5_000 });
   await expect(projectorAnswer).toHaveText(secondContent!);
 
