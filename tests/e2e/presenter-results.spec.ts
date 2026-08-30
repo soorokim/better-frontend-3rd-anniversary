@@ -43,7 +43,7 @@ async function submitExistingParticipantAnswer(browser: Browser, nickname: strin
   await page.getByLabel('6자리 PIN', { exact: true }).fill('123456');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();
   await expect(page).toHaveURL(/\/lobby/);
-  await page.getByRole('link', { name: '3주년 기록 남기기' }).click();
+  await page.getByRole('link', { name: /3주년 기록 (남기기|수정하기)/ }).click();
   await page.getByLabel('나의 3주년 답변').fill(content);
   await page.getByRole('button', { name: '답변 저장' }).click();
   await expect(page.getByText('저장했어요.')).toBeVisible();
