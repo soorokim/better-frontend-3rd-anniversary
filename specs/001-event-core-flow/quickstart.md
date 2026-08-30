@@ -169,10 +169,13 @@ secret과 컨테이너 내부 인증 설정을 사용한다.
 ## MVP Validation Record (2026-08-30)
 
 - Scenario 2의 닉네임 정규화 경계와 아바타 100회 재현 테스트는 로컬 단위 테스트에서
-  통과했다 (`14 passed`).
-- Scenario 1의 등록·로그인·로그아웃 계약 테스트와 360px 종단 테스트는 작성했으며,
-  타입 검사·lint·운영 빌드는 통과했다.
-- 현재 PC의 Docker daemon이 실행 중이 아니고 별도 PostgreSQL도 없어 실제 DB 계약 및
-  브라우저 종단 실행은 보류했다. SQLite나 메모리 저장소로 대체하지 않았으며,
-  `TEST_DATABASE_URL`을 제공한 PostgreSQL 환경에서 `npm run test:integration`과
-  `npm run test:e2e`를 다시 실행해야 Scenario 1을 완료로 판정할 수 있다.
+  통과했다. Argon2의 플랫폼 간 입력 호환성 회귀 테스트를 포함해 `15 passed`다.
+- Debian 12 전용 LXC의 Docker Compose 환경에서 PostgreSQL 17이 healthy가 되고,
+  마이그레이션과 시드가 종료 코드 0으로 완료됐으며 앱 헬스체크가
+  `{"status":"ok"}`를 반환했다.
+- Scenario 1은 실제 PostgreSQL과 서버 앱을 대상으로 360px 모바일 Playwright에서
+  등록, 결정적 캐릭터 확인, 로그아웃, 같은 닉네임·PIN 재입장, 같은 캐릭터 재확인까지
+  통과했다 (`1 passed`). 검증용 참가자는 완료 뒤 삭제해 참가자 수를 0명으로 복구했다.
+- 운영 쿠키는 `__Host-`와 `Secure` 속성을 유지한다. 도메인 연결 전 검증은 SSH 터널의
+  localhost origin으로 실행했고, 공개 배포에서는 `APP_ORIGIN`에 실제 HTTPS 도메인을
+  지정해야 한다.

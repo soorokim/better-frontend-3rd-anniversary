@@ -89,7 +89,7 @@
 - [X] T034 [US1] 시작·신규 입장·재입장 폼과 오류 안내를 `app/(public)/page.tsx`, `app/(public)/join/page.tsx`, `app/(public)/login/page.tsx`, `components/forms/ParticipantAuthForm.tsx`에 구현한다
 - [X] T035 [US1] 참가자 세션 보호와 닉네임·캐릭터·답변 상태가 보이는 로비를 `app/(participant)/layout.tsx` 및 `app/(participant)/lobby/page.tsx`에 구현한다
 - [X] T036 [US1] 등록 중복·잘못된 인증·재시도 제한 메시지와 로딩/재시도 상태를 `components/forms/AuthStatus.tsx`에 연결한다
-- [ ] T037 [US1] T022~T026을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 1·2 결과를 기록한다
+- [X] T037 [US1] T022~T026을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 1·2 결과를 기록한다
 
 **Checkpoint**: User Story 1만으로도 초대받은 사람이 고유 캐릭터와 함께 로비에 들어가는 MVP를 시연할 수 있다.
 
