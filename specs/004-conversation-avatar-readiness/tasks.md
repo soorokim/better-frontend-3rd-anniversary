@@ -38,7 +38,7 @@ description: "대화 아바타 작업을 현재 서비스에 통합하고 배포
 
 **⚠️ CRITICAL**: 이 단계가 끝나기 전에는 인증, 제한, 접근성 구현을 시작하지 않는다.
 
-- [ ] T005 `codex/mvp-core-flow`와 `origin/codex/mvp-core-flow`를 갱신·비교해 통합 기준 SHA와 `conversation-avatar-pre-rebase` 복구 SHA를 `specs/004-conversation-avatar-readiness/integration-inventory.md`에 기록하고 이 inventory 갱신을 커밋해 깨끗한 재배치 입력을 만든다.
+- [X] T005 `codex/mvp-core-flow`와 `origin/codex/mvp-core-flow`를 갱신·비교해 통합 기준 SHA와 `conversation-avatar-pre-rebase` 복구 SHA를 `specs/004-conversation-avatar-readiness/integration-inventory.md`에 기록하고 이 inventory 갱신을 커밋해 깨끗한 재배치 입력을 만든다.
 - [ ] T006 복구 SHA를 유지한 채 `codex/conversation-avatar`를 T005의 기준 SHA 위로 재배치하고 충돌 파일 목록을 `specs/004-conversation-avatar-readiness/integration-inventory.md`에 기록한다.
 - [ ] T007 `db/schema.ts`, `app/admin/page.tsx`, `README.md`, `docs/DEPLOYMENT.md` 충돌을 해결해 진행자 엔티티·화면·운영 절차와 대화 프로필 엔티티·현황 화면을 모두 보존한다.
 - [ ] T008 [P] `package.json`, `package-lock.json`, `THIRD_PARTY_NOTICES.md`, `public/avatar-parts/README.md`를 현재 기준선과 대화 아바타 의존성·라이선스가 함께 맞도록 정리한다.

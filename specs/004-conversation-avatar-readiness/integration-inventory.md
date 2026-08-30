@@ -49,4 +49,12 @@
 
 ## 재배치 기록
 
-T005~T010에서 기준선 SHA, 복구 SHA, 충돌 파일, 재배치 후 HEAD와 정적·단위 검증 결과를 이어서 기록한다.
+### 고정 입력
+
+- 로컬 기준선 `codex/mvp-core-flow`: `ca9f8fa507a9dbb6077f5ddd1a66a6034a342363`
+- 원격 기준선 `origin/codex/mvp-core-flow`: `ca9f8fa507a9dbb6077f5ddd1a66a6034a342363`
+- 로컬/원격 ahead-behind: `0/0`
+- 복구 태그 대상 SHA: `4982246ae2c9a90d887e5bf327fc0513c6fb2a59`
+- 복구 태그: `conversation-avatar-pre-rebase`
+
+T006~T010에서 충돌 파일, 재배치 후 HEAD와 정적·단위 검증 결과를 이어서 기록한다.
