@@ -93,3 +93,45 @@ avatar 연결, `participant_register` action과 batch/event 및 profile/batch �
 `npm ci`의 audit 요약에는 moderate 4건과 high 5건이 남았다. 이 명령은 의존성 잠금의
 재현 여부를 확인하기 위한 것이므로 자동 `npm audit fix`나 breaking upgrade는 적용하지 않았다.
 PostgreSQL integration과 Playwright E2E는 이 체크포인트 범위가 아니며 US1 이후에 실행한다.
+
+## US1 migration 통합 검증
+
+### TDD와 migration 계보
+
+- RED 확인: journal이 임시 `0002_conversation_profiles` tag를 가리키는 상태에서
+  `tests/integration/bootstrap.test.ts`의 정확한 `0001 → 0002_presenter_results →
+  0003_conversation_profiles` 계보 테스트가 실패했다.
+- 최종 계보: `0001_event_core.sql`, `0002_presenter_results.sql`,
+  `0003_conversation_profiles.sql`. journal index도 0, 1, 2 순서다.
+- 기존 `0001_event_core.sql`과 `0002_presenter_results.sql`은 통합 기준점 이후 변경하지 않았다.
+- `participant_register` enum 값은 `0003`의 첫 statement에서 추가하고 같은 transaction의
+  뒤쪽 DDL에서는 새 값을 사용하지 않는다. PostgreSQL 16.2의 clean/upgrade 실행으로 이 순서를
+  확인했다.
+
+### 전용 PostgreSQL 검증
+
+- 환경: WSL의 사용자 전용 portable PostgreSQL 16.2, UTF-8, loopback 전용 포트와 이름에
+  `test`가 포함된 삭제 가능한 DB. 운영 DB와 행사 Compose project는 사용하지 않았다.
+- PostgreSQL integration: 18개 파일, 64개 테스트 통과.
+- clean/repeat: 빈 DB에 전체 migration을 적용하고 다시 실행해 양쪽 기능의 테이블과
+  `participant_register` enum을 확인했다.
+- upgrade: `0001 + 0002_presenter_results`에서 참가자, 답변, presentation session/item을 만든 뒤
+  `0003`을 적용하고 개수, revision, 작성자 공개 상태, 현재 item, avatar snapshot이 그대로임을
+  확인했다. 같은 migration을 다시 실행해도 결과가 변하지 않았다.
+- snapshot: conversation avatar의 확정 traits가 controller, projector, 저장된 presentation item에
+  동일하게 남는 통합 테스트를 통과했다.
+
+### 정적·회귀 게이트
+
+- `npm run lint`: 통과
+- `npm run build`: 통과
+- `npm run typecheck`: build 종료 뒤 단독 실행 통과. build와 동시에 실행한 첫 시도는 두 명령이
+  같은 `.next/types` 생성물을 교체하면서 일시 실패했으므로 최종 판정에서 제외했다.
+- `npm test -- --reporter=dot`: 12개 파일, 57개 테스트 통과
+- `npm run test:analysis`: 2개 테스트 통과
+- `git diff --check`: 통과
+- `compose.yaml`, `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`의 공통 migration
+  runner와 백업 선행 순서는 정적 계약 테스트로 확인했다.
+
+T019에서 위 구현과 기록을 candidate commit으로 고정하고, 그 SHA만 `--no-local` clone해
+T020 스모크 결과를 별도 기록한다.

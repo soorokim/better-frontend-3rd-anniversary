@@ -59,18 +59,18 @@ description: "대화 아바타 작업을 현재 서비스에 통합하고 배포
 
 > **NOTE: 아래 테스트를 먼저 작성하고 현재 충돌 마이그레이션에서 실패하는지 확인한다.**
 
-- [ ] T011 [P] [US1] 깨끗한 DB의 `0001 → 0002 → 0003`, 마이그레이션 재실행, journal 순서와 양쪽 테이블 존재를 검증하는 실패 테스트를 `tests/integration/bootstrap.test.ts`에 작성한다.
-- [ ] T012 [P] [US1] `0002` 상태의 참가자·답변·발표 session/item을 만든 뒤 `0003` 적용 후 개수·revision·작성자 공개 상태 보존을 검증하는 업그레이드 테스트를 `tests/integration/presentation-concurrency.test.ts`에 작성한다.
-- [ ] T013 [P] [US1] 대화 아바타 참가자의 답변을 선택하고 작성자를 공개했을 때 확정 traits가 진행자와 프로젝터 snapshot에 그대로 나타나는 회귀 테스트를 `tests/integration/presentation-api.test.ts`와 `tests/e2e/presenter-results.spec.ts`에 작성한다.
+- [X] T011 [P] [US1] 깨끗한 DB의 `0001 → 0002 → 0003`, 마이그레이션 재실행, journal 순서와 양쪽 테이블 존재를 검증하는 실패 테스트를 `tests/integration/bootstrap.test.ts`에 작성한다.
+- [X] T012 [P] [US1] `0002` 상태의 참가자·답변·발표 session/item을 만든 뒤 `0003` 적용 후 개수·revision·작성자 공개 상태 보존을 검증하는 업그레이드 테스트를 `tests/integration/presentation-concurrency.test.ts`에 작성한다.
+- [X] T013 [P] [US1] 대화 아바타 참가자의 답변을 선택하고 작성자를 공개했을 때 확정 traits가 진행자와 프로젝터 snapshot에 그대로 나타나는 회귀 테스트를 `tests/integration/presentation-api.test.ts`와 `tests/e2e/presenter-results.spec.ts`에 작성한다.
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] 충돌한 `db/migrations/0002_conversation_profiles.sql`을 제거하고 최종 `db/schema.ts` 기준의 `db/migrations/0003_conversation_profiles.sql`을 생성해 대화 프로필 구조와 `participant_register` enum 확장만 전진 적용한다.
-- [ ] T015 [US1] `db/migrations/meta/_journal.json`을 `0001_event_core`, `0002_presenter_results`, `0003_conversation_profiles` 순서와 고유 인덱스로 정리하고 기존 `db/migrations/0001_event_core.sql`, `db/migrations/0002_presenter_results.sql`은 변경하지 않는다.
-- [ ] T016 [US1] 진행자·대화 프로필 테이블을 함께 초기화하고 운영 DB 오입력을 거절하도록 `tests/helpers/database.ts`와 `tests/integration/bootstrap.test.ts`의 테스트 DB 가드를 정리한다.
-- [ ] T017 [P] [US1] 관리자 홈에서 기존 참가자·PIN 복구·진행자 링크와 활성 대화 프로필 준비 현황을 모두 유지하도록 `app/admin/page.tsx`와 `components/admin/AvatarProfileStatus.tsx`를 통합한다.
-- [ ] T018 [P] [US1] `compose.yaml`, `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`에서 새 설치와 `0002` 기존 DB 갱신이 같은 migration runner를 사용하고 실패 전 백업을 요구하도록 정리한다.
-- [ ] T019 [US1] T011~T013과 기존 진행자·질문·답변 회귀 테스트를 실행해 마이그레이션 재실행과 데이터 보존을 확인하고 `specs/004-conversation-avatar-readiness/integration-inventory.md`를 갱신한 뒤 US1 구현 전체를 커밋해 검증할 candidate SHA를 고정한다.
+- [X] T014 [US1] 충돌한 `db/migrations/0002_conversation_profiles.sql`을 제거하고 최종 `db/schema.ts` 기준의 `db/migrations/0003_conversation_profiles.sql`을 생성해 대화 프로필 구조와 `participant_register` enum 확장만 전진 적용한다.
+- [X] T015 [US1] `db/migrations/meta/_journal.json`을 `0001_event_core`, `0002_presenter_results`, `0003_conversation_profiles` 순서와 고유 인덱스로 정리하고 기존 `db/migrations/0001_event_core.sql`, `db/migrations/0002_presenter_results.sql`은 변경하지 않는다.
+- [X] T016 [US1] 진행자·대화 프로필 테이블을 함께 초기화하고 운영 DB 오입력을 거절하도록 `tests/helpers/database.ts`와 `tests/integration/bootstrap.test.ts`의 테스트 DB 가드를 정리한다.
+- [X] T017 [P] [US1] 관리자 홈에서 기존 참가자·PIN 복구·진행자 링크와 활성 대화 프로필 준비 현황을 모두 유지하도록 `app/admin/page.tsx`와 `components/admin/AvatarProfileStatus.tsx`를 통합한다.
+- [X] T018 [P] [US1] `compose.yaml`, `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`에서 새 설치와 `0002` 기존 DB 갱신이 같은 migration runner를 사용하고 실패 전 백업을 요구하도록 정리한다.
+- [X] T019 [US1] T011~T013과 기존 진행자·질문·답변 회귀 테스트를 실행해 마이그레이션 재실행과 데이터 보존을 확인하고 `specs/004-conversation-avatar-readiness/integration-inventory.md`를 갱신한 뒤 US1 구현 전체를 커밋해 검증할 candidate SHA를 고정한다.
 - [ ] T020 [US1] T019의 candidate commit을 임시 디렉터리에 `--no-local`로 clone해 필수 추적 파일, 빈 DB 설치, `0002` DB 1회 갱신을 각각 스모크 검증하고 시작·종료 시각과 결과를 `specs/004-conversation-avatar-readiness/validation/us1-smoke.md`에 남긴다.
 
 **Checkpoint**: 다른 작업자가 같은 commit으로 기존 기능과 대화 아바타 기능을 함께 설치할 수 있다.

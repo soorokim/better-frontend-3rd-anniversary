@@ -87,6 +87,14 @@ test('host checks submission status, presents a random answer anonymously, then 
   const revealedNames = await Promise.all(initialParticipants.slice(0, 3).map(async ({ nickname }) =>
     currentSlide.getByText(nickname, { exact: true }).isVisible()));
   expect(revealedNames.filter(Boolean)).toHaveLength(1);
+
+  const controllerResponse = await page.request.get('/api/admin/presentation');
+  const projectorResponse = await page.request.get('/api/admin/presentation/screen');
+  const controller = await controllerResponse.json();
+  const projector = await projectorResponse.json();
+  expect(controllerResponse.ok()).toBe(true);
+  expect(projectorResponse.ok()).toBe(true);
+  expect(projector.slide.author.avatar).toEqual(controller.currentSlide.author.avatar);
 });
 
 test('host exhausts 30 answers once, navigates, republishes, reloads, and receives a late submission', async ({ browser, page }) => {

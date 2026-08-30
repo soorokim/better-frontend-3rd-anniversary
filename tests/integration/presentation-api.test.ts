@@ -468,4 +468,49 @@ describe('presenter controller API contract', () => {
     });
     expect(JSON.stringify(revealed)).not.toMatch(/answers|summary|answerId|itemId|currentItemId|presentationOrder|sourceDigest/);
   });
+
+  it('keeps exact conversation avatar traits in controller and projector snapshots', async () => {
+    activeCookie = adminToken;
+    const conversationTraits = {
+      hair: 'short01',
+      eyes: 'variant04',
+      mouth: 'happy03',
+      clothing: 'variant12',
+      className: 'steady-debugger',
+      item: 'terminal-keyboard',
+      status: 'reviewing-the-memory',
+    };
+    const participant = eventParticipants[0];
+    const [conversationAvatar] = await database.db.insert(avatarAssignments).values({
+      participantId: participant.id,
+      sourceKind: 'conversation',
+      sourceVersion: 'conversation-summary-v1',
+      sourceDigest: 'a'.repeat(64),
+      generatorVersion: 'developer-profile-v1',
+      catalogVersion: 'developer-profile-catalog-v1',
+      selectedTraits: conversationTraits,
+    }).returning();
+    await database.db.update(participants)
+      .set({ currentAvatarId: conversationAvatar.id })
+      .where(eq(participants.id, participant.id));
+
+    const { POST } = await import('@/app/api/admin/presentation/commands/route');
+    const { GET: getProjector } = await import('@/app/api/admin/presentation/screen/route');
+    const selected = await (await POST(commandRequest({
+      type: 'select_answer',
+      answerId: eventAnswers[0].id,
+    }, adminCsrf))).json();
+    expect(selected.currentSlide.author.avatar).toEqual({
+      generatorVersion: 'developer-profile-v1',
+      catalogVersion: 'developer-profile-catalog-v1',
+      traits: conversationTraits,
+    });
+
+    await POST(commandRequest({ type: 'set_author_visibility', revealed: true }, adminCsrf));
+    const projector = await (await getProjector()).json();
+    expect(projector.slide.author.avatar).toEqual(selected.currentSlide.author.avatar);
+    const [savedItem] = await database.db.select().from(presentationItems)
+      .where(eq(presentationItems.answerId, eventAnswers[0].id));
+    expect(savedItem.avatarSnapshot).toEqual(selected.currentSlide.author.avatar);
+  });
 });
