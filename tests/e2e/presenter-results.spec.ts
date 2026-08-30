@@ -130,8 +130,12 @@ test('host exhausts 30 answers once, navigates, republishes, reloads, and receiv
 
   const firstNickname = initialParticipants[0].nickname;
   const firstAnswerButton = page.getByRole('button', { name: `${firstNickname} 답변 공개` });
-  const firstAnswerRowText = await firstAnswerButton.locator('xpath=ancestor::li').textContent();
-  const firstPresentationOrder = firstAnswerRowText?.match(/(\d+)번째 · 공개 완료/)?.[1];
+  const firstAnswerStatus = await firstAnswerButton
+    .locator('xpath=ancestor::li')
+    .locator('span')
+    .filter({ hasText: '공개 완료' })
+    .textContent();
+  const firstPresentationOrder = firstAnswerStatus?.match(/^(\d+)번째/)?.[1];
   expect(firstPresentationOrder).toBeTruthy();
   await firstAnswerButton.click();
   await expect(currentAnswer).toHaveText(initialParticipants[0].content!);
