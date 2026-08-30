@@ -112,9 +112,20 @@ export async function answerStatusForParticipant(participantId: string, eventId:
 }
 
 export function isNicknameConflict(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  const candidate = error as { code?: string; constraint_name?: string; constraint?: string };
-  return candidate.code === '23505'
-    && (candidate.constraint_name === 'participants_event_nickname_uq'
-      || candidate.constraint === 'participants_event_nickname_uq');
+  let current = error;
+  for (let depth = 0; depth < 3 && current && typeof current === 'object'; depth += 1) {
+    const candidate = current as {
+      code?: string;
+      constraint_name?: string;
+      constraint?: string;
+      cause?: unknown;
+    };
+    const constraint = candidate.constraint_name ?? candidate.constraint;
+    if (candidate.code === '23505' && (
+      constraint === 'participants_event_nickname_uq'
+      || constraint === 'participants_event_id_nickname_key_key'
+    )) return true;
+    current = candidate.cause;
+  }
+  return false;
 }

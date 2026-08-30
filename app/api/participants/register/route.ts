@@ -16,12 +16,14 @@ export async function POST(request: Request) {
       ...result.view,
       participant: { id: result.view.id, nickname: result.view.nickname },
       reveal: { enabled: true, minDurationMs: 3000, maxDurationMs: 5000, serverProgress: false },
-    }, { status: 201 });
+    }, { status: 201, headers: { 'Cache-Control': 'no-store' } });
     const cookies = authCookiePolicy();
     response.cookies.set(cookies.names.participant, result.session.token, cookies.session(result.session.token, result.session.expiresAt));
     response.cookies.set(cookies.names.participantCsrf, result.session.csrfToken, cookies.csrf(result.session.csrfToken, result.session.expiresAt));
     return response;
   } catch (error) {
-    return errorResponse(error);
+    const response = errorResponse(error);
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   }
 }

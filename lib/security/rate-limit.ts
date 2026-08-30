@@ -3,7 +3,7 @@ import { authThrottles } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import { digest } from './crypto';
 
-export type ThrottleAction = 'invite' | 'participant_login' | 'admin_login' | 'pin_reset';
+export type ThrottleAction = 'invite' | 'participant_login' | 'admin_login' | 'pin_reset' | 'participant_register';
 const WINDOW_MS = 15 * 60_000;
 
 function delaySeconds(failures: number): number { return failures < 3 ? 0 : Math.min(300, 2 ** (failures - 3)); }
@@ -22,6 +22,40 @@ export async function recordFailure(action: ThrottleAction, subjectKeyHash: stri
     const failures = expired ? 1 : existing.failureCount + 1; const seconds = delaySeconds(failures); const blockedUntil = seconds ? new Date(now.getTime() + seconds * 1000) : null;
     if (!existing) await tx.insert(authThrottles).values({ action, subjectKeyHash, failureCount: failures, blockedUntil });
     else await tx.update(authThrottles).set({ failureCount: failures, windowStartedAt: expired ? now : existing.windowStartedAt, blockedUntil, updatedAt: now }).where(eq(authThrottles.id, existing.id));
+    return { blocked: seconds > 0, retryAfter: seconds };
+  });
+}
+
+export async function consumeRegistrationAttempt(subjectKeyHash: string) {
+  return db.transaction(async (tx) => {
+    await tx.insert(authThrottles).values({
+      action: 'participant_register',
+      subjectKeyHash,
+      failureCount: 0,
+    }).onConflictDoNothing({
+      target: [authThrottles.action, authThrottles.subjectKeyHash],
+    });
+
+    const [existing] = await tx.select().from(authThrottles).where(and(
+      eq(authThrottles.action, 'participant_register'),
+      eq(authThrottles.subjectKeyHash, subjectKeyHash),
+    )).for('update').limit(1);
+    if (!existing) throw new Error('가입 제한 상태를 만들지 못했습니다.');
+
+    const now = new Date();
+    if (existing.blockedUntil && existing.blockedUntil > now) {
+      return { blocked: true, retryAfter: retryAfter(existing.blockedUntil, now) };
+    }
+
+    const expired = now.getTime() - existing.windowStartedAt.getTime() > WINDOW_MS;
+    const attempts = expired ? 1 : existing.failureCount + 1;
+    const seconds = delaySeconds(attempts);
+    await tx.update(authThrottles).set({
+      failureCount: attempts,
+      windowStartedAt: expired ? now : existing.windowStartedAt,
+      blockedUntil: seconds ? new Date(now.getTime() + seconds * 1000) : null,
+      updatedAt: now,
+    }).where(eq(authThrottles.id, existing.id));
     return { blocked: seconds > 0, retryAfter: seconds };
   });
 }

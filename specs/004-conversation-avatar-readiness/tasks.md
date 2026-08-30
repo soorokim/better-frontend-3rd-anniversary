@@ -109,18 +109,18 @@ description: "대화 아바타 작업을 현재 서비스에 통합하고 배포
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T029 [P] [US3] 같은 subject의 미승인 닉네임 실패 누적, 승인 닉네임 병렬 시도 슬롯 소비, 차단 만료, 성공 시 clear와 다른 subject 격리를 검증하는 실패 테스트를 `tests/integration/participant-registration-throttle.test.ts`에 작성한다.
-- [ ] T030 [P] [US3] 미승인 닉네임에서 Argon2 호출 0회, 제한된 승인 닉네임에서 추가 해시 0회, 동시 선점 한 건만 성공을 검증하는 실패 테스트를 `tests/integration/participant-auth-security.test.ts`에 작성한다.
-- [ ] T031 [P] [US3] 같은 미승인 닉네임 반복이 한도 뒤 429가 되는지, 가입 429 응답의 `Retry-After`, `retryAfterSeconds`, 사용자 안내와 다른 닉네임 20명의 성공을 검증하는 계약 테스트를 `tests/integration/conversation-avatar-register-api.test.ts`에 작성한다.
+- [X] T029 [P] [US3] 같은 subject의 미승인 닉네임 실패 누적, 승인 닉네임 병렬 시도 슬롯 소비, 차단 만료, 성공 시 clear와 다른 subject 격리를 검증하는 실패 테스트를 `tests/integration/participant-registration-throttle.test.ts`에 작성한다.
+- [X] T030 [P] [US3] 미승인 닉네임에서 Argon2 호출 0회, 제한된 승인 닉네임에서 추가 해시 0회, 동시 선점 한 건만 성공을 검증하는 실패 테스트를 `tests/integration/participant-auth-security.test.ts`에 작성한다.
+- [X] T031 [P] [US3] 같은 미승인 닉네임 반복이 한도 뒤 429가 되는지, 가입 429 응답의 `Retry-After`, `retryAfterSeconds`, 사용자 안내와 다른 닉네임 20명의 성공을 검증하는 계약 테스트를 `tests/integration/conversation-avatar-register-api.test.ts`에 작성한다.
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] `participant_register` subject의 시도 슬롯을 잠금 또는 동등한 원자 연산으로 소비하고 차단 상태를 반환하는 함수를 `lib/security/rate-limit.ts`에 구현한다.
-- [ ] T033 [US3] 초대·활성 배치 뒤 subject 차단 상태를 먼저 확인하고, 미승인 닉네임은 PIN 해시 없이 실패 횟수만 기록하며, 승인·미선점 프로필은 T032 슬롯을 소비한 요청만 해시를 실행하고 성공 subject만 clear하도록 `lib/auth/participant-service.ts`의 가입 순서를 바꾼다.
-- [ ] T034 [US3] 제한 응답에서 body와 `Retry-After` 헤더가 같은 남은 시간을 사용하도록 `lib/http/errors.ts`와 `app/api/participants/register/route.ts`를 정리한다.
-- [ ] T035 [P] [US3] 가입 제한 로그와 테스트 산출물에 IP 원문·닉네임·PIN·초대 코드가 남지 않도록 `lib/observability/logger.ts`와 `tests/integration/conversation-avatar-privacy.test.ts`를 보강한다.
-- [ ] T036 [P] [US3] 정상 가입 p95 2초와 제한 subject·다른 정상 참가자 20명의 격리를 재현하는 측정 절차를 `scripts/benchmark-conversation-avatars.md`에 추가한다.
-- [ ] T037 [US3] T029~T031과 측정 절차를 실행해 Argon2 호출 수, 제한 범위와 정상 참가자 성공률을 `specs/004-conversation-avatar-readiness/validation/us3-registration-throttle.md`에 기록한다.
+- [X] T032 [US3] `participant_register` subject의 시도 슬롯을 잠금 또는 동등한 원자 연산으로 소비하고 차단 상태를 반환하는 함수를 `lib/security/rate-limit.ts`에 구현한다.
+- [X] T033 [US3] 초대·활성 배치 뒤 subject 차단 상태를 먼저 확인하고, 미승인 닉네임은 PIN 해시 없이 실패 횟수만 기록하며, 승인·미선점 프로필은 T032 슬롯을 소비한 요청만 해시를 실행하고 성공 subject만 clear하도록 `lib/auth/participant-service.ts`의 가입 순서를 바꾼다.
+- [X] T034 [US3] 제한 응답에서 body와 `Retry-After` 헤더가 같은 남은 시간을 사용하도록 `lib/http/errors.ts`와 `app/api/participants/register/route.ts`를 정리한다.
+- [X] T035 [P] [US3] 가입 제한 로그와 테스트 산출물에 IP 원문·닉네임·PIN·초대 코드가 남지 않도록 `lib/observability/logger.ts`와 `tests/integration/conversation-avatar-privacy.test.ts`를 보강한다.
+- [X] T036 [P] [US3] 정상 가입 p95 2초와 제한 subject·다른 정상 참가자 20명의 격리를 재현하는 측정 절차를 `scripts/benchmark-conversation-avatars.md`에 추가한다.
+- [X] T037 [US3] T029~T031과 측정 절차를 실행해 Argon2 호출 수, 제한 범위와 정상 참가자 성공률을 `specs/004-conversation-avatar-readiness/validation/us3-registration-throttle.md`에 기록한다.
 
 **Checkpoint**: 공통 초대 코드를 아는 반복 요청이 정상 참가자의 가입 자원을 고갈시키지 않는다.
 

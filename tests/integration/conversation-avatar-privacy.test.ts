@@ -23,4 +23,21 @@ describe('conversation avatar privacy boundary', () => {
     expect(line).toContain('safe-id');
     for (const secret of ['123456', 'private-invite', 'private-session', 'private-hmac']) expect(line).not.toContain(secret);
   });
+
+  it('does not print registration source, nickname, or credentials in throttle logs', () => {
+    const output = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    logger.warn('participant_registration_throttled', {
+      action: 'participant_register',
+      ipAddress: '198.51.100.250',
+      nickname: '비공개닉네임',
+      pin: '654321',
+      inviteCode: 'private-registration-invite',
+    });
+    const line = String(output.mock.calls[0]?.[0]);
+    expect(line).toContain('participant_registration_throttled');
+    expect(line).toContain('participant_register');
+    for (const secret of ['198.51.100.250', '비공개닉네임', '654321', 'private-registration-invite']) {
+      expect(line).not.toContain(secret);
+    }
+  });
 });

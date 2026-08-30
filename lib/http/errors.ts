@@ -13,7 +13,12 @@ export function errorResponse(error: unknown): Response {
     return Response.json({ error: { code: 'validation_error', message: issue?.message ?? '입력값을 확인해 주세요.', field: issue?.path.join('.') || undefined } }, { status: 400 });
   }
   if (error instanceof AppError) return Response.json(
-    { error: { code: error.code, message: error.message, field: error.field } },
+    { error: {
+      code: error.code,
+      message: error.message,
+      field: error.field,
+      retryAfterSeconds: error.retryAfter,
+    } },
     { status: error.status, headers: error.retryAfter ? { 'Retry-After': String(error.retryAfter) } : undefined },
   );
   logger.error('request_failed', error);

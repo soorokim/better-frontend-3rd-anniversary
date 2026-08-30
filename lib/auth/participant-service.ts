@@ -19,8 +19,15 @@ import {
 } from '@/lib/db/repositories/conversation-profiles';
 import { inTransaction } from '@/lib/db/transaction';
 import { AppError, UnauthorizedError } from '@/lib/http/errors';
+import { logger } from '@/lib/observability/logger';
 import { hashSecret, verifySecret } from '@/lib/security/crypto';
-import { clearThrottle, readThrottle, recordFailure, throttleSubject } from '@/lib/security/rate-limit';
+import {
+  clearThrottle,
+  consumeRegistrationAttempt,
+  readThrottle,
+  recordFailure,
+  throttleSubject,
+} from '@/lib/security/rate-limit';
 import { normalizeNickname } from '@/lib/validation/nickname';
 import { issueSession } from './session';
 
@@ -112,6 +119,40 @@ export async function registerParticipant(input: ParticipantAuthInput) {
   if (!(await findActiveConversationProfileBatch(event.id))) {
     throw new AppError('profile_batch_not_ready', '대화 프로필을 준비하고 있어요. 잠시 뒤 다시 입장해 주세요.', 503);
   }
+  const subject = throttleSubject(event.id, requestedNickname.key, input.ipAddress);
+  const currentThrottle = await readThrottle('participant_register', subject);
+  if (currentThrottle.blocked) {
+    logger.warn('participant_registration_throttled', { action: 'participant_register', outcome: 'blocked' });
+    throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, currentThrottle.retryAfter);
+  }
+
+  const initialProfile = await findConversationProfile(event.id, requestedNickname.key);
+  if (!initialProfile) {
+    const attempt = await consumeRegistrationAttempt(subject);
+    if (attempt.blocked) {
+      logger.warn('participant_registration_throttled', { action: 'participant_register', outcome: 'blocked' });
+      throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, attempt.retryAfter);
+    }
+    throw new AppError('nickname_not_invited', '단톡방에서 사용한 닉네임인지 확인해 주세요.', 403, 'nickname');
+  }
+  if (initialProfile.claimedParticipantId) {
+    throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');
+  }
+  const [requestedNameOwner, canonicalNameOwner] = await Promise.all([
+    findParticipantByNickname(event.id, requestedNickname.key),
+    requestedNickname.key === initialProfile.nicknameKey
+      ? Promise.resolve(undefined)
+      : findParticipantByNickname(event.id, initialProfile.nicknameKey),
+  ]);
+  if (requestedNameOwner || canonicalNameOwner) {
+    throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');
+  }
+
+  const attempt = await consumeRegistrationAttempt(subject);
+  if (attempt.blocked) {
+    logger.warn('participant_registration_throttled', { action: 'participant_register', outcome: 'blocked' });
+    throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, attempt.retryAfter);
+  }
   const pinHash = await hashSecret(input.pin);
 
   try {
@@ -145,6 +186,7 @@ export async function registerParticipant(input: ParticipantAuthInput) {
       return created;
     });
     const session = await issueSession('participant', row.participant.id, row.participant.authVersion);
+    await clearThrottle('participant_register', subject);
     return { view: participantView(row), session };
   } catch (error) {
     if (isNicknameConflict(error)) throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');

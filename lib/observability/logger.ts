@@ -1,4 +1,4 @@
-const redactedKeys = /password|pin|invite|reset.?code|token|session|csrf|answer|content|snapshot|nickname|author|avatar|hmac|hash.?key|secret/i;
+const redactedKeys = /password|pin|invite|reset.?code|token|session|csrf|answer|content|snapshot|nickname|author|avatar|hmac|hash.?key|secret|ip.?address|client.?ip|remote.?address|^ip$/i;
 
 const presentationCommandTypes = new Set([
   'select_answer',
@@ -11,7 +11,16 @@ const presentationCommandTypes = new Set([
 function sanitize(value: unknown): unknown {
   // Error messages can contain a validation input or a database value. Keep
   // the useful error class but never copy the free-form message into logs.
-  if (value instanceof Error) return { name: value.name };
+  if (value instanceof Error) {
+    const databaseError = value as Error & { code?: unknown; constraint_name?: unknown; constraint?: unknown };
+    const constraint = databaseError.constraint_name ?? databaseError.constraint;
+    return {
+      name: value.name,
+      code: typeof databaseError.code === 'string' ? databaseError.code : undefined,
+      constraint: typeof constraint === 'string' ? constraint : undefined,
+      cause: databaseError.cause instanceof Error ? sanitize(databaseError.cause) : undefined,
+    };
+  }
   if (Array.isArray(value)) return value.map(sanitize);
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, redactedKeys.test(key) ? '[REDACTED]' : sanitize(item)]));
   return value;
