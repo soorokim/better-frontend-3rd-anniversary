@@ -2,6 +2,8 @@
 
 공통 초대 코드로 입장한 참가자가 단톡방에서 사용한 승인 닉네임과 PIN을 만들고, 미리 분석한 대화 특징으로 고정 픽셀 캐릭터와 개발자 프로필을 받아 3주년 질문에 답하는 작은 행사 서비스다. 다시 로그인하면 같은 캐릭터와 기존 답변을 불러와 수정할 수 있고, 진행자는 관리자 화면에서 참가자와 제출 여부, 대화 프로필 준비 상태를 확인하고 PIN 초기화 코드를 발급할 수 있다.
 
+현재 데이터베이스 마이그레이션 계보는 `0001_event_core → 0002_presenter_results → 0003_conversation_profiles`다. 새 설치와 `0002`까지 적용된 기존 설치의 갱신을 모두 지원한다. 기존 마이그레이션의 이름이나 내용을 바꾸지 말고, 이후 변경은 새 번호의 전진 마이그레이션으로 추가한다.
+
 ## 바로 실행하기
 
 필요한 것은 Git, Docker Engine, Docker Compose v2다. Node.js는 Docker 밖에서 실행할 때만 필요하며 그 경우 22.13 이상을 사용한다.
@@ -21,7 +23,31 @@ docker compose ps -a
 curl -fsS http://localhost:3000/api/health
 ```
 
-정상이라면 마지막 요청은 `{"status":"ok"}`를 반환한다. 참가자 화면은 `/`, 관리자 로그인은 `/admin/login`이다.
+정상이라면 `db`와 `app`은 `healthy`, 일회성 `migrate` 서비스는 `Exited (0)`으로 표시되고 마지막 요청은 `{"status":"ok"}`를 반환한다. 참가자 화면은 `/`, 관리자 로그인은 `/admin/login`이다. 문제가 생기면 먼저 `docker compose logs migrate`와 `docker compose logs app`을 확인한다.
+
+## 기존 서버 업데이트
+
+운영 데이터가 있는 서버에서는 `docker compose down -v`를 실행하거나 PostgreSQL volume을 직접 지우지 않는다. 작업 트리가 깨끗하고 현재 앱과 DB가 정상인 상태에서 아래 배포 스크립트를 사용한다.
+
+```bash
+git status --short
+git pull --ff-only
+sh scripts/deploy.sh
+```
+
+이 스크립트는 배포 직전 DB 백업을 만들고 검사한 뒤, 새 설치와 같은 migration runner로 `0003`까지 적용하고 앱 health를 확인한다. 마이그레이션이 실패하면 기존 앱을 그대로 두며 출력된 백업 경로를 알려 준다. 상세한 환경 변수, HTTPS, 수동 백업·복구와 장애 대응은 [배포 안내서](docs/DEPLOYMENT.md)를 따른다.
+
+## AI 작업자에게 설치를 맡길 때
+
+저장소만 전달받은 작업자는 다음 순서로 진행하면 된다.
+
+1. 이 README와 [배포 안내서](docs/DEPLOYMENT.md)를 먼저 읽는다.
+2. `.env.example`을 `.env`로 복사하고 placeholder와 실제 접속 origin을 교체한다. 비밀 값은 채팅, 로그, Git에 남기지 않는다.
+3. `docker compose config --quiet`로 설정을 검사한다.
+4. 새 서버는 `docker compose up -d --build`, 기존 서버는 `sh scripts/deploy.sh`를 사용한다.
+5. `migrate`의 정상 종료, `db`·`app` health, `/api/health` 응답을 확인한 뒤에만 설치 완료로 판단한다.
+
+운영 DB를 시험 대상으로 쓰지 않는다. 데모 데이터나 migration 검증이 필요하면 별도의 이름에 `test`가 포함된 삭제 가능한 DB 또는 고유한 Compose project를 만든다.
 
 ## 행사에서 답변 발표하기
 
@@ -31,7 +57,7 @@ curl -fsS http://localhost:3000/api/health
 
 **발표 기록 초기화**는 한 번 더 확인해야 실행된다. 현재 슬라이드와 공개 순서만 지우며 참가자의 원본 답변, 닉네임, 캐릭터는 지우지 않는다. 행사 중 연결이 잠깐 끊기면 마지막 슬라이드를 그대로 둔 채 자동으로 다시 연결한다. 로그인 만료 안내가 나오면 관리자 로그인을 다시 하고 진행자 화면과 발표 화면을 새로 열면 DB에 저장된 현재 순서와 슬라이드가 복구된다.
 
-도메인 없이 같은 네트워크에서 쓰는 HTTP 설치와 Caddy를 붙인 HTTPS 설치, 업데이트, 백업·복구, 장애 대응은 [배포 안내서](docs/DEPLOYMENT.md)에 정리해 두었다. 운영 데이터를 지우지 않고 복구를 연습하는 절차도 그 문서를 따른다. 운영 도구는 `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`에 있으며, 특히 복구 스크립트는 대상 DB와 정확한 확인 문구를 요구한다.
+도메인 없이 같은 네트워크에서 쓰는 HTTP 설치와 Caddy를 붙인 HTTPS 설치, 백업·복구, 장애 대응도 [배포 안내서](docs/DEPLOYMENT.md)에 정리해 두었다. 운영 데이터를 지우지 않고 복구를 연습하는 절차도 그 문서를 따른다. 운영 도구는 `scripts/deploy.sh`, `scripts/backup.ps1`, `scripts/restore.ps1`에 있으며, 특히 복구 스크립트는 대상 DB와 정확한 확인 문구를 요구한다.
 
 ## 개발 검증
 
@@ -40,10 +66,11 @@ npm ci
 npm run typecheck
 npm run lint
 npm test
+npm run test:analysis
 npm run build
 ```
 
-통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 참가자 흐름은 [기본 기능 quickstart](specs/001-event-core-flow/quickstart.md), 진행자 화면은 [발표 기능 quickstart](specs/002-presenter-results/quickstart.md)에 검증 순서가 있다. API 계약은 [기본 기능 OpenAPI](specs/001-event-core-flow/contracts/openapi.yaml)와 [발표 기능 OpenAPI](specs/002-presenter-results/contracts/openapi.yaml)를 참고하면 된다.
+통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 운영 DB URL을 넣어 실행하면 안 된다. 참가자 흐름은 [기본 기능 quickstart](specs/001-event-core-flow/quickstart.md), 진행자 화면은 [발표 기능 quickstart](specs/002-presenter-results/quickstart.md), 현재 통합 검증은 [대화 아바타 준비 quickstart](specs/004-conversation-avatar-readiness/quickstart.md)에 순서가 있다. API 계약은 [기본 기능 OpenAPI](specs/001-event-core-flow/contracts/openapi.yaml)와 [발표 기능 OpenAPI](specs/002-presenter-results/contracts/openapi.yaml)를 참고하면 된다.
 
 ## 대화 기반 아바타 준비
 
