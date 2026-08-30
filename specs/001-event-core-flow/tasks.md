@@ -119,7 +119,7 @@
 - [X] T044 [US2] 현재 질문과 답변 조회·저장 계약을 `app/api/question/current/route.ts` 및 `app/api/answer/current/route.ts`에 구현한다
 - [X] T045 [US2] 작성 중 텍스트, 마지막 성공본, 저장 상태를 구분하는 폼을 `components/forms/MemoryAnswerForm.tsx`에 구현한다
 - [X] T046 [US2] 질문 준비 상태와 답변 작성·수정 화면을 `app/(participant)/memory/page.tsx`에 구현하고 로비 제출 상태를 `app/(participant)/lobby/page.tsx`에 연결한다
-- [ ] T047 [US2] T038~T040을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 3 결과를 기록한다
+- [X] T047 [US2] T038~T040을 실행하고 `specs/001-event-core-flow/quickstart.md`의 Scenario 3 결과를 기록한다
 
 **Checkpoint**: User Stories 1과 2가 함께 실제 3주년 기록 하나를 끝까지 저장하고 다시 불러온다.
 
