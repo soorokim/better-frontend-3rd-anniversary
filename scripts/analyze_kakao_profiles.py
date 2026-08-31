@@ -197,9 +197,14 @@ def discover_participants(connection: sqlite3.Connection, rules: list[AliasRule]
         overlap = claimed.intersection(ids)
         if overlap:
             raise ValueError(f"source_user_ids used by more than one profile: {sorted(overlap)}")
+        rule_keys: dict[str, str] = {}
         for alias in rule.aliases:
             key = nickname_key(alias)
-            if not key or key in approved_keys:
+            if not key:
+                raise ValueError(f"Alias normalization collision: {alias}")
+            rule_keys.setdefault(key, alias)
+        for key, alias in rule_keys.items():
+            if key in approved_keys:
                 raise ValueError(f"Alias normalization collision: {alias}")
             approved_keys.add(key)
             approved_key_rows[key] = list(matched)

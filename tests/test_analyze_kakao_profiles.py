@@ -83,6 +83,31 @@ class AnalyzeKakaoProfilesTest(unittest.TestCase):
             self.assertEqual({profile["name"] for profile in payload["profiles"]}, {"Dup A", "Dup B"})
             self.assertEqual(sum(profile["source_row_count"] for profile in payload["profiles"]), 2)
 
+    def test_allows_operator_approved_case_only_aliases_in_one_profile(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); database = root / "archive.sqlite3"; output = root / "profiles.json"
+            users = [(21, "Case/React", 1, 0), (22, "Case/react", 1, 0)]
+            messages = [(1, 21, "2025-01-01", "10:00", "one", 0), (2, 22, "2025-01-01", "11:00", "two", 0)]
+            build_archive(database, users, messages)
+            aliases = root / "aliases.json"
+            aliases.write_text(json.dumps({
+                "schema_version": "kakao-participant-aliases-v2",
+                "profiles": [{
+                    "join_nickname": "Case/React",
+                    "aliases": ["Case/react"],
+                    "source_user_ids": [21, 22],
+                }],
+            }), encoding="utf-8")
+
+            resolved = self.run_analysis(database, output, aliases)
+
+            self.assertEqual(resolved.returncode, 0, resolved.stderr)
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(payload["merge_review"], [])
+            self.assertEqual(len(payload["profiles"]), 1)
+            self.assertEqual(payload["profiles"][0]["name"], "Case/React")
+            self.assertEqual(payload["profiles"][0]["source_row_count"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
