@@ -25,3 +25,16 @@
 4. `merge_review`와 `unmatched`가 빈 결과만 검증·전송한다.
 
 기존에 쓰던 단순 `{ "닉네임": ["별칭"] }` 파일도 읽을 수 있지만 원본 행 충돌을 확실하게 해결하려면 v2 형식을 사용한다. 실제 운영 순서는 [`specs/003-conversation-avatar/quickstart.md`](../specs/003-conversation-avatar/quickstart.md)에 있다.
+
+## 픽셀 아바타 원본 정리
+
+`extract_avatar_atlas.py`는 런타임 서버가 아니라 에셋을 만드는 개발 환경에서만 실행한다.
+필요한 Pillow 버전은 별도 파일에 고정되어 있다.
+
+```powershell
+python -m pip install -r scripts/requirements-avatar.txt
+python scripts/extract_avatar_atlas.py
+```
+
+생성된 파일은 `npm run avatar:assets:validate`로 크기, 투명도, 안전 영역과 manifest를
+검사한 뒤 사용한다. 운영 app 컨테이너에는 Python이나 Pillow가 필요하지 않다.

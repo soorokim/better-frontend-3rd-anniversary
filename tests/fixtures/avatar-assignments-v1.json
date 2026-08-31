@@ -1,0 +1,61 @@
+{
+  "catalogVersion": "pixel-parts-v1",
+  "generatorVersion": "avatar-generator-v1",
+  "catalog": {
+    "body": ["light", "warm", "deep"],
+    "hair": ["short", "wave", "bob", "spike", "cap"],
+    "outfit": ["hoodie", "sweater", "jacket", "overalls"],
+    "accessory": ["none", "terminal", "keyboard", "coffee", "book"],
+    "accent": ["yellow", "pink", "mint", "sky"]
+  },
+  "cases": [
+    {
+      "sourceVersion": "conversation-v1",
+      "source": "fixture-alpha",
+      "sourceDigest": "a640b423367aab1868eafb952f69a13258f8a068452944cd1aa445160264df2c",
+      "generatorVersion": "avatar-generator-v1",
+      "catalogVersion": "pixel-parts-v1",
+      "traits": {
+        "body": "light",
+        "hair": "short",
+        "outfit": "hoodie",
+        "accessory": "none",
+        "accent": "yellow"
+      }
+    },
+    {
+      "sourceVersion": "conversation-v1",
+      "source": "fixture-beta",
+      "sourceDigest": "fee364a598aa81313c1873daff2f11990ae1f35445ff4e89f192efa53f29d8aa",
+      "generatorVersion": "avatar-generator-v1",
+      "catalogVersion": "pixel-parts-v1",
+      "traits": {
+        "body": "deep",
+        "hair": "wave",
+        "outfit": "overalls",
+        "accessory": "terminal",
+        "accent": "mint"
+      }
+    },
+    {
+      "sourceVersion": "conversation-v2",
+      "source": "fixture-gamma",
+      "sourceDigest": "81ba8c98190a5e1c61a53f4d30dbea3dcd085028db990da630085e89965134a7",
+      "generatorVersion": "avatar-generator-v1",
+      "catalogVersion": "pixel-parts-v1",
+      "traits": {
+        "body": "deep",
+        "hair": "short",
+        "outfit": "hoodie",
+        "accessory": "coffee",
+        "accent": "sky"
+      }
+    }
+  ],
+  "matrix": {
+    "sourceVersion": "assignment-regression-v1",
+    "sourcePrefix": "fixture-source-",
+    "count": 1200,
+    "sha256": "ec290f469201038d6c17b4c8f4df91e4c9b0175b472741c786df7e86acdd9380"
+  }
+}

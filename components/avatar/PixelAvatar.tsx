@@ -32,11 +32,9 @@ const outfitAssets: Record<Outfit, string> = {
 
 const itemAssets: Record<Accessory, string | null> = {
   none: null,
-  terminal: `${assetRoot}/item-laptop.png`,
   laptop: `${assetRoot}/item-laptop.png`,
   keyboard: `${assetRoot}/item-keyboard.png`,
   coffee: `${assetRoot}/item-coffee.png`,
-  book: `${assetRoot}/item-error-log.png`,
   duck: `${assetRoot}/item-duck.png`,
   usb: `${assetRoot}/item-usb.png`,
   'error-log': `${assetRoot}/item-error-log.png`,

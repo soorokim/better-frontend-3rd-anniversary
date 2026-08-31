@@ -28,7 +28,10 @@ export default async function AdminPage() {
           </div>
           <AdminLogoutButton />
         </div>
-        <Link className="game-button mt-6" href="/admin/presenter">답변 발표 진행하기</Link>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link className="game-button" href="/admin/presenter">답변 발표 진행하기</Link>
+          <Link className="game-button" href="/admin/avatar-review?mode=pilot">아바타 후보 검토하기</Link>
+        </div>
       </GamePanel>
       <GamePanel>
         <AvatarProfileStatus summary={avatarProfiles} />

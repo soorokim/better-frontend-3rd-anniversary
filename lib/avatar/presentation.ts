@@ -1,4 +1,5 @@
 import { avatarCatalog, type AvatarTrait, type AvatarTraits } from './catalog';
+import { canonicalItemId, type CanonicalItemId } from './assets/manifest';
 
 // Keep this seed namespace stable for the legacy `/avatars/pixel-art` API.
 export const AVATAR_RENDERER_VERSION = 'dicebear-pixel-art-v1';
@@ -14,24 +15,7 @@ const fallbackTraits: AvatarTraits = {
 const traitOrder = Object.keys(avatarCatalog) as AvatarTrait[];
 
 export type LayeredAvatarParts = Omit<AvatarTraits, 'accessory'> & {
-  accessory: AvatarTraits['accessory']
-    | 'duck'
-    | 'usb'
-    | 'laptop'
-    | 'error-log'
-    | 'test-check'
-    | 'browser-tabs';
-};
-
-const itemAccessory: Record<string, LayeredAvatarParts['accessory']> = {
-  'RUBBER DUCK': 'duck',
-  COFFEE: 'coffee',
-  'MECHANICAL KEYBOARD': 'keyboard',
-  LAPTOP: 'laptop',
-  'RED ERROR LOG': 'error-log',
-  'GREEN TEST CHECK': 'test-check',
-  'ENDLESS BROWSER TABS': 'browser-tabs',
-  'UNKNOWN USB': 'usb',
+  accessory: CanonicalItemId;
 };
 
 export function normalizeAvatarTraits(input: Record<string, string>): AvatarTraits {
@@ -59,7 +43,7 @@ export function layeredAvatarParts(input: Record<string, string>): LayeredAvatar
   const traits = normalizeAvatarTraits(input);
   return {
     ...traits,
-    accessory: itemAccessory[input.developerItem] ?? traits.accessory,
+    accessory: canonicalItemId(traits.accessory, input.developerItem),
   };
 }
 

@@ -21,7 +21,9 @@
     "db:seed": "tsx db/seed.ts",
     "db:seed:demo": "tsx db/seed-demo.ts",
     "avatar:import": "tsx scripts/import-conversation-profiles.ts",
-    "avatar:validate": "tsx scripts/validate-conversation-profiles.ts"
+    "avatar:validate": "tsx scripts/validate-conversation-profiles.ts",
+    "avatar:assets:validate": "tsx scripts/validate-avatar-assets.ts",
+    "avatar:golden:build": "python scripts/build_golden_avatar_v4.py"
   },
   "dependencies": {
     "@dicebear/core": "^10.7.0",
@@ -47,6 +49,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "jsdom": "^26.1.0",
+    "sharp": "^0.35.4",
     "tailwindcss": "4.2.1",
     "tsx": "^4.20.5",
     "typescript": "5.9.3",

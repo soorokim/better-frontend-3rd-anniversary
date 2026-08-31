@@ -48,7 +48,7 @@ def visible_crop(image: Image.Image, bounds: tuple[int, int, int, int]) -> Image
 
 
 def remove_chroma(image: Image.Image) -> Image.Image:
-    """Turn the generated flat lime backdrop and its edge blend into alpha."""
+    """Turn the generated flat lime backdrop into a hard-alpha pixel edge."""
     cleaned = image.copy()
     pixels = []
     for red, green, blue, alpha in cleaned.getdata():
@@ -56,16 +56,29 @@ def remove_chroma(image: Image.Image) -> Image.Image:
         if excess <= 80:
             pixels.append((red, green, blue, alpha))
             continue
-        chroma_alpha = round(255 * max(0, 180 - excess) / 100)
+        chroma_alpha = 0 if excess >= 128 else 255
         pixels.append((red, min(green, max(red, blue)), blue, min(alpha, chroma_alpha)))
     cleaned.putdata(pixels)
-    return cleaned
+    return quantize_alpha(cleaned)
+
+
+def quantize_alpha(image: Image.Image) -> Image.Image:
+    """Keep every exported pixel fully opaque or fully transparent."""
+    quantized = []
+    for red, green, blue, alpha in image.getdata():
+        if alpha < 128:
+            quantized.append((0, 0, 0, 0))
+        else:
+            quantized.append((red, green, blue, 255))
+    result = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    result.putdata(quantized)
+    return result
 
 
 def fit(part: Image.Image, limits: tuple[int, int]) -> Image.Image:
     scale = min(limits[0] / part.width, limits[1] / part.height)
     size = (max(1, round(part.width * scale)), max(1, round(part.height * scale)))
-    return part.resize(size, Image.Resampling.LANCZOS)
+    return quantize_alpha(part.resize(size, Image.Resampling.NEAREST))
 
 
 def place(part: Image.Image, anchor: str) -> Image.Image:
@@ -85,7 +98,7 @@ def main() -> None:
     source = remove_chroma(Image.open(SOURCE).convert("RGBA"))
     OUTPUT.mkdir(parents=True, exist_ok=True)
     for name, (bounds, limits, anchor) in LAYERS.items():
-        layer = place(fit(visible_crop(source, bounds), limits), anchor)
+        layer = quantize_alpha(place(fit(visible_crop(source, bounds), limits), anchor))
         layer.save(OUTPUT / f"{name}.png", optimize=True)
 
 

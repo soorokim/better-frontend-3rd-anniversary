@@ -43,7 +43,7 @@ describe('pixel avatar presentation', () => {
   });
 
   it('keeps the generated trait combination instead of collapsing it into an atlas cell', () => {
-    expect(layeredAvatarParts(traits)).toEqual(traits);
+    expect(layeredAvatarParts(traits)).toEqual({ ...traits, accessory: 'laptop' });
   });
 
   it('lets a conversation-derived item choose the visible handheld layer', () => {

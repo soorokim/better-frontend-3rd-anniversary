@@ -1,0 +1,248 @@
+{
+  "schemaVersion": "avatar-asset-manifest-v1",
+  "assetSetVersion": "pixel-layers-v3",
+  "phase": "pilot",
+  "catalogVersion": "pixel-parts-v1",
+  "canvas": {
+    "width": 256,
+    "height": 384,
+    "logicalWidth": 128,
+    "logicalHeight": 192,
+    "exportScale": 2,
+    "pixelInterpolation": "nearest",
+    "safeBounds": { "x": 8, "y": 4, "width": 244, "height": 376 },
+    "baselineY": 380,
+    "faceSafeArea": { "x": 118, "y": 168, "width": 30, "height": 5 },
+    "torsoArea": { "x": 82, "y": 168, "width": 92, "height": 130 },
+    "anchors": {
+      "leftHand": { "x": 62, "y": 240 },
+      "rightHand": { "x": 194, "y": 240 },
+      "leftGround": { "x": 6, "y": 354 },
+      "rightGround": { "x": 250, "y": 354 }
+    }
+  },
+  "layerOrder": ["hairBack", "body", "outfit", "faceFeatures", "hairFront", "item", "accent"],
+  "fallback": {
+    "path": "/avatar-parts/v3/fallback-default.png",
+    "sha256": "8b88eaf625b49bfcbb9ad5197879828578fbc2da8cec5e7c04f518e8a75139d6",
+    "provenanceId": "universal-lpc"
+  },
+  "parts": {
+    "body": {
+      "light": {
+        "id": "light", "role": "body",
+        "layers": { "body": { "path": "/avatar-parts/v3/body-light.png", "sha256": "a52f703210bd2d1bc4362bffdde790b5c052661bdff5a66c2f45e2e531af75cd", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "light-green", "layers": { "body": { "path": "/avatar-parts/v3/body-light-green.png", "sha256": "f8734958127c0ac23e779360995039fbed173ea7a846b0fc25ec5690112d1f52", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" },
+          { "id": "light-brown", "layers": { "body": { "path": "/avatar-parts/v3/body-light-brown.png", "sha256": "cd5b56d01167df5c52e6d75fcd15c245af66b265c3ce077af486ea09bae3a355", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "warm": {
+        "id": "warm", "role": "body",
+        "layers": { "body": { "path": "/avatar-parts/v3/body-warm.png", "sha256": "10df7653c61d3ac7288e011fc25550a7db20545ca80b779db284f578d1a939f1", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "warm-brown", "layers": { "body": { "path": "/avatar-parts/v3/body-warm-brown.png", "sha256": "fc7ab8e9ee73b1d9c370dcf0ecf2d0cfe2e5e28093d4d48c8077ff70bb2fa550", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" },
+          { "id": "warm-gray", "layers": { "body": { "path": "/avatar-parts/v3/body-warm-gray.png", "sha256": "359754922f0a40dd0d60e051882da4c77d8873b6caab57643f89f8b7dc4a781d", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "deep": {
+        "id": "deep", "role": "body",
+        "layers": { "body": { "path": "/avatar-parts/v3/body-deep.png", "sha256": "08e29b2f55b668ef9e1b389304ba5a3cac2f7c03e38763e868c5dba63d7d1ef5", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "deep-blue", "layers": { "body": { "path": "/avatar-parts/v3/body-deep-blue.png", "sha256": "90a9b1d74203f9cf0e15cc51507e4de58d37a99004c142a4246531568f11254d", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" },
+          { "id": "deep-green", "layers": { "body": { "path": "/avatar-parts/v3/body-deep-green.png", "sha256": "278964ba61b42861d4294733c8b123d7a28f19c6203cce9a7b9f64ee00977eff", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 103, "width": 150, "height": 235 }, "provenanceId": "universal-lpc" }
+        ]
+      }
+    },
+    "hair": {
+      "short": {
+        "id": "short", "role": "hair",
+        "layers": {
+          "hairBack": { "path": "/avatar-parts/v3/hair-short-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" },
+          "hairFront": { "path": "/avatar-parts/v3/hair-short-front.png", "sha256": "2f6499c2199482ddd5ac3f787139228c19dfc71a10b35f6fbf163da8cc5964aa", "provenanceId": "universal-lpc" }
+        },
+        "contentBounds": { "x": 73, "y": 98, "width": 110, "height": 95 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "short-curtains", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-short-curtains-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-short-curtains-front.png", "sha256": "16a5fb62a8ae158596ab5db82af61fe2ee18f0ec1e8438e4ea4d3f08e95c903a", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 68, "y": 98, "width": 120, "height": 75 }, "provenanceId": "universal-lpc" },
+          { "id": "short-pixie", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-short-pixie-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-short-pixie-front.png", "sha256": "4de17988e8df1649dbc09eac3ff1dbebd5327bbfc98cf5a654a15b8c5860dcf8", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 63, "y": 98, "width": 120, "height": 105 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "wave": {
+        "id": "wave", "role": "hair",
+        "layers": {
+          "hairBack": { "path": "/avatar-parts/v3/hair-wave-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" },
+          "hairFront": { "path": "/avatar-parts/v3/hair-wave-front.png", "sha256": "072b5da8f9da4aa349c092d49306922649cf4d8db8913c74f80b393c24c35627", "provenanceId": "universal-lpc" }
+        },
+        "contentBounds": { "x": 68, "y": 88, "width": 125, "height": 110 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "wave-long", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-wave-long-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-wave-long-front.png", "sha256": "c9736e5c6964f46875e0e8e975e870d7a8cc7b88e06412d10acb2af5ce2f7fd2", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 68, "y": 98, "width": 120, "height": 115 }, "provenanceId": "universal-lpc" },
+          { "id": "wave-curly", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-wave-curly-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-wave-curly-front.png", "sha256": "6aef1439ba06a722e6db14191bc88b34b80a70c6d31c12a30f7608dbc22a2d0b", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 43, "y": 93, "width": 155, "height": 145 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "bob": {
+        "id": "bob", "role": "hair",
+        "layers": {
+          "hairBack": { "path": "/avatar-parts/v3/hair-bob-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" },
+          "hairFront": { "path": "/avatar-parts/v3/hair-bob-front.png", "sha256": "b70a437995c3e12643cfcd509815fd18543214f784b20eae6d25ddfd43f1d5db", "provenanceId": "universal-lpc" }
+        },
+        "contentBounds": { "x": 63, "y": 103, "width": 130, "height": 100 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "bob-lob", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-bob-lob-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-bob-lob-front.png", "sha256": "977d3915dcd10b48221a607ee51b8f8a9fbc1470e1468749f8433d72ac633420", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 63, "y": 103, "width": 130, "height": 115 }, "provenanceId": "universal-lpc" },
+          { "id": "bob-page", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-bob-page-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-bob-page-front.png", "sha256": "15497bf6dead5a625ef1183f5fbdb56aac975108e3c5472de3e0b9dd5b4b8993", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 73, "y": 103, "width": 110, "height": 90 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "spike": {
+        "id": "spike", "role": "hair",
+        "layers": {
+          "hairBack": { "path": "/avatar-parts/v3/hair-spike-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" },
+          "hairFront": { "path": "/avatar-parts/v3/hair-spike-front.png", "sha256": "e099f6f2d9ec7e701842fe3e692b8be1c50971f15baad924aae10e0adc29f11f", "provenanceId": "universal-lpc" }
+        },
+        "contentBounds": { "x": 78, "y": 78, "width": 110, "height": 85 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "spike-tall", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-spike-tall-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-spike-tall-front.png", "sha256": "218c04af976a43a9f24dc6a65dbc64b4def557173ef20316b1033927a16a9263", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 73, "y": 88, "width": 110, "height": 85 }, "provenanceId": "universal-lpc" },
+          { "id": "spike-messy", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-spike-messy-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-spike-messy-front.png", "sha256": "fa26a06b54697aa9b55228162d553acf6d3af5e3e6b726ddac69a36d94ad7e47", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 73, "y": 103, "width": 110, "height": 75 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "cap": {
+        "id": "cap", "role": "hair",
+        "layers": {
+          "hairBack": { "path": "/avatar-parts/v3/hair-cap-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" },
+          "hairFront": { "path": "/avatar-parts/v3/hair-cap-front.png", "sha256": "78862214126763b04d81a6af3dc69bc44cc5ea843cf8e8046c8ee159d2c689c3", "provenanceId": "universal-lpc" }
+        },
+        "contentBounds": { "x": 78, "y": 78, "width": 100, "height": 90 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "cap-natural", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-cap-natural-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-cap-natural-front.png", "sha256": "e6b62d0d00a9a668bf9c7cfd06f09b2983461f69698f5928b7dae2523ba7ee15", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 78, "y": 103, "width": 100, "height": 80 }, "provenanceId": "universal-lpc" },
+          { "id": "cap-dreadlocks", "layers": { "hairBack": { "path": "/avatar-parts/v3/hair-cap-dreadlocks-back.png", "sha256": "00a7cbcbc9beec6e795033fa61663909543047fc9e4497950de43b9a964407cb", "provenanceId": "universal-lpc" }, "hairFront": { "path": "/avatar-parts/v3/hair-cap-dreadlocks-front.png", "sha256": "c30478fbad906d6479bdbfff490c161dfd57f0fbecbea6c02e10821b9299c6a9", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 63, "y": 88, "width": 145, "height": 110 }, "provenanceId": "universal-lpc" }
+        ]
+      }
+    },
+    "outfit": {
+      "hoodie": {
+        "id": "hoodie", "role": "outfit",
+        "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-hoodie.png", "sha256": "0a6fae9c0c09ae8f8c8cb9abc045b2743de37b032390508fca5f670f3d6b93a2", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 58, "y": 188, "width": 140, "height": 150 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "hoodie-vneck", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-hoodie-vneck.png", "sha256": "077356b0b9a88d9c99100413117088b307d1c32658d05a1aebfad1b6bade5a89", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 58, "y": 188, "width": 140, "height": 150 }, "provenanceId": "universal-lpc" },
+          { "id": "hoodie-polo", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-hoodie-polo.png", "sha256": "66f4c5768091df5b5d94cbf6b5da6339c9ae5d216f1d75eff2fa322ddce08d67", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 58, "y": 188, "width": 140, "height": 150 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "sweater": {
+        "id": "sweater", "role": "outfit",
+        "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-sweater.png", "sha256": "c5f05dcff1c3fce29cad241b1c82e487bc5920e800e58b19ac42dae482f790b2", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "sweater-mint", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-sweater-mint.png", "sha256": "1b2d30fa16906f340c0b9336005b828d8e86312d6f1a4534524744e013c8cbaf", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "provenanceId": "universal-lpc" },
+          { "id": "sweater-orange", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-sweater-orange.png", "sha256": "56f5ca7c3bb06bcf45ffdc8211ea4a9dcb930c305096650134c92ff85d2b6f62", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "jacket": {
+        "id": "jacket", "role": "outfit",
+        "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-jacket.png", "sha256": "9177e5296ae5c0ea7fbd375a5bc7c43362fa5874d30a51ab62f3ee722959ead6", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "jacket-trench", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-jacket-trench.png", "sha256": "54e179edc2ef3954638cbb6e89f2ee1bae66eea99819cd9f0db650cd4b98086d", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "provenanceId": "universal-lpc" },
+          { "id": "jacket-casual", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-jacket-casual.png", "sha256": "8f00da910c928fa8c45c603bbe7203c66e400a66232eb2fa3c8f57b16aad1d5e", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "provenanceId": "universal-lpc" }
+        ]
+      },
+      "overalls": {
+        "id": "overalls", "role": "outfit",
+        "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-overalls.png", "sha256": "8b8590793c7e9bfe631c9ae7d3feb770a41045fee88dd6a5d4c4a2c70de852b9", "provenanceId": "universal-lpc" } },
+        "contentBounds": { "x": 53, "y": 188, "width": 150, "height": 150 }, "anchor": null, "provenanceId": "universal-lpc",
+        "variants": [
+          { "id": "overalls-sky", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-overalls-sky.png", "sha256": "e5e3c764bee4d2306678ad913960d337fa67a8d6a63618cb5ffaf38197a8abe7", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 58, "y": 188, "width": 140, "height": 150 }, "provenanceId": "universal-lpc" },
+          { "id": "overalls-wine", "layers": { "outfit": { "path": "/avatar-parts/v3/outfit-overalls-wine.png", "sha256": "3d7f7acb58eb69da4d26465482a3ba86949808a06e29287b544d12bd73274fa7", "provenanceId": "universal-lpc" } }, "contentBounds": { "x": 58, "y": 188, "width": 140, "height": 150 }, "provenanceId": "universal-lpc" }
+        ]
+      }
+    },
+    "item": {
+      "none": { "id": "none", "role": "item", "layers": {}, "contentBounds": null, "anchor": null, "provenanceId": "universal-lpc" },
+      "coffee": {
+        "id": "coffee", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-coffee.png", "sha256": "94777cd00534c195e084d6579465da369a78675340bab6582278cf4317b8e32a", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 192, "y": 272, "width": 56, "height": 80 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "keyboard": {
+        "id": "keyboard", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-keyboard.png", "sha256": "e050a85ac2870c989aa77ea8ae76744a5a637fee4aa72f6edfb9c69f427ffce5", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 168, "y": 320, "width": 80, "height": 40 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "laptop": {
+        "id": "laptop", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-laptop.png", "sha256": "22d73ddb1aca3219e801374f8fbf63cf7aa347e4772604a7fb2a3ad2b4524063", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 168, "y": 276, "width": 84, "height": 84 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "error-log": {
+        "id": "error-log", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-error-log.png", "sha256": "8fa40158979d2468ebd2e0541ba0467a7e3e8b4c0ff12290730e6c090d149144", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 192, "y": 284, "width": 52, "height": 76 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "duck": {
+        "id": "duck", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-duck.png", "sha256": "04c1ad7c276e520b1a8680a47be0d9cc0f670bd4343adc8ff6efaf45647178d4", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 207, "y": 304, "width": 43, "height": 50 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "browser-tabs": {
+        "id": "browser-tabs", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-browser-tabs.png", "sha256": "9aae31b61416d1f68d183eb4d4e8b14e9b5cb2c05af93b668eb2214712280a60", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 192, "y": 302, "width": 58, "height": 52 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "usb": {
+        "id": "usb", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-usb.png", "sha256": "2bd1ee90631d0ca0945b0eb1a8c82b478b5090c98ff30a00982a1de1cbeba988", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 214, "y": 309, "width": 36, "height": 45 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      },
+      "test-check": {
+        "id": "test-check", "role": "item",
+        "layers": { "item": { "path": "/avatar-parts/v3/item-test-check.png", "sha256": "7bb98aed0fd2d148b6b19650a05e4850758ed52fc844e0f966fb5dd899f2573d", "provenanceId": "project-pixel-v3-items" } },
+        "contentBounds": { "x": 192, "y": 305, "width": 58, "height": 49 }, "anchor": "rightGround", "provenanceId": "project-pixel-v3-items"
+      }
+    }
+  },
+  "aliases": {
+    "accessory": {
+      "none": "none", "terminal": "laptop", "keyboard": "keyboard", "coffee": "coffee", "book": "error-log"
+    },
+    "developerItem": {
+      "RUBBER DUCK": "duck", "COFFEE": "coffee", "MECHANICAL KEYBOARD": "keyboard", "LAPTOP": "laptop",
+      "RED ERROR LOG": "error-log", "GREEN TEST CHECK": "test-check", "ENDLESS BROWSER TABS": "browser-tabs", "UNKNOWN USB": "usb"
+    }
+  },
+  "pilotCases": [
+    {
+      "id": "short-small-item", "traits": { "body": "light", "hair": "short", "outfit": "hoodie", "accessory": "none", "accent": "yellow" },
+      "developerItem": "RUBBER DUCK", "expectedItemId": "duck", "riskCoverage": ["short-hair", "small-item", "mobile"]
+    },
+    {
+      "id": "long-wide-item", "traits": { "body": "deep", "hair": "wave", "outfit": "jacket", "accessory": "none", "accent": "pink" },
+      "developerItem": "ENDLESS BROWSER TABS", "expectedItemId": "browser-tabs", "riskCoverage": ["long-hair", "wide-item", "torso-overlap"]
+    },
+    {
+      "id": "cap-tiny-item", "traits": { "body": "warm", "hair": "cap", "outfit": "overalls", "accessory": "none", "accent": "mint" },
+      "developerItem": "UNKNOWN USB", "expectedItemId": "usb", "riskCoverage": ["headwear", "tiny-item", "alignment"]
+    },
+    {
+      "id": "tall-large-item", "traits": { "body": "deep", "hair": "spike", "outfit": "sweater", "accessory": "none", "accent": "sky" },
+      "developerItem": "GREEN TEST CHECK", "expectedItemId": "test-check", "riskCoverage": ["tall-hair", "large-item", "safe-bounds"]
+    }
+  ],
+  "provenance": [
+    {
+      "id": "universal-lpc", "sourceType": "third-party", "creatorOrTool": "Universal LPC contributors",
+      "createdAt": "2026-08-31", "sourceAsset": "public/avatar-parts/vendor/universal-lpc/",
+      "promptFile": null, "modifications": "Selected aligned front-facing walk frames; combined body, head, eyes, hair, shirt or jacket, pants and shoes; applied deterministic three-stop color ramps where the source is recolorable; scaled 5x with nearest-neighbor sampling; and hard-alpha normalized the layers onto the shared 256x384 canvas.",
+      "licenseSpdx": "LicenseRef-Universal-LPC-Mixed", "sourceUrl": "https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator", "licenseUrl": "https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/blob/master/LICENSE", "redistributionAllowed": true,
+      "noticeFile": "public/avatar-parts/THIRD_PARTY_NOTICES.md"
+    },
+    {
+      "id": "project-pixel-v3-items", "sourceType": "project-generated", "creatorOrTool": "OpenAI built-in image generation and project authoring scripts",
+      "createdAt": "2026-08-31", "sourceAsset": "public/avatar-parts/v3/sources/",
+      "promptFile": "public/avatar-parts/v3/sources/README.md", "modifications": "Hand-free transparent object sources cropped by alpha, resized with nearest-neighbor sampling, hard-alpha normalized, and placed at rightGround.",
+      "licenseSpdx": "LicenseRef-Project-Owned", "sourceUrl": null, "licenseUrl": null, "redistributionAllowed": true,
+      "noticeFile": "public/avatar-parts/THIRD_PARTY_NOTICES.md"
+    }
+  ],
+  "review": { "status": "pending", "reviewedAt": null, "recordPath": "specs/005-rebuild-avatar-parts/validation/pilot-review.md" }
+}

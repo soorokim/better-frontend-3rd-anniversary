@@ -6,8 +6,18 @@
 ## 픽셀 캐릭터
 
 아바타의 조합값은 `lib/avatar/catalog.ts`의 프로젝트 자체 카탈로그에서 만들고,
-참가자 화면에는 프로젝트 자체 SVG 픽셀 도형으로 만든 몸, 머리, 옷, 소지품, 강조 효과를
-겹쳐 렌더링한다. 런타임 캐릭터에는 제3자 게임 에셋을 포함하지 않는다.
+현재 참가자 화면에는 승인된 기존 SVG 픽셀 캐릭터가 계속 표시된다. 승인 전 관리자용
+`pixel-layers-v3` 파일럿은 Universal LPC의 64×64 모듈형 캐릭터 파츠를 사용한다.
+
+- 원본: https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator
+- 라이선스: 파츠별 혼합(CC0, CC-BY 4.0, CC-BY-SA 3.0, OGA-BY 3.0, GPL 3.0)
+- 저장 위치: `public/avatar-parts/vendor/universal-lpc/`
+- 세부 저작자와 출처: 위 폴더의 `CREDITS.csv`와 `sheet_definitions/`
+
+파일럿은 정면 보행 프레임에서 몸, 머리, 눈, 상의, 하의와 신발 레이어를 골라 최근접 이웃
+방식으로 확대한다. 색상 변경을 지원하는 레이어만 결정적인 팔레트로 바꾸며 캐릭터 파츠를
+AI로 다시 그리지 않는다. 개발자 아이템 4종은 기존 프로젝트 생성 에셋을 캐릭터 오른쪽
+아래에 따로 배치한다.
 
 `public/avatar-parts`의 PNG 두 장은 2026-08-31에 이 프로젝트를 위해 OpenAI 이미지 생성
 도구로 만든 원본 에셋이다. v1 완성 캐릭터 아틀라스와 v2 파츠 콘셉트 기록이며, 현재
