@@ -25,4 +25,4 @@ export async function answerFactory(
   return answer;
 }
 export async function adminFactory(db: TestDatabase, eventId: string, overrides: Partial<typeof adminAccounts.$inferInsert> = {}) { const [admin] = await db.insert(adminAccounts).values({ eventId, username: 'host', passwordHash: await hashSecret('a-test-admin-password'), ...overrides }).returning(); return admin; }
-export async function questionFactory(db: PostgresJsDatabase<typeof import('@/db/schema')>, eventId: string) { const [question] = await db.insert(questions).values({ eventId, prompt: '기억에 남는 순간은?', status: 'published', publishedAt: new Date() }).returning(); return question; }
+export async function questionFactory(db: PostgresJsDatabase<typeof import('@/db/schema')>, eventId: string, displayOrder = 1) { const [question] = await db.insert(questions).values({ eventId, prompt: '기억에 남는 순간은?', displayOrder, status: 'published', publishedAt: new Date() }).returning(); return question; }

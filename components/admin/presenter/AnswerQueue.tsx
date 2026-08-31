@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { PixelAvatar } from '@/components/avatar/PixelAvatar';
 import type { PresentationAnswerView } from '@/lib/presentation/presentation-view';
 
@@ -9,11 +8,9 @@ type AnswerQueueProps = {
   busy: boolean;
   onSelect: (answerId: string) => void;
   onNavigate: (direction: 'previous' | 'next') => void;
-  onRestart: () => void;
 };
 
-export function AnswerQueue({ answers, busy, onSelect, onNavigate, onRestart }: AnswerQueueProps) {
-  const [confirmingRestart, setConfirmingRestart] = useState(false);
+export function AnswerQueue({ answers, busy, onSelect, onNavigate }: AnswerQueueProps) {
   if (answers.length === 0) {
     return (
       <div className="admin-empty">
@@ -56,27 +53,7 @@ export function AnswerQueue({ answers, busy, onSelect, onNavigate, onRestart }: 
         <button className="game-button secondary" type="button" disabled={busy || !canGoNext} onClick={() => onNavigate('next')}>
           다음 답변 →
         </button>
-        <button className="game-button secondary sm:ml-auto" type="button" disabled={busy || presentedOrders.length === 0} onClick={() => setConfirmingRestart(true)}>
-          발표 기록 초기화
-        </button>
       </div>
-
-      {confirmingRestart ? (
-        <div className="mt-4 border-3 border-[var(--pink)] bg-[#111a35] p-4" role="alertdialog" aria-labelledby="restart-presentation-title" aria-describedby="restart-presentation-description">
-          <p id="restart-presentation-title" className="font-bold text-[var(--pink)]">지금까지의 공개 순서를 지울까요?</p>
-          <p id="restart-presentation-description" className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            참가자의 원본 답변은 그대로 두고, 발표 순서와 현재 슬라이드만 처음 상태로 돌립니다.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button className="game-button" type="button" disabled={busy} onClick={() => { setConfirmingRestart(false); onRestart(); }}>
-              초기화 확인
-            </button>
-            <button className="game-button secondary" type="button" disabled={busy} onClick={() => setConfirmingRestart(false)}>
-              취소
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       <ol className="mt-5 grid gap-3" aria-label="발표할 답변 후보">
       {orderedAnswers.map((answer, index) => {

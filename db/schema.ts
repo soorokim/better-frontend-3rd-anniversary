@@ -10,6 +10,8 @@ const timestamps = {
 
 export const avatarSourceKind = pgEnum('avatar_source_kind', ['nickname', 'conversation']);
 export const questionStatus = pgEnum('question_status', ['draft', 'published', 'closed']);
+export const questionSequenceStatus = pgEnum('question_sequence_status', ['waiting', 'in_progress', 'completed']);
+export const presentationCompletionState = pgEnum('presentation_completion_state', ['presenting', 'revealed', 'excluded']);
 export const throttleAction = pgEnum('throttle_action', ['invite', 'participant_login', 'admin_login', 'pin_reset']);
 export const auditOutcome = pgEnum('audit_outcome', ['success', 'failure']);
 
@@ -35,9 +37,9 @@ export const avatarAssignments = pgTable('avatar_assignments', {
 
 export const questions = pgTable('questions', {
   id: uuid('id').defaultRandom().primaryKey(), eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
-  prompt: text('prompt').notNull(), status: questionStatus('status').default('draft').notNull(),
+  prompt: text('prompt').notNull(), displayOrder: integer('display_order').notNull(), status: questionStatus('status').default('draft').notNull(),
   publishedAt: timestamp('published_at', { withTimezone: true }), ...timestamps,
-}, (t) => [index('questions_event_idx').on(t.eventId), uniqueIndex('questions_one_published_uq').on(t.eventId).where(sql`${t.status} = 'published'`), check('questions_prompt_length', sql`char_length(btrim(${t.prompt})) between 1 and 500`)]);
+}, (t) => [index('questions_event_idx').on(t.eventId), uniqueIndex('questions_event_order_uq').on(t.eventId, t.displayOrder), check('questions_prompt_length', sql`char_length(btrim(${t.prompt})) between 1 and 500`), check('questions_display_order_check', sql`${t.displayOrder} between 1 and 4`)]);
 
 export const answers = pgTable('answers', {
   id: uuid('id').defaultRandom().primaryKey(), participantId: uuid('participant_id').notNull().references(() => participants.id, { onDelete: 'cascade' }),
@@ -73,6 +75,9 @@ export const presentationItems = pgTable('presentation_items', {
     traits: Record<string, string>;
   }>().notNull(),
   presentationOrder: integer('presentation_order').notNull(),
+  completionState: presentationCompletionState('completion_state').default('presenting').notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  exclusionNote: text('exclusion_note'),
   firstPresentedAt: timestamp('first_presented_at', { withTimezone: true }).defaultNow().notNull(),
   lastSelectedAt: timestamp('last_selected_at', { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
@@ -81,6 +86,19 @@ export const presentationItems = pgTable('presentation_items', {
   index('presentation_items_answer_idx').on(t.answerId),
   check('presentation_items_content_length', sql`char_length(btrim(${t.contentSnapshot})) between 1 and 1000`),
   check('presentation_items_order_check', sql`${t.presentationOrder} > 0`),
+]);
+
+export const questionSequenceSessions = pgTable('question_sequence_sessions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  eventId: uuid('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
+  currentQuestionId: uuid('current_question_id').references(() => questions.id, { onDelete: 'set null' }),
+  status: questionSequenceStatus('status').default('waiting').notNull(),
+  revision: integer('revision').default(0).notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex('question_sequence_sessions_event_uq').on(t.eventId),
+  check('question_sequence_sessions_revision_check', sql`${t.revision} >= 0`),
 ]);
 
 export const participantSessions = pgTable('participant_sessions', {

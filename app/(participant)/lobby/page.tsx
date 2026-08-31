@@ -15,6 +15,7 @@ export default async function LobbyPage() {
   </div></GamePanel><GamePanel title="Quest Log"><p>{status}</p>
     {lobby.answerStatus === 'question-unavailable'
       ? <p className="mt-2 text-sm text-[var(--muted)]">질문이 공개되면 이곳에 입구가 열립니다.</p>
-      : <Link className="game-button mt-5" href="/memory">{lobby.answerStatus === 'submitted' ? '3주년 기록 수정하기' : '3주년 기록 남기기'}</Link>}
+      : <Link className="game-button mt-5" href="/memory">네 질문 작성하기</Link>}
+    <Link className="memory-back-link mt-4" href="/answers">질답 기록 보기</Link>
     <div className="mt-6"><LogoutButton /></div></GamePanel></main>;
 }

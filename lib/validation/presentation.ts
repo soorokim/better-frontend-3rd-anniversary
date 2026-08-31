@@ -24,12 +24,15 @@ const restartCommandSchema = z.object({
   confirmed: z.literal(true),
 }).strict();
 
+const advanceQuestionCommandSchema = z.object({ type: z.literal('advance_question') }).strict();
+
 export const presentationCommandSchema = z.discriminatedUnion('type', [
   selectAnswerCommandSchema,
   selectRandomCommandSchema,
   setAuthorVisibilityCommandSchema,
   navigateCommandSchema,
   restartCommandSchema,
+  advanceQuestionCommandSchema,
 ]);
 
 export type PresentationCommand = z.infer<typeof presentationCommandSchema>;

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { answers, avatarAssignments, events, participants, questions } from './schema';
 import { closeDatabase, db } from '../lib/db/client';
 import { generateAvatar } from '../lib/avatar/generator';
@@ -35,11 +35,11 @@ async function seedDemo() {
   const [event] = await db.select().from(events).where(eq(events.slug, env.EVENT_SLUG)).limit(1);
   if (!event) throw new Error('먼저 npm run db:seed로 행사를 생성해 주세요.');
 
-  const [question] = await db.select().from(questions).where(and(
+  const questionRows = await db.select().from(questions).where(and(
     eq(questions.eventId, event.id),
     eq(questions.status, 'published'),
-  )).limit(1);
-  if (!question) throw new Error('공개 중인 질문이 없습니다.');
+  )).orderBy(asc(questions.displayOrder));
+  if (questionRows.length !== 4) throw new Error('답변 가능한 질문 네 개가 필요합니다.');
 
   const pinHash = await hashSecret(demoPin);
   await db.transaction(async (tx) => {
@@ -75,11 +75,13 @@ async function seedDemo() {
       }
 
       if (demo.answer) {
-        await tx.insert(answers).values({
-          participantId: participant.id,
-          questionId: question.id,
-          content: demo.answer,
-        }).onConflictDoNothing({ target: [answers.participantId, answers.questionId] });
+        for (const question of questionRows) {
+          await tx.insert(answers).values({
+            participantId: participant.id,
+            questionId: question.id,
+            content: question.displayOrder === 1 ? demo.answer : `${question.prompt}에 대해 ${demo.nickname}가 남긴 이야기입니다. ${demo.answer}`,
+          }).onConflictDoNothing({ target: [answers.participantId, answers.questionId] });
+        }
       }
     }
   });

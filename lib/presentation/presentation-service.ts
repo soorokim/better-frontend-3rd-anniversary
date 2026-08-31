@@ -9,6 +9,8 @@ import {
   restartPresentationSession,
   savePresentationItem,
   updatePresentationSession,
+  completePresentationItem,
+  moveToNextQuestion,
 } from '@/lib/db/repositories/presentation';
 import { inTransaction, type Transaction } from '@/lib/db/transaction';
 import { AppError } from '@/lib/http/errors';
@@ -50,6 +52,10 @@ async function selectAnswer(input: {
   questionId: string;
   answerId?: string;
 }, executor: Transaction) {
+  const existing = await lockPresentationSession(input.sessionId, executor);
+  if (existing?.currentItemId && !existing.authorRevealed) {
+    throw new AppError('author_not_revealed', '작성자를 공개한 뒤 다음 답변으로 넘어갈 수 있습니다.', 409);
+  }
   const candidate = input.answerId
     ? await findPresentationAnswer(input.eventId, input.questionId, input.answerId, executor)
     : await findRandomUnpresentedAnswer(
@@ -89,6 +95,18 @@ export async function commandPresentation(eventId: string, command: Presentation
     if (!session) throw questionUnavailable();
 
     switch (command.type) {
+      case 'advance_question': {
+        if (session.currentItemId && !session.authorRevealed) {
+          throw new AppError('author_not_revealed', '작성자를 공개한 뒤 다음 질문으로 넘어갈 수 있습니다.', 409);
+        }
+        const current = await controllerView(eventId, executor);
+        if (current.answers.length > 0 && !current.session.allPresented) {
+          throw new AppError('answers_remaining', '현재 질문의 답변을 모두 공개한 뒤 다음 질문으로 넘어갈 수 있습니다.', 409);
+        }
+        const moved = await moveToNextQuestion(eventId, executor);
+        if (!moved) throw questionUnavailable();
+        return controllerView(eventId, executor);
+      }
       case 'select_answer':
         await selectAnswer({
           eventId,
@@ -106,6 +124,7 @@ export async function commandPresentation(eventId: string, command: Presentation
         break;
       case 'set_author_visibility':
         if (!session.currentItemId) throw noCurrentAnswer();
+        if (command.revealed) await completePresentationItem(session.currentItemId, 'revealed', executor);
         await updatePresentationSession({
           sessionId: session.id,
           authorRevealed: command.revealed,

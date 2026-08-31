@@ -1,4 +1,4 @@
-import { and, count, eq, gt, isNull, lt, max, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gt, isNull, lt, max, sql } from 'drizzle-orm';
 import {
   answers,
   avatarAssignments,
@@ -6,6 +6,7 @@ import {
   participants,
   presentationItems,
   presentationSessions,
+  questionSequenceSessions,
   questions,
 } from '@/db/schema';
 import { db } from '@/lib/db/client';
@@ -18,15 +19,41 @@ const missingSessionId = '00000000-0000-0000-0000-000000000000';
 export type PresentationAnswerCandidate = Awaited<ReturnType<typeof findPresentationAnswer>>;
 
 export async function findPresentationBoundary(eventId: string, executor: Executor = db) {
-  const [boundary] = await executor.select({ event: events, question: questions })
-    .from(events)
-    .innerJoin(questions, and(
-      eq(questions.eventId, events.id),
-      eq(questions.status, 'published'),
-    ))
-    .where(eq(events.id, eventId))
-    .limit(1);
-  return boundary;
+  const [sequence] = await executor.select().from(questionSequenceSessions).where(eq(questionSequenceSessions.eventId, eventId)).limit(1);
+  const [event] = await executor.select().from(events).where(eq(events.id, eventId)).limit(1);
+  if (!event) return undefined;
+  const [question] = sequence.currentQuestionId
+    ? await executor.select().from(questions).where(eq(questions.id, sequence.currentQuestionId)).limit(1)
+    : await executor.select().from(questions).where(eq(questions.eventId, eventId)).orderBy(asc(questions.displayOrder)).limit(1);
+  return question ? { event, question } : undefined;
+}
+
+export async function getOrCreateSequence(eventId: string, executor: Executor = db) {
+  await executor.insert(questionSequenceSessions).values({ eventId }).onConflictDoNothing({ target: questionSequenceSessions.eventId });
+  const [sequence] = await executor.select().from(questionSequenceSessions).where(eq(questionSequenceSessions.eventId, eventId)).limit(1);
+  return sequence;
+}
+
+export async function lockSequence(eventId: string, executor: Transaction) {
+  const sequence = await getOrCreateSequence(eventId, executor);
+  if (!sequence) return undefined;
+  const [locked] = await executor.select().from(questionSequenceSessions).where(eq(questionSequenceSessions.id, sequence.id)).for('update').limit(1);
+  return locked;
+}
+
+export async function moveToNextQuestion(eventId: string, executor: Transaction) {
+  const sequence = await lockSequence(eventId, executor);
+  if (!sequence) return undefined;
+  const all = await executor.select().from(questions).where(eq(questions.eventId, eventId)).orderBy(asc(questions.displayOrder));
+  const currentOrder = sequence.currentQuestionId ? all.find((question) => question.id === sequence.currentQuestionId)?.displayOrder ?? 0 : 0;
+  const next = all.find((question) => question.displayOrder > currentOrder);
+  const [updated] = await executor.update(questionSequenceSessions).set({
+    currentQuestionId: next?.id ?? sequence.currentQuestionId,
+    status: next ? 'in_progress' : 'completed',
+    completedAt: next ? null : new Date(),
+    revision: sql`${questionSequenceSessions.revision} + 1`, updatedAt: new Date(),
+  }).where(eq(questionSequenceSessions.id, sequence.id)).returning();
+  return { sequence: updated, question: next };
 }
 
 export async function findPresentationSession(
@@ -42,6 +69,14 @@ export async function findPresentationSession(
 }
 
 export async function preparePresentationSession(eventId: string, executor: Executor = db) {
+  const sequence = await getOrCreateSequence(eventId, executor);
+  if (sequence && !sequence.currentQuestionId) {
+    const [firstQuestion] = await executor.select().from(questions).where(eq(questions.eventId, eventId))
+      .orderBy(asc(questions.displayOrder)).limit(1);
+    if (firstQuestion) await executor.update(questionSequenceSessions).set({
+      currentQuestionId: firstQuestion.id, status: 'in_progress', revision: sql`${questionSequenceSessions.revision} + 1`, updatedAt: new Date(),
+    }).where(eq(questionSequenceSessions.id, sequence.id));
+  }
   const boundary = await findPresentationBoundary(eventId, executor);
   if (!boundary) return undefined;
 
@@ -186,6 +221,12 @@ export async function updatePresentationSession(input: {
     updatedAt: new Date(),
   }).where(eq(presentationSessions.id, input.sessionId)).returning();
   return session;
+}
+
+export async function completePresentationItem(itemId: string, state: 'revealed' | 'excluded', executor: Transaction) {
+  const [item] = await executor.update(presentationItems).set({ completionState: state, completedAt: new Date() })
+    .where(eq(presentationItems.id, itemId)).returning();
+  return item;
 }
 
 export async function findAdjacentPresentationItem(input: {

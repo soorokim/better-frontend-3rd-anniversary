@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: 질문별 답변 공개 진행 API
+  version: 1.0.0
+paths:
+  /api/questions:
+    get:
+      summary: 행사 전에 참가자가 답할 수 있는 네 질문 조회
+      responses:
+        '200':
+          description: 답변 가능 질문 목록
+          content: { application/json: { schema: { type: array, minItems: 4, maxItems: 4, items: { $ref: '#/components/schemas/ParticipantQuestion' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NoQuestion' }
+  /api/answers/archive:
+    get:
+      summary: 전체 질답 완료 뒤 참가자용 질문별 기록 조회
+      responses:
+        '200':
+          description: 완료된 행사 기록
+          content: { application/json: { schema: { $ref: '#/components/schemas/ParticipantArchiveView' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 행사가 아직 완료되지 않음 }
+  /api/admin/presentation:
+    get:
+      summary: 진행자용 질문 순서와 답변 진행 상태 조회
+      responses:
+        '200':
+          description: 진행자 상태
+          content: { application/json: { schema: { $ref: '#/components/schemas/PresentationControllerView' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/presentation/screen:
+    get:
+      summary: 프로젝터용 현재 발표 화면 조회
+      responses:
+        '200':
+          description: 최소 공개 화면 상태
+          content: { application/json: { schema: { $ref: '#/components/schemas/PresentationScreenView' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/presentation/commands:
+    post:
+      summary: 질문과 답변 발표 상태 변경
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/PresentationCommand' } } }
+      responses:
+        '200':
+          description: 갱신된 진행자 상태
+          content: { application/json: { schema: { $ref: '#/components/schemas/PresentationControllerView' } } }
+        '400': { description: 허용하지 않는 명령 또는 형식 오류 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Origin 또는 CSRF 검증 실패 }
+        '409': { description: 현재 질문·답변 상태에서 허용되지 않는 전환 }
+components:
+  responses:
+    Unauthorized: { description: 관리자 인증 필요 }
+    NoQuestion: { description: 현재 답할 수 있는 질문 없음 }
+  schemas:
+    ParticipantQuestion:
+      type: object
+      additionalProperties: false
+      required: [id, prompt, status]
+      properties:
+        id: { type: string, format: uuid }
+        prompt: { type: string, minLength: 1, maxLength: 500 }
+        status: { const: published }
+    QuestionProgress:
+      type: object
+      additionalProperties: false
+      required: [id, prompt, order, state, submitted, completed, remaining]
+      properties:
+        id: { type: string, format: uuid }
+        prompt: { type: string }
+        order: { type: integer, minimum: 1, maximum: 4 }
+        state: { type: string, enum: [locked, current, completed] }
+        submitted: { type: integer, minimum: 0 }
+        completed: { type: integer, minimum: 0 }
+        remaining: { type: integer, minimum: 0 }
+    AnswerAuthorView:
+      type: object
+      additionalProperties: false
+      required: [nickname, avatar]
+      properties:
+        nickname: { type: string }
+        avatar: { type: object }
+    PresentationControllerView:
+      type: object
+      required: [questions, status, revision, currentSlide]
+      properties:
+        questions: { type: array, minItems: 4, maxItems: 4, items: { $ref: '#/components/schemas/QuestionProgress' } }
+        status: { type: string, enum: [waiting, in_progress, completed] }
+        revision: { type: integer, minimum: 0 }
+        currentSlide: { oneOf: [{ type: 'null' }, { $ref: '#/components/schemas/ControllerSlide' }] }
+    ControllerSlide:
+      type: object
+      required: [itemId, content, completionState, author]
+      properties:
+        itemId: { type: string, format: uuid }
+        content: { type: string, minLength: 1, maxLength: 1000 }
+        completionState: { type: string, enum: [presenting, revealed, excluded] }
+        author: { $ref: '#/components/schemas/AnswerAuthorView' }
+    PresentationScreenView:
+      type: object
+      additionalProperties: false
+      required: [status, revision, slide]
+      properties:
+        status: { type: string, enum: [waiting, in_progress, completed] }
+        revision: { type: integer, minimum: 0 }
+        question: { oneOf: [{ type: 'null' }, { type: object, required: [prompt], properties: { prompt: { type: string } } }] }
+        slide:
+          oneOf:
+            - { type: object, required: [kind], properties: { kind: { const: waiting } } }
+            - { type: object, required: [kind, content], properties: { kind: { const: answer }, content: { type: string }, author: { $ref: '#/components/schemas/AnswerAuthorView' } } }
+            - { type: object, required: [kind], properties: { kind: { const: completed } } }
+    PresentationCommand:
+      oneOf:
+        - { type: object, additionalProperties: false, required: [type], properties: { type: { const: start_question } } }
+        - { type: object, additionalProperties: false, required: [type], properties: { type: { const: reveal_next_answer } } }
+        - { type: object, additionalProperties: false, required: [type], properties: { type: { const: reveal_author } } }
+        - { type: object, additionalProperties: false, required: [type, confirmed], properties: { type: { const: exclude_current_answer }, confirmed: { const: true } } }
+        - { type: object, additionalProperties: false, required: [type], properties: { type: { const: advance_question } } }
+        - { type: object, additionalProperties: false, required: [type, questionId], properties: { type: { const: review_question }, questionId: { type: string, format: uuid } } }
+    ParticipantArchiveView:
+      type: object
+      additionalProperties: false
+      required: [status, questions]
+      properties:
+        status: { const: completed }
+        questions:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            type: object
+            required: [id, prompt, answers]
+            properties:
+              id: { type: string, format: uuid }
+              prompt: { type: string }
+              answers:
+                type: array
+                items:
+                  type: object
+                  required: [content, author]
+                  properties:
+                    content: { type: string, minLength: 1, maxLength: 1000 }
+                    author: { $ref: '#/components/schemas/AnswerAuthorView' }

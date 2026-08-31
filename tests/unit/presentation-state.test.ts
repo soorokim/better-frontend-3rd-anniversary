@@ -34,6 +34,7 @@ describe('presentation command validation', () => {
     { type: 'navigate', direction: 'previous' },
     { type: 'navigate', direction: 'next' },
     { type: 'restart', confirmed: true },
+    { type: 'advance_question' },
   ])('accepts a supported presenter command: %o', (command) => {
     expect(presentationCommandSchema.safeParse(command).success).toBe(true);
   });
