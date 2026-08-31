@@ -5,7 +5,7 @@ import type { Transaction } from '@/lib/db/transaction';
 export type AuditInput = {
   eventId: string;
   adminId?: string;
-  action: 'admin_login' | 'pin_reset_issued' | 'pin_reset_completed';
+  action: 'admin_login' | 'pin_reset_issued' | 'pin_reset_completed' | 'participant_deleted';
   targetParticipantId?: string;
   outcome: 'success' | 'failure';
 };
