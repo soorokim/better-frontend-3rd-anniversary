@@ -7,6 +7,8 @@ const filenames = [
   'hair-back.png',
   'body-face-warm.png',
   'outfit-navy-mint.png',
+  'outfit-base-navy-mint.png',
+  'outfit-neckline-navy-mint.png',
   'hair-front-indigo.png',
   'assembled-from-layers.png',
 ];
@@ -23,11 +25,11 @@ describe('golden avatar v4 assets', () => {
     expect([...alphaValues].sort((left, right) => left - right)).toEqual([0, 255]);
   });
 
-  it('keeps the neck and shoulder join underneath the outfit', async () => {
+  it('keeps the neck and shoulder join underneath the upper outfit layer', async () => {
     const assetPath = path.join(process.cwd(), 'public', 'avatar-parts', 'v4-golden');
     const [body, outfit] = await Promise.all([
       readFile(path.join(assetPath, 'body-face-warm.png')),
-      readFile(path.join(assetPath, 'outfit-navy-mint.png')),
+      readFile(path.join(assetPath, 'outfit-neckline-navy-mint.png')),
     ]);
     const [bodyPixels, outfitPixels] = await Promise.all([
       sharp(body).ensureAlpha().raw().toBuffer(),
@@ -47,5 +49,20 @@ describe('golden avatar v4 assets', () => {
 
     expect(bodyCount).toBeGreaterThan(0);
     expect(coveredCount / bodyCount).toBeGreaterThanOrEqual(0.9);
+  });
+
+  it('recombines the two outfit layers without changing the reviewed outfit', async () => {
+    const assetPath = path.join(process.cwd(), 'public', 'avatar-parts', 'v4-golden');
+    const [combined, base, neckline] = await Promise.all([
+      readFile(path.join(assetPath, 'outfit-navy-mint.png')),
+      readFile(path.join(assetPath, 'outfit-base-navy-mint.png')),
+      readFile(path.join(assetPath, 'outfit-neckline-navy-mint.png')),
+    ]);
+    const [combinedPixels, recombinedPixels] = await Promise.all([
+      sharp(combined).ensureAlpha().raw().toBuffer(),
+      sharp(base).ensureAlpha().composite([{ input: neckline }]).raw().toBuffer(),
+    ]);
+
+    expect(recombinedPixels.equals(combinedPixels)).toBe(true);
   });
 });

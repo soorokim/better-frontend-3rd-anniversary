@@ -3,7 +3,8 @@ const assetRoot = '/avatar-parts/v4-golden';
 const layers = [
   ['hairBack', 'hair-back.png'],
   ['bodyFace', 'body-face-warm.png'],
-  ['outfit', 'outfit-navy-mint.png'],
+  ['outfitBase', 'outfit-base-navy-mint.png'],
+  ['outfitNeckline', 'outfit-neckline-navy-mint.png'],
   ['hairFront', 'hair-front-indigo.png'],
 ] as const;
 
@@ -67,7 +68,7 @@ export function GoldenAvatarPilot() {
       </article>
       <article className="min-w-0 border-4 border-[#817a9c] bg-[#202e58] p-3 sm:p-5">
         <h3 className="mb-4 text-center text-sm text-[#f27cac]">FULL-CANVAS LAYERS</h3>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           {layers.map(([role, filename]) => <div key={role} className="text-center">
             <AvatarImage src={`${assetRoot}/${filename}`} label={`${role} 단독 레이어`} size={128} />
             <p className="mt-2 break-words font-mono text-[10px] text-[#aaa6bd]">{role}</p>

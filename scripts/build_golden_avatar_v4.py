@@ -23,6 +23,7 @@ SOURCE_SCALE = 0.64
 # Keeping this as a build-time guard prevents a future crop from making the head
 # look like it was pasted on top of the clothes.
 NECKLINE_SAFE_AREA = (112, 160, 144, 184)
+OUTFIT_NECKLINE_BOTTOM = 214
 
 # Equal source-sheet cells. Bounds inside each cell are measured once from the
 # golden sheet; their relative placement is expressed against the shared body.
@@ -82,6 +83,23 @@ def assert_neckline_is_covered(body: Image.Image, outfit: Image.Image) -> None:
         )
 
 
+def split_outfit(outfit: Image.Image) -> tuple[Image.Image, Image.Image]:
+    """Keep the collar as an explicit upper-clothing layer without changing pixels."""
+    base = outfit.copy()
+    neckline = outfit.copy()
+    base_alpha = base.getchannel("A")
+    neckline_alpha = neckline.getchannel("A")
+    for y in range(CANVAS[1]):
+        for x in range(CANVAS[0]):
+            if y < OUTFIT_NECKLINE_BOTTOM:
+                base_alpha.putpixel((x, y), 0)
+            else:
+                neckline_alpha.putpixel((x, y), 0)
+    base.putalpha(base_alpha)
+    neckline.putalpha(neckline_alpha)
+    return base, neckline
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     source = Image.open(SOURCE).convert("RGBA")
@@ -99,13 +117,20 @@ def main() -> None:
             layers[name] = place(part, y_offset)
         layers[name].save(OUTPUT / f"{name}.png", optimize=True)
 
+    outfit_base, outfit_neckline = split_outfit(layers["outfit-navy-mint"])
+    outfit_base.save(OUTPUT / "outfit-base-navy-mint.png", optimize=True)
+    outfit_neckline.save(OUTPUT / "outfit-neckline-navy-mint.png", optimize=True)
+    assert_neckline_is_covered(layers["body-face-warm"], outfit_neckline)
+
     assembled = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
-    for name in ("hair-back", "body-face-warm", "outfit-navy-mint", "hair-front-indigo"):
+    for name in ("hair-back", "body-face-warm"):
         assembled.alpha_composite(layers[name])
-    assert_neckline_is_covered(layers["body-face-warm"], layers["outfit-navy-mint"])
+    assembled.alpha_composite(outfit_base)
+    assembled.alpha_composite(outfit_neckline)
+    assembled.alpha_composite(layers["hair-front-indigo"])
     assembled.save(OUTPUT / "assembled-from-layers.png", optimize=True)
 
-    print(f"wrote {len(layers) + 1} aligned assets to {OUTPUT.relative_to(ROOT)}")
+    print(f"wrote {len(layers) + 3} aligned assets to {OUTPUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
