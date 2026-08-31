@@ -18,6 +18,12 @@ CENTER_X = 128
 BASELINE_Y = 370
 SOURCE_SCALE = 0.64
 
+# The visible centre of the neck and shoulder join.  The body deliberately owns
+# the skin underneath, while the outfit must cover this area in the final stack.
+# Keeping this as a build-time guard prevents a future crop from making the head
+# look like it was pasted on top of the clothes.
+NECKLINE_SAFE_AREA = (112, 160, 144, 184)
+
 # Equal source-sheet cells. Bounds inside each cell are measured once from the
 # golden sheet; their relative placement is expressed against the shared body.
 CELLS = {
@@ -57,6 +63,25 @@ def place(part: Image.Image, y_offset_from_body: int) -> Image.Image:
     return canvas
 
 
+def assert_neckline_is_covered(body: Image.Image, outfit: Image.Image) -> None:
+    left, top, right, bottom = NECKLINE_SAFE_AREA
+    body_alpha = body.getchannel("A")
+    outfit_alpha = outfit.getchannel("A")
+    body_pixels = 0
+    covered_pixels = 0
+    for y in range(top, bottom):
+        for x in range(left, right):
+            if body_alpha.getpixel((x, y)):
+                body_pixels += 1
+                covered_pixels += bool(outfit_alpha.getpixel((x, y)))
+
+    coverage = covered_pixels / body_pixels if body_pixels else 0
+    if coverage < 0.9:
+        raise ValueError(
+            f"Outfit must cover the neck and shoulder join: {coverage:.1%} < 90%"
+        )
+
+
 def main() -> None:
     OUTPUT.mkdir(parents=True, exist_ok=True)
     source = Image.open(SOURCE).convert("RGBA")
@@ -77,6 +102,7 @@ def main() -> None:
     assembled = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
     for name in ("hair-back", "body-face-warm", "outfit-navy-mint", "hair-front-indigo"):
         assembled.alpha_composite(layers[name])
+    assert_neckline_is_covered(layers["body-face-warm"], layers["outfit-navy-mint"])
     assembled.save(OUTPUT / "assembled-from-layers.png", optimize=True)
 
     print(f"wrote {len(layers) + 1} aligned assets to {OUTPUT.relative_to(ROOT)}")
