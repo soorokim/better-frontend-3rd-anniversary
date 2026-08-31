@@ -6,7 +6,7 @@ import { PixelAvatar } from '@/components/avatar/PixelAvatar';
 describe('PixelAvatar', () => {
   afterEach(cleanup);
 
-  it('shows one full-body atlas cell while preserving the accessible image contract', () => {
+  it('stacks deterministic full-body parts while preserving the accessible image contract', () => {
     render(<PixelAvatar
       nickname="테스터"
       size={100}
@@ -22,7 +22,13 @@ describe('PixelAvatar', () => {
     />);
 
     const image = screen.getByRole('img', { name: /^테스터의 픽셀 캐릭터/ });
-    expect(image).toHaveAttribute('src', '/avatar-parts/full-body-developers-v1.png?sprite=2');
-    expect(image).toHaveStyle({ width: '400px', height: '400px', left: '-200px', top: '0px' });
+    expect(image.tagName).toBe('svg');
+    expect(image).toHaveAttribute('viewBox', '0 0 32 40');
+    expect(image).toHaveAttribute('data-avatar-combination', 'warm:short:hoodie:duck:mint');
+    expect(image.querySelector('[data-avatar-layer="body"]')).toBeInTheDocument();
+    expect(image.querySelector('[data-avatar-layer="hair"][data-avatar-part="short"]')).toBeInTheDocument();
+    expect(image.querySelector('[data-avatar-layer="outfit"][data-avatar-part="hoodie"]')).toBeInTheDocument();
+    expect(image.querySelector('[data-avatar-layer="accessory"][data-avatar-part="duck"]')).toBeInTheDocument();
+    expect(image.querySelector('[data-avatar-layer="accent"][data-avatar-part="mint"]')).toBeInTheDocument();
   });
 });

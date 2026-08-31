@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderPixelAvatar } from '@/lib/avatar/dicebear';
 import {
-  FULL_BODY_AVATAR_ATLAS,
-  fullBodyAvatarSprite,
-  fullBodyAvatarUrl,
+  layeredAvatarParts,
   normalizeAvatarTraits,
   pixelAvatarUrl,
 } from '@/lib/avatar/presentation';
@@ -44,20 +42,14 @@ describe('pixel avatar presentation', () => {
     expect(first).toContain('viewBox="0 0 16 16"');
   });
 
-  it('selects one stable full-body sprite and keeps its asset self-hosted', () => {
-    const profile = { ...traits, developerItem: 'RUBBER DUCK', developerHash: '7A3F-C921' };
-    expect(fullBodyAvatarSprite(profile)).toEqual({ index: 2, column: 2, row: 0 });
-    expect(fullBodyAvatarSprite(profile)).toEqual(fullBodyAvatarSprite(profile));
-    expect(fullBodyAvatarUrl(profile)).toBe(`${FULL_BODY_AVATAR_ATLAS}?sprite=2`);
+  it('keeps the generated trait combination instead of collapsing it into an atlas cell', () => {
+    expect(layeredAvatarParts(traits)).toEqual(traits);
   });
 
-  it('keeps every fallback selection inside the 4 by 4 atlas', () => {
-    for (const developerHash of ['0000-0000', '7A3F-C921', 'FFFF-FFFF']) {
-      const sprite = fullBodyAvatarSprite({ ...traits, developerHash });
-      expect(sprite.index).toBeGreaterThanOrEqual(0);
-      expect(sprite.index).toBeLessThan(16);
-      expect(sprite.column).toBe(sprite.index % 4);
-      expect(sprite.row).toBe(Math.floor(sprite.index / 4));
-    }
+  it('lets a conversation-derived item choose the visible handheld layer', () => {
+    expect(layeredAvatarParts({ ...traits, developerItem: 'COFFEE' }).accessory).toBe('coffee');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'RED ERROR LOG' }).accessory).toBe('book');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'RUBBER DUCK' }).accessory).toBe('duck');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'UNKNOWN USB' }).accessory).toBe('usb');
   });
 });

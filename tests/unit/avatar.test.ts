@@ -39,4 +39,13 @@ describe('pixel avatar generator', () => {
       generateAvatar('conversation-v1', 'frontend'),
     );
   });
+
+  it('defines 1,200 distinct base part combinations', () => {
+    const combinations = avatarCatalog.body.length
+      * avatarCatalog.hair.length
+      * avatarCatalog.outfit.length
+      * avatarCatalog.accessory.length
+      * avatarCatalog.accent.length;
+    expect(combinations).toBe(1_200);
+  });
 });

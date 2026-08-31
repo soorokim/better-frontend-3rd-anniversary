@@ -98,4 +98,4 @@ docker compose run --rm \
 - `AUTH_PEPPER`와 `SESSION_SECRET`은 설치 뒤 함부로 바꾸지 않는다. 기존 인증 정보와 세션에 영향을 준다.
 - 최초 시드는 빈 DB에 관리자 계정을 만든다. 이미 생성된 관리자의 비밀번호는 `.env` 변경이나 재시드만으로 바뀌지 않는다.
 - 데이터베이스 포트는 Compose에서 호스트에 공개하지 않는다.
-- 픽셀 캐릭터는 대화 HMAC에서 확정한 고정 조합을 DiceBear Pixel Art SVG로 서버에서 직접 렌더링한다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.
+- 픽셀 캐릭터는 대화 HMAC에서 확정한 몸·머리·옷·소지품·색상 파츠를 프로젝트 자체 SVG 픽셀 도형으로 겹쳐 렌더링한다. 현재 카탈로그는 1,200가지 조합이며 같은 입력은 다시 접속해도 같은 캐릭터가 된다. 개발 서버에서는 `/avatar-lab`에서 대표 조합과 레이어 정렬을 볼 수 있고 운영 빌드에서는 이 경로가 404로 닫힌다. 기존 `/avatars/pixel-art` 호환 API에는 DiceBear가 남아 있다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.

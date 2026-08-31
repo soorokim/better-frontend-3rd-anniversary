@@ -6,17 +6,20 @@
 ## 픽셀 캐릭터
 
 아바타의 조합값은 `lib/avatar/catalog.ts`의 프로젝트 자체 카탈로그에서 만들고,
-참가자 화면에는 프로젝트 전용 4×4 전신 스프라이트 아틀라스를 렌더링한다. 이 PNG는
-2026-08-31에 이 프로젝트를 위해 OpenAI 이미지 생성 도구로 만든 원본 에셋이며 제3자
-게임 에셋을 포함하지 않는다.
+참가자 화면에는 프로젝트 자체 SVG 픽셀 도형으로 만든 몸, 머리, 옷, 소지품, 강조 효과를
+겹쳐 렌더링한다. 런타임 캐릭터에는 제3자 게임 에셋을 포함하지 않는다.
+
+`public/avatar-parts`의 PNG 두 장은 2026-08-31에 이 프로젝트를 위해 OpenAI 이미지 생성
+도구로 만든 원본 에셋이다. v1 완성 캐릭터 아틀라스와 v2 파츠 콘셉트 기록이며, 현재
+런타임 캐릭터는 어느 PNG도 직접 표시하지 않는다.
 
 기존 아바타 URL API는 DiceBear의 `Pixel Art` 스타일로 SVG를 렌더링한다.
 
 - DiceBear Core: MIT License, https://github.com/dicebear/dicebear
 - DiceBear Pixel Art: CC0 1.0, https://www.dicebear.com/styles/pixel-art/
 
-SVG는 외부 아바타 API를 호출하지 않고 설치된 npm 패키지로 서버 안에서 생성한다. 전신
-아틀라스와 자세한 카탈로그, 생성 방식은 `public/avatar-parts/README.md`에 있다.
+SVG API는 외부 아바타 API를 호출하지 않고 설치된 npm 패키지로 서버 안에서 생성한다.
+현재 화면에서 쓰는 레이어 조합과 자세한 카탈로그는 `public/avatar-parts/README.md`에 있다.
 
 ## 폰트
 
