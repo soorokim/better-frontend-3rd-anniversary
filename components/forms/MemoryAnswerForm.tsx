@@ -18,7 +18,7 @@ function readCookie(name: string) {
   return document.cookie.split('; ').find((entry) => entry.startsWith(`${name}=`))?.slice(name.length + 1);
 }
 
-export function MemoryAnswerForm({ initialContent = '' }: { initialContent?: string }) {
+export function MemoryAnswerForm({ questionId, initialContent = '' }: { questionId: string; initialContent?: string }) {
   const [draft, setDraft] = useState(initialContent);
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [state, setState] = useState<SaveState>({ kind: 'idle' });
@@ -34,7 +34,7 @@ export function MemoryAnswerForm({ initialContent = '' }: { initialContent?: str
       const response = await fetch('/api/answer/current', {
         method: 'PUT',
         headers: { 'content-type': 'application/json', ...(csrf ? { 'x-csrf-token': decodeURIComponent(csrf) } : {}) },
-        body: JSON.stringify({ content: draft }),
+        body: JSON.stringify({ questionId, content: draft }),
       });
       const body = await response.json() as AnswerResponse;
       if (!response.ok || typeof body.content !== 'string') {

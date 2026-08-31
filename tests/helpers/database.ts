@@ -45,7 +45,7 @@ export async function createTestDatabase() {
     db: database,
     client,
     async reset() {
-      await client`truncate table presentation_items, presentation_sessions, audit_events, auth_throttles, pin_reset_grants, admin_sessions, participant_sessions, answers, questions, conversation_profile_aliases, conversation_profiles, conversation_profile_batches, avatar_assignments, participants, admin_accounts, events restart identity cascade`;
+      await client`truncate table presentation_items, presentation_sessions, question_sequence_sessions, audit_events, auth_throttles, pin_reset_grants, admin_sessions, participant_sessions, answers, questions, conversation_profile_aliases, conversation_profiles, conversation_profile_batches, avatar_assignments, participants, admin_accounts, events restart identity cascade`;
     },
     async close() { await client.end(); },
   };

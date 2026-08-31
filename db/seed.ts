@@ -10,8 +10,16 @@ async function seed() {
   const existing = event ?? (await db.select().from(events).where(eq(events.slug, env.EVENT_SLUG)).limit(1))[0];
   if (!existing) throw new Error('행사 초기화에 실패했습니다.');
   await db.insert(adminAccounts).values({ eventId: existing.id, username: env.ADMIN_USERNAME, passwordHash: await hashSecret(env.ADMIN_PASSWORD) }).onConflictDoNothing({ target: [adminAccounts.eventId, adminAccounts.username] });
-  const published = await db.select({ id: questions.id }).from(questions).where(eq(questions.eventId, existing.id)).limit(1);
-  if (!published.length) await db.insert(questions).values({ eventId: existing.id, prompt: env.EVENT_QUESTION, status: 'published', publishedAt: new Date() });
+  const prompts = [
+    '3주년에 대한 감상이나 소감',
+    '지식 / 아이디어 공유',
+    '올해 좋은 일 자랑하기',
+    '더 하고 싶은 말',
+  ];
+  for (const [index, prompt] of prompts.entries()) {
+    await db.insert(questions).values({ eventId: existing.id, prompt, displayOrder: index + 1, status: 'published', publishedAt: new Date() })
+      .onConflictDoNothing({ target: [questions.eventId, questions.displayOrder] });
+  }
 }
 
 seed().finally(closeDatabase).catch((error) => { console.error('초기 데이터 생성 실패'); console.error(error instanceof Error ? error.message : '알 수 없는 오류'); process.exitCode = 1; });

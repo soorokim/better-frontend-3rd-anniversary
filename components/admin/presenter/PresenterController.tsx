@@ -139,11 +139,16 @@ export function PresenterController() {
           ) : null}
           {view.session.allPresented ? (
             <p className="mt-3 border-l-3 border-[var(--yellow)] pl-3 text-[var(--yellow)]">
-              모든 답변을 공개했어요. 목록에서 다시 볼 답변을 고르거나 발표 기록을 초기화할 수 있어요.
+              이 질문의 답변을 모두 공개했어요. 다음 질문으로 넘어갈 수 있어요.
             </p>
           ) : null}
         </div>
       </GamePanel>
+
+      <div className="mx-auto max-w-4xl px-4">
+        <button className="game-button secondary" type="button" disabled={controlsDisabled || !view.session.allPresented}
+          onClick={() => void sendCommand({ type: 'advance_question' })}>다음 질문 시작</button>
+      </div>
 
       <GamePanel title="On Stage" aria-live="polite">
         <div data-testid="presenter-current-slide" className="mt-5 min-h-64 border-4 border-[var(--yellow)] bg-[#111a35] p-5 sm:p-7">
@@ -189,7 +194,6 @@ export function PresenterController() {
           busy={controlsDisabled}
           onSelect={(answerId) => void sendCommand({ type: 'select_answer', answerId })}
           onNavigate={(direction) => void sendCommand({ type: 'navigate', direction })}
-          onRestart={() => void sendCommand({ type: 'restart', confirmed: true })}
         />
       </GamePanel>
     </>

@@ -1,4 +1,4 @@
-import { currentAnswer, saveCurrentAnswer } from '@/lib/answers/answer-service';
+import { currentAnswer, saveAnswer, saveCurrentAnswer } from '@/lib/answers/answer-service';
 import { requireParticipant } from '@/lib/auth/authorization';
 import { getEnv } from '@/lib/config/env';
 import { AppError, errorResponse } from '@/lib/http/errors';
@@ -28,7 +28,9 @@ export async function PUT(request: Request) {
       throw new AppError('invalid_json', '요청 내용을 확인해 주세요.', 400);
     }
     const body = answerRequestSchema.parse(payload);
-    return Response.json(await saveCurrentAnswer(participant.id, participant.eventId, body.content));
+    return Response.json(body.questionId
+      ? await saveAnswer(participant.id, participant.eventId, body.questionId, body.content)
+      : await saveCurrentAnswer(participant.id, participant.eventId, body.content));
   } catch (error) {
     return errorResponse(error);
   }
