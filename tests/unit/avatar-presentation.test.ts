@@ -48,7 +48,11 @@ describe('pixel avatar presentation', () => {
 
   it('lets a conversation-derived item choose the visible handheld layer', () => {
     expect(layeredAvatarParts({ ...traits, developerItem: 'COFFEE' }).accessory).toBe('coffee');
-    expect(layeredAvatarParts({ ...traits, developerItem: 'RED ERROR LOG' }).accessory).toBe('book');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'MECHANICAL KEYBOARD' }).accessory).toBe('keyboard');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'LAPTOP' }).accessory).toBe('laptop');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'RED ERROR LOG' }).accessory).toBe('error-log');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'GREEN TEST CHECK' }).accessory).toBe('test-check');
+    expect(layeredAvatarParts({ ...traits, developerItem: 'ENDLESS BROWSER TABS' }).accessory).toBe('browser-tabs');
     expect(layeredAvatarParts({ ...traits, developerItem: 'RUBBER DUCK' }).accessory).toBe('duck');
     expect(layeredAvatarParts({ ...traits, developerItem: 'UNKNOWN USB' }).accessory).toBe('usb');
   });

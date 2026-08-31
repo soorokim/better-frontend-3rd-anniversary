@@ -14,17 +14,23 @@ const fallbackTraits: AvatarTraits = {
 const traitOrder = Object.keys(avatarCatalog) as AvatarTrait[];
 
 export type LayeredAvatarParts = Omit<AvatarTraits, 'accessory'> & {
-  accessory: AvatarTraits['accessory'] | 'duck' | 'usb';
+  accessory: AvatarTraits['accessory']
+    | 'duck'
+    | 'usb'
+    | 'laptop'
+    | 'error-log'
+    | 'test-check'
+    | 'browser-tabs';
 };
 
 const itemAccessory: Record<string, LayeredAvatarParts['accessory']> = {
   'RUBBER DUCK': 'duck',
   COFFEE: 'coffee',
   'MECHANICAL KEYBOARD': 'keyboard',
-  LAPTOP: 'terminal',
-  'RED ERROR LOG': 'book',
-  'GREEN TEST CHECK': 'terminal',
-  'ENDLESS BROWSER TABS': 'terminal',
+  LAPTOP: 'laptop',
+  'RED ERROR LOG': 'error-log',
+  'GREEN TEST CHECK': 'test-check',
+  'ENDLESS BROWSER TABS': 'browser-tabs',
   'UNKNOWN USB': 'usb',
 };
 

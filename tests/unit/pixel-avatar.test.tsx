@@ -23,7 +23,7 @@ describe('PixelAvatar', () => {
 
     const image = screen.getByRole('img', { name: /^테스터의 픽셀 캐릭터/ });
     expect(image.tagName).toBe('svg');
-    expect(image).toHaveAttribute('viewBox', '0 0 32 40');
+    expect(image).toHaveAttribute('viewBox', '0 0 48 58');
     expect(image).toHaveAttribute('data-avatar-combination', 'warm:short:hoodie:duck:mint');
     expect(image.querySelector('[data-avatar-layer="body"]')).toBeInTheDocument();
     expect(image.querySelector('[data-avatar-layer="hair"][data-avatar-part="short"]')).toBeInTheDocument();

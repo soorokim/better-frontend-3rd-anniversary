@@ -59,6 +59,7 @@ services:
       EVENT_SLUG: ${EVENT_SLUG:-frontend-chat-3rd}
       EVENT_TITLE: ${EVENT_TITLE:-프론트엔드 단톡방 3주년}
       EVENT_QUESTION: ${EVENT_QUESTION:?set EVENT_QUESTION}
+      AVATAR_LAB_ENABLED: ${AVATAR_LAB_ENABLED:-false}
     ports:
       - "${APP_PORT:-3000}:3000"
     depends_on:

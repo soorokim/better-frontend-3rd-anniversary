@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation';
 import { PixelAvatar } from '@/components/avatar/PixelAvatar';
 import { avatarCatalog } from '@/lib/avatar/catalog';
+import { developerItems } from '@/lib/avatar/developer-profile';
 
 export const dynamic = 'force-dynamic';
 
 export default function AvatarLabPage() {
-  if (process.env.NODE_ENV === 'production') notFound();
+  if (process.env.NODE_ENV === 'production' && process.env.AVATAR_LAB_ENABLED !== 'true') notFound();
 
   const examples = avatarCatalog.hair.flatMap((hair, hairIndex) =>
     avatarCatalog.outfit.map((outfit, outfitIndex) => ({
@@ -27,14 +28,21 @@ export default function AvatarLabPage() {
       </article>)}
     </div>
     <h2 className="mb-4 mt-10 text-xl">CONVERSATION ITEMS</h2>
-    <div className="flex gap-5">
-      {(['RUBBER DUCK', 'UNKNOWN USB'] as const).map((developerItem) => <article key={developerItem} className="text-center">
+    <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 md:grid-cols-8">
+      {developerItems.map((developerItem, index) => <article key={developerItem} className="min-w-0 text-center">
         <PixelAvatar
           nickname={developerItem}
-          traits={{ body: 'warm', hair: 'short', outfit: 'hoodie', accessory: 'none', accent: 'yellow', developerItem }}
+          traits={{
+            body: avatarCatalog.body[index % avatarCatalog.body.length],
+            hair: avatarCatalog.hair[index % avatarCatalog.hair.length],
+            outfit: avatarCatalog.outfit[index % avatarCatalog.outfit.length],
+            accessory: 'none',
+            accent: avatarCatalog.accent[index % avatarCatalog.accent.length],
+            developerItem,
+          }}
           size={128}
         />
-        <p className="mt-2 text-xs text-[#aaa6bd]">{developerItem}</p>
+        <p className="mt-2 break-words text-[10px] leading-4 text-[#aaa6bd]">{developerItem}</p>
       </article>)}
     </div>
   </main>;
