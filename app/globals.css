@@ -23,7 +23,7 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .last-saved p { margin-top:8px; white-space:pre-wrap; }
 .memory-back-link { display:inline-block; margin-top:24px; color:var(--muted); }
 .status { min-height:24px; color:var(--muted); } .status.error { color:var(--danger); } .status.success { color:var(--mint); }
-.lobby-grid { display:grid; grid-template-columns:144px 1fr; gap:24px; align-items:center; }
+.lobby-grid { display:grid; grid-template-columns:208px 1fr; gap:24px; align-items:center; }
 .developer-profile { display:grid; gap:16px; margin-top:28px; }
 .terminal-reveal { overflow:hidden; border:2px solid #11162b; background:#070b16; padding:14px 16px; color:var(--muted); font:700 .78rem/1.7 'Courier New',monospace; }
 .terminal-line { margin:0; opacity:0; animation:terminal-line-in .35s steps(2,end) forwards; }

@@ -18,12 +18,12 @@ export default function AvatarLabPage() {
     })),
   );
 
-  return <main className="mx-auto min-h-screen max-w-5xl p-8 text-[#f4f0e8]">
+  return <main className="mx-auto min-h-screen max-w-7xl p-8 text-[#f4f0e8]">
     <h1 className="mb-2 text-3xl">PIXEL PARTS LAB</h1>
     <p className="mb-8 text-[#aaa6bd]">런타임 레이어 정렬을 확인하는 개발 전용 화면 · 1,200 combinations</p>
-    <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 md:grid-cols-5">
+    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
       {examples.map((traits, index) => <article key={`${traits.hair}-${traits.outfit}`} className="text-center">
-        <PixelAvatar nickname={`샘플 ${index + 1}`} traits={traits} size={128} />
+        <PixelAvatar nickname={`샘플 ${index + 1}`} traits={traits} size={160} />
         <p className="mt-2 text-xs text-[#aaa6bd]">{traits.hair} · {traits.outfit}<br />{traits.accessory} · {traits.accent}</p>
       </article>)}
     </div>
@@ -40,7 +40,7 @@ export default function AvatarLabPage() {
             accent: avatarCatalog.accent[index % avatarCatalog.accent.length],
             developerItem,
           }}
-          size={128}
+          size={144}
         />
         <p className="mt-2 break-words text-[10px] leading-4 text-[#aaa6bd]">{developerItem}</p>
       </article>)}

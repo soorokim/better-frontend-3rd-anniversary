@@ -22,13 +22,13 @@ describe('PixelAvatar', () => {
     />);
 
     const image = screen.getByRole('img', { name: /^테스터의 픽셀 캐릭터/ });
-    expect(image.tagName).toBe('svg');
-    expect(image).toHaveAttribute('viewBox', '0 0 48 58');
+    expect(image.tagName).toBe('SPAN');
     expect(image).toHaveAttribute('data-avatar-combination', 'warm:short:hoodie:duck:mint');
     expect(image.querySelector('[data-avatar-layer="body"]')).toBeInTheDocument();
     expect(image.querySelector('[data-avatar-layer="hair"][data-avatar-part="short"]')).toBeInTheDocument();
     expect(image.querySelector('[data-avatar-layer="outfit"][data-avatar-part="hoodie"]')).toBeInTheDocument();
     expect(image.querySelector('[data-avatar-layer="accessory"][data-avatar-part="duck"]')).toBeInTheDocument();
     expect(image.querySelector('[data-avatar-layer="accent"][data-avatar-part="mint"]')).toBeInTheDocument();
+    expect(image.querySelector('[data-avatar-layer="face"]')).toHaveAttribute('viewBox', '0 0 256 384');
   });
 });
