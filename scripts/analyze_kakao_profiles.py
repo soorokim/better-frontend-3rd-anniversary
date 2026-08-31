@@ -69,9 +69,14 @@ def normalize_text(value: str | None) -> str:
     return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", value or "")).strip()
 
 
+def normalize_display_name(value: str | None) -> str:
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", value or "")).strip()
+
+
 def nickname_key(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", value).casefold()
-    return re.sub(r"[^0-9a-z가-힣]", "", normalized)
+    compact = re.sub(r"[^0-9a-z가-힣]", "", normalized)
+    return compact or normalize_text(normalized)
 
 
 def nickname_stem(value: str) -> str:
@@ -164,7 +169,7 @@ def discover_participants(connection: sqlite3.Connection, rules: list[AliasRule]
         WHERE coalesce(is_system, 0)=0 AND coalesce(message_count, 0)>0
         ORDER BY id
     """).fetchall()
-    eligible = [(int(user_id), normalize_text(name), int(count)) for user_id, name, count in rows]
+    eligible = [(int(user_id), normalize_display_name(name), int(count)) for user_id, name, count in rows]
     by_id = {row[0]: row for row in eligible}
     by_name: dict[str, list[tuple[int, str, int]]] = {}
     for row in eligible:
@@ -182,13 +187,13 @@ def discover_participants(connection: sqlite3.Connection, rules: list[AliasRule]
                 unmatched.append(rule.name)
                 continue
         else:
-            matched = [row for alias in rule.aliases for row in by_name.get(normalize_text(alias), [])]
+            matched = [row for alias in rule.aliases for row in by_name.get(normalize_display_name(alias), [])]
         ids = tuple(dict.fromkeys(row[0] for row in matched))
         if not ids:
             unmatched.append(rule.name)
             continue
         if len(ids) > 1:
-            approved_aliases = {normalize_text(alias) for alias in rule.aliases}
+            approved_aliases = {normalize_display_name(alias) for alias in rule.aliases}
             missing_aliases = sorted({row[1] for row in matched if row[1] not in approved_aliases})
             if missing_aliases:
                 raise ValueError(

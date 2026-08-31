@@ -57,6 +57,22 @@ class AnalyzeKakaoProfilesTest(unittest.TestCase):
             self.assertEqual(second.returncode, 0)
             self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["profiles"][0]["conversation_digest"], digest)
 
+    def test_keeps_nicknames_made_only_of_punctuation_or_korean_jamo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); database = root / "archive.sqlite3"; output = root / "profiles.json"
+            users = [(9, ".", 1, 0), (10, "ㅈ.ㅅ.ㄱ.", 1, 0)]
+            messages = [(1, 9, "2025-01-01", "10:00", "one", 0), (2, 10, "2025-01-01", "11:00", "two", 0)]
+            build_archive(database, users, messages)
+
+            result = self.run_analysis(database, output)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(payload["source_user_count"], 2)
+            self.assertEqual(len(payload["profiles"]), 2)
+            self.assertEqual(sum(profile["source_row_count"] for profile in payload["profiles"]), 2)
+            self.assertEqual({profile["name"] for profile in payload["profiles"]}, {".", "ㅈ.ㅅ.ㄱ."})
+
     def test_requires_explicit_source_ids_before_same_key_rows_are_merged_or_split(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); database = root / "archive.sqlite3"; output = root / "profiles.json"
