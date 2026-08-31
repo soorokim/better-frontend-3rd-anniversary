@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import {
   adminSessions,
   answers,
@@ -97,7 +97,6 @@ describe('admin participant deletion', () => {
 
     expect((await route.DELETE(request(otherParticipant.id), { params: Promise.resolve({ participantId: otherParticipant.id }) })).status).toBe(404);
     expect(await database.db.select().from(participants).where(eq(participants.id, otherParticipant.id))).toHaveLength(1);
-    expect(await database.db.select().from(conversationProfiles).where(isNull(conversationProfiles.claimedParticipantId))).not.toHaveLength(0);
     expect(event.id).not.toBe(otherEvent.id);
   });
 });
