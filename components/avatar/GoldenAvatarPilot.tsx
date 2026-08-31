@@ -1,4 +1,5 @@
 const assetRoot = '/avatar-parts/v4-golden';
+const goldenReference = `${assetRoot}/assembled-reference.png`;
 
 const layers = [
   ['hairBack', 'hair-back.png'],
@@ -39,21 +40,20 @@ function ComposedAvatar({ size }: { size: number }) {
     className="relative inline-block shrink-0 overflow-hidden border-2 border-[#ffe657] bg-[radial-gradient(circle_at_50%_79%,#34466f_0_22%,transparent_23%),linear-gradient(#172449,#090e22)] shadow-[3px_3px_0_#0a1028]"
     data-avatar-asset-set="golden-master-v4"
   >
-    {layers.map(([role, filename]) => <span
-      key={role}
+    <span
       aria-hidden="true"
-      data-avatar-layer={role}
+      data-avatar-layer="golden-reference"
       className="absolute inset-0 bg-contain bg-center bg-no-repeat [image-rendering:pixelated]"
-      style={{ backgroundImage: `url("${assetRoot}/${filename}")` }}
-    />)}
+      style={{ backgroundImage: `url("${goldenReference}")` }}
+    />
   </span>;
 }
 
 export function GoldenAvatarPilot() {
   return <section data-testid="golden-avatar-pilot">
     <div className="mb-5 border-2 border-[#ffe657] bg-[#111a3a] p-4 text-sm text-[#aaa6bd]">
-      <p><span className="text-[#ffe657]">GOLDEN MASTER V4</span> · 한 세트만 정렬 검증 중</p>
-      <p className="mt-2">몸 기준 스케일, 중앙선, 지면과 목선 연결을 고정했습니다. 상의가 목과 어깨의 경계를 덮어 하나의 전신처럼 보이게 합니다. 아직 운영 화면에는 적용하지 않습니다.</p>
+      <p><span className="text-[#ffe657]">GOLDEN MASTER V4</span> · 원본 완성 조합을 기준으로 검증 중</p>
+      <p className="mt-2">원본 조합의 목선·후드·이너 티셔츠 연결을 기준으로 삼습니다. 파츠 추출본은 이 모습과 같아질 때까지 운영 화면에 적용하지 않습니다.</p>
     </div>
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <article className="min-w-0 border-4 border-[#817a9c] bg-[#202e58] p-3 text-center sm:p-5">
