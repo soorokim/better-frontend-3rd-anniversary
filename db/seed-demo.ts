@@ -1,10 +1,25 @@
+import { createHash } from 'node:crypto';
 import { and, eq } from 'drizzle-orm';
-import { answers, avatarAssignments, events, participants, questions } from './schema';
+import {
+  answers,
+  avatarAssignments,
+  conversationProfileAliases,
+  conversationProfileBatches,
+  conversationProfiles,
+  events,
+  participants,
+  questions,
+} from './schema';
 import { closeDatabase, db } from '../lib/db/client';
+import { allocateDeveloperProfiles, developerTraits } from '../lib/avatar/developer-profile';
 import { generateAvatar } from '../lib/avatar/generator';
 import { getEnv } from '../lib/config/env';
+import { assignConversationAvatar } from '../lib/db/repositories/participants';
+import { claimConversationProfile } from '../lib/db/repositories/conversation-profiles';
 import { hashSecret } from '../lib/security/crypto';
 import { normalizeNickname } from '../lib/validation/nickname';
+
+const DEMO_SOURCE_VERSION = 'demo-conversation-v1';
 
 const demoParticipants = [
   { nickname: '리액트요정', answer: '올해는 다 같이 새벽까지 배포 장애를 잡던 날이 제일 기억나요. 힘들었는데 이상하게 재미있었어요.' },
@@ -43,6 +58,84 @@ async function seedDemo() {
 
   const pinHash = await hashSecret(demoPin);
   await db.transaction(async (tx) => {
+    const preparedProfiles = demoParticipants.map((demo, index) => {
+      const nickname = normalizeNickname(demo.nickname);
+      const sourceDigest = createHash('sha256')
+        .update(`${DEMO_SOURCE_VERSION}\0${nickname.key}`, 'utf8')
+        .digest('hex');
+      return { demo, index, nickname, sourceDigest };
+    });
+    const payloadDigest = createHash('sha256')
+      .update(`${DEMO_SOURCE_VERSION}\0${event.id}\0${preparedProfiles.map(({ sourceDigest }) => sourceDigest).join('\0')}`, 'utf8')
+      .digest('hex');
+    const [activeBatch] = await tx.select().from(conversationProfileBatches).where(and(
+      eq(conversationProfileBatches.eventId, event.id),
+      eq(conversationProfileBatches.status, 'active'),
+    )).limit(1);
+    let [demoBatch] = await tx.select().from(conversationProfileBatches).where(and(
+      eq(conversationProfileBatches.eventId, event.id),
+      eq(conversationProfileBatches.payloadDigest, payloadDigest),
+    )).limit(1);
+    if (!demoBatch) {
+      if (activeBatch) {
+        throw new Error('실제 대화 프로필 배치가 활성화된 행사에는 데모 프로필을 만들 수 없습니다.');
+      }
+      [demoBatch] = await tx.insert(conversationProfileBatches).values({
+        eventId: event.id,
+        schemaVersion: 'demo-profile-analysis-v1',
+        sourceVersion: DEMO_SOURCE_VERSION,
+        selectionMode: 'demo-participants',
+        sourceUserCount: preparedProfiles.length,
+        profileCount: preparedProfiles.length,
+        mergedSourceRowCount: 0,
+        payloadDigest,
+        status: 'active',
+        activatedAt: new Date(),
+      }).returning();
+    }
+    if (!demoBatch || demoBatch.status !== 'active' || demoBatch.sourceVersion !== DEMO_SOURCE_VERSION) {
+      throw new Error('활성 데모 프로필 배치를 준비하지 못했습니다.');
+    }
+
+    let storedProfiles = await tx.select().from(conversationProfiles)
+      .where(eq(conversationProfiles.batchId, demoBatch.id));
+    if (!storedProfiles.length) {
+      const allocated = allocateDeveloperProfiles(preparedProfiles.map(({ sourceDigest, index }) => ({
+        sourceVersion: DEMO_SOURCE_VERSION,
+        sourceDigest,
+        adjectiveCandidates: ['꾸준한', '호기심 많은', '침착한'],
+        nounCandidates: ['타입 수호자', '버그 사냥꾼', 'API 연금술사', '런타임 탐험가'],
+        signals: { volume: (index + 1) / preparedProfiles.length },
+      })));
+      for (const prepared of preparedProfiles) {
+        const profileData = allocated.get(prepared.sourceDigest);
+        if (!profileData) throw new Error(`${prepared.demo.nickname}의 데모 프로필을 만들지 못했습니다.`);
+        const [profile] = await tx.insert(conversationProfiles).values({
+          batchId: demoBatch.id,
+          eventId: event.id,
+          nicknameDisplay: prepared.nickname.display,
+          nicknameKey: prepared.nickname.key,
+          sourceVersion: DEMO_SOURCE_VERSION,
+          sourceDigest: prepared.sourceDigest,
+          sourceRowCount: 1,
+          profileData,
+        }).returning();
+        await tx.insert(conversationProfileAliases).values({
+          batchId: demoBatch.id,
+          profileId: profile.id,
+          displayAlias: prepared.nickname.display,
+          aliasKey: prepared.nickname.key,
+          kind: 'canonical',
+        });
+      }
+      storedProfiles = await tx.select().from(conversationProfiles)
+        .where(eq(conversationProfiles.batchId, demoBatch.id));
+    }
+    if (storedProfiles.length !== preparedProfiles.length) {
+      throw new Error('데모 프로필 수가 참가자 수와 일치하지 않습니다.');
+    }
+    const profilesByNickname = new Map(storedProfiles.map((profile) => [profile.nicknameKey, profile]));
+
     for (const demo of demoParticipants) {
       const nickname = normalizeNickname(demo.nickname);
       await tx.insert(participants).values({
@@ -74,6 +167,27 @@ async function seedDemo() {
           .where(eq(participants.id, participant.id));
       }
 
+      const profile = profilesByNickname.get(nickname.key);
+      if (!profile) throw new Error(`${demo.nickname}의 데모 프로필을 찾지 못했습니다.`);
+      if (!profile.claimedParticipantId && !(await claimConversationProfile(profile.id, participant.id, tx))) {
+        throw new Error(`${demo.nickname}의 데모 프로필을 연결하지 못했습니다.`);
+      }
+      const currentAvatarId = participant.currentAvatarId ?? (await tx.select({ id: avatarAssignments.id })
+        .from(avatarAssignments)
+        .where(eq(avatarAssignments.participantId, participant.id))
+        .limit(1))[0]?.id;
+      if (!currentAvatarId) throw new Error(`${demo.nickname}의 기존 캐릭터를 찾지 못했습니다.`);
+      await assignConversationAvatar({
+        participantId: participant.id,
+        supersedesId: currentAvatarId,
+        sourceVersion: profile.sourceVersion,
+        sourceDigest: profile.sourceDigest,
+        generatorVersion: profile.profileData.generatorVersion,
+        catalogVersion: 'pixel-parts-v1',
+        traits: developerTraits(profile.profileData),
+        conversationProfileId: profile.id,
+      }, tx);
+
       if (demo.answer) {
         await tx.insert(answers).values({
           participantId: participant.id,
@@ -84,7 +198,7 @@ async function seedDemo() {
     }
   });
 
-  console.log(`데모 참가자 ${demoParticipants.length}명과 답변 ${demoParticipants.filter((demo) => demo.answer).length}개를 준비했습니다.`);
+  console.log(`데모 프로필·참가자 ${demoParticipants.length}명과 답변 ${demoParticipants.filter((demo) => demo.answer).length}개를 준비했습니다.`);
 }
 
 seedDemo()
