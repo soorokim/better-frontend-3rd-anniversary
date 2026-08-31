@@ -62,3 +62,4 @@ __pycache__/
 /.venv/
 /venv/
 *.egg-info/
+/.tmp-npm-ci-check/
