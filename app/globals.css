@@ -33,7 +33,7 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .status { min-height:24px; color:var(--muted); } .status.error { color:var(--danger); } .status.success { color:var(--mint); }
 .lobby-grid { display:grid; grid-template-columns:208px 1fr; gap:24px; align-items:center; }
 .developer-profile { display:grid; gap:16px; margin-top:28px; }
-.terminal-reveal { overflow:hidden; margin-bottom:16px; border:2px solid #11162b; background:#070b16; padding:14px 16px; color:var(--muted); font:700 .78rem/1.7 'Courier New',monospace; }
+.terminal-reveal { overflow:hidden; margin-bottom:4px; border:2px solid #11162b; background:#070b16; padding:14px 16px; color:var(--muted); font:700 .78rem/1.7 'Courier New',monospace; }
 .terminal-line { margin:0; opacity:0; animation:terminal-line-in .35s steps(2,end) forwards; }
 .terminal-line:nth-child(2) { animation-delay:.3s; }
 .terminal-line:nth-child(3) { animation-delay:.6s; }
