@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation';
 import { PixelAvatar } from '@/components/avatar/PixelAvatar';
-import { AvatarReviewGrid } from '@/components/avatar/AvatarReviewGrid';
-import { GoldenAvatarPilot } from '@/components/avatar/GoldenAvatarPilot';
 import { avatarCatalog } from '@/lib/avatar/catalog';
 import { developerItems } from '@/lib/avatar/developer-profile';
 
@@ -21,17 +19,9 @@ export default function AvatarLabPage() {
   );
 
   return <main className="mx-auto min-h-screen max-w-7xl p-4 text-[#f4f0e8] sm:p-8">
-    <h1 className="mb-2 text-3xl">PIXEL PARTS LAB</h1>
-    <p className="mb-8 text-[#aaa6bd]">런타임 레이어 정렬을 확인하는 개발 전용 화면 · 운영 v2와 승인 전 후보</p>
-    <section className="mb-12">
-      <h2 className="mb-4 text-xl">V4 GOLDEN MASTER</h2>
-      <GoldenAvatarPilot />
-    </section>
-    <section className="mb-12">
-      <h2 className="mb-4 text-xl">V3 PILOT CANDIDATES</h2>
-      <AvatarReviewGrid mode="pilot" />
-    </section>
-    <h2 className="mb-4 text-xl">CURRENT V2 SAMPLES</h2>
+    <h1 className="mb-2 text-3xl">DICEBEAR AVATAR LAB</h1>
+    <p className="mb-8 text-[#aaa6bd]">DiceBear Open Peeps · Bold Pop 조합을 확인하는 개발 전용 화면</p>
+    <h2 className="mb-4 text-xl">DICEBEAR SAMPLES</h2>
     <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
       {examples.map((traits, index) => <article key={`${traits.hair}-${traits.outfit}`} className="text-center">
         <PixelAvatar nickname={`샘플 ${index + 1}`} traits={traits} size={160} />

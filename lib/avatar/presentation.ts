@@ -2,7 +2,7 @@ import { avatarCatalog, type AvatarTrait, type AvatarTraits } from './catalog';
 import { canonicalItemId, type CanonicalItemId } from './assets/manifest';
 
 // Keep this seed namespace stable for the legacy `/avatars/pixel-art` API.
-export const AVATAR_RENDERER_VERSION = 'dicebear-pixel-art-v1';
+export const AVATAR_RENDERER_VERSION = 'dicebear-open-peeps-bold-pop-v1';
 
 const fallbackTraits: AvatarTraits = {
   body: 'warm',
@@ -30,12 +30,15 @@ export function normalizeAvatarTraits(input: Record<string, string>): AvatarTrai
 
 export function avatarRenderSeed(input: Record<string, string>): string {
   const traits = normalizeAvatarTraits(input);
-  return [AVATAR_RENDERER_VERSION, ...traitOrder.map((trait) => `${trait}:${traits[trait]}`)].join('\0');
+  const identitySeed = input.developerHash || input.avatarSeed || 'trait-fallback';
+  return [AVATAR_RENDERER_VERSION, identitySeed, ...traitOrder.map((trait) => `${trait}:${traits[trait]}`)].join('\0');
 }
 
 export function pixelAvatarUrl(input: Record<string, string>): string {
   const traits = normalizeAvatarTraits(input);
   const params = new URLSearchParams(traitOrder.map((trait) => [trait, traits[trait]]));
+  if (input.developerHash) params.set('developerHash', input.developerHash);
+  if (input.avatarSeed) params.set('avatarSeed', input.avatarSeed);
   return `/avatars/pixel-art?${params.toString()}`;
 }
 
@@ -47,8 +50,15 @@ export function layeredAvatarParts(input: Record<string, string>): LayeredAvatar
   };
 }
 
-export function traitsFromSearchParams(params: URLSearchParams): AvatarTraits {
-  return normalizeAvatarTraits(Object.fromEntries(traitOrder.map((trait) => [trait, params.get(trait) ?? ''])));
+export function traitsFromSearchParams(params: URLSearchParams): Record<string, string> {
+  const traits = normalizeAvatarTraits(Object.fromEntries(traitOrder.map((trait) => [trait, params.get(trait) ?? ''])));
+  const developerHash = params.get('developerHash');
+  const avatarSeed = params.get('avatarSeed');
+  return {
+    ...traits,
+    ...(developerHash ? { developerHash } : {}),
+    ...(avatarSeed ? { avatarSeed } : {}),
+  };
 }
 
 export const revealMessages = [

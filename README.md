@@ -74,9 +74,9 @@ npm run test:analysis
 npm run build
 ```
 
-### V4 조합형 아바타
+### 아바타 렌더러
 
-V4 조합형 아바타는 공통 캔버스·레이어 기준을 새로 잡는 준비 단계다. 현재 운영 캐릭터나 배포 스크립트에는 연결하지 않는다. 설계와 검증 계획은 [V4 모듈형 아바타 구현 계획](docs/V4_MODULAR_AVATAR_IMPLEMENTATION_PLAN.md)을 참고한다.
+운영 아바타는 로컬 DiceBear `Open Peeps` 스타일에 `Bold Pop` 배경 팔레트를 적용해 SVG로 생성한다. 참가자의 `developerHash`를 seed로 전달하므로 같은 참가자는 항상 같은 아바타를 받고, 서로 다른 참가자는 특성과 seed가 함께 반영된 서로 다른 결과를 받는다. 대화 프로필에서 정한 장비는 프로젝트 로컬 32×32 SVG로 아바타 위에 표시한다.
 
 통합 테스트와 Playwright는 별도의 테스트 데이터베이스와 실행 중인 앱 설정이 필요하다. 운영 DB URL을 넣어 실행하면 안 된다. 참가자 흐름은 [기본 기능 quickstart](specs/001-event-core-flow/quickstart.md), 진행자 화면은 [발표 기능 quickstart](specs/002-presenter-results/quickstart.md), 현재 통합 검증은 [대화 아바타 준비 quickstart](specs/004-conversation-avatar-readiness/quickstart.md)에 순서가 있다. API 계약은 [기본 기능 OpenAPI](specs/001-event-core-flow/contracts/openapi.yaml)와 [발표 기능 OpenAPI](specs/002-presenter-results/contracts/openapi.yaml)를 참고하면 된다.
 
@@ -107,4 +107,4 @@ docker compose run --rm \
 - `AUTH_PEPPER`와 `SESSION_SECRET`은 설치 뒤 함부로 바꾸지 않는다. 기존 인증 정보와 세션에 영향을 준다.
 - 최초 시드는 빈 DB에 관리자 계정을 만든다. 이미 생성된 관리자의 비밀번호는 `.env` 변경이나 재시드만으로 바뀌지 않는다.
 - 데이터베이스 포트는 Compose에서 호스트에 공개하지 않는다.
-- 픽셀 캐릭터는 대화 HMAC에서 확정한 몸·머리·옷·소지품·색상 파츠를 256×384 고밀도 픽셀 레이어로 겹쳐 렌더링한다. 현재 카탈로그는 1,200가지 조합이며 같은 입력은 다시 접속해도 같은 캐릭터가 된다. 대화 프로필의 `RUBBER DUCK`, `LAPTOP`, `RED ERROR LOG` 등 8개 장비는 캐릭터가 실제로 들고 있는 서로 다른 픽셀 아이템으로 표시된다. 로컬 개발에서는 `/avatar-lab`에서 대표 조합과 레이어 정렬을 볼 수 있고, 빌드된 개발 서버는 `AVATAR_LAB_ENABLED=true`일 때만 같은 경로를 연다. 운영 기본값은 `false`라 404로 닫힌다. 기존 `/avatars/pixel-art` 호환 API에는 DiceBear가 남아 있다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.
+- 아바타 특성 카탈로그는 기존 DB 호환을 위해 유지한다. 참가자 본체는 DiceBear Open Peeps/Bold Pop SVG로 생성하고, `RUBBER DUCK`, `LAPTOP`, `RED ERROR LOG` 등 8개 장비는 32×32 로컬 SVG 아이콘으로 표시한다. 로컬 개발에서는 `/avatar-lab`에서 대표 조합을 볼 수 있고, 빌드된 개발 서버는 `AVATAR_LAB_ENABLED=true`일 때만 같은 경로를 연다. 운영 기본값은 `false`라 404로 닫힌다. 기존 `/avatars/pixel-art` URL은 호환 경로로 유지한다. 제3자 고지는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 있다.

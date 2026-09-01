@@ -31,15 +31,24 @@ describe('pixel avatar presentation', () => {
     });
   });
 
-  it('renders the same crisp DiceBear SVG for the same traits', () => {
+  it('renders the same Open Peeps Bold Pop SVG for the same traits', () => {
     const normalized = normalizeAvatarTraits(traits);
     const first = renderPixelAvatar(normalized);
     const second = renderPixelAvatar(normalized);
 
     expect(second).toBe(first);
     expect(first).toContain('<svg');
-    expect(first).toContain('shape-rendering="crispEdges"');
-    expect(first).toContain('viewBox="0 0 16 16"');
+    expect(first).toContain('<dc:title>Open Peeps</dc:title>');
+    expect(first).toContain('viewBox="0 0 704 704"');
+    expect(first).toMatch(/fill="#(ff6b6b|feca57|48dbfb|1dd1a1|5f27cd)"/);
+  });
+
+  it('passes the generated participant hash through to the DiceBear seed', () => {
+    const first = renderPixelAvatar({ ...traits, developerHash: 'A1B2-C3D4' });
+    const second = renderPixelAvatar({ ...traits, developerHash: 'D4C3-B2A1' });
+
+    expect(first).not.toBe(second);
+    expect(pixelAvatarUrl({ ...traits, developerHash: 'A1B2-C3D4' })).toContain('developerHash=A1B2-C3D4');
   });
 
   it('keeps the generated trait combination instead of collapsing it into an atlas cell', () => {

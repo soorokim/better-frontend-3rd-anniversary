@@ -3,33 +3,17 @@
 이 문서는 화면에 쓰이는 픽셀 파츠, 폰트, 아이콘 파일을 점검한 결과다. npm 패키지의
 라이선스 목록을 대신하는 문서는 아니다.
 
-## 픽셀 캐릭터
+## 아바타
 
-아바타의 조합값은 `lib/avatar/catalog.ts`의 프로젝트 자체 카탈로그에서 만들고,
-현재 참가자 화면에는 승인된 기존 SVG 픽셀 캐릭터가 계속 표시된다. 승인 전 관리자용
-`pixel-layers-v3` 파일럿은 Universal LPC의 64×64 모듈형 캐릭터 파츠를 사용한다.
-
-- 원본: https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator
-- 라이선스: 파츠별 혼합(CC0, CC-BY 4.0, CC-BY-SA 3.0, OGA-BY 3.0, GPL 3.0)
-- 저장 위치: `public/avatar-parts/vendor/universal-lpc/`
-- 세부 저작자와 출처: 위 폴더의 `CREDITS.csv`와 `sheet_definitions/`
-
-파일럿은 정면 보행 프레임에서 몸, 머리, 눈, 상의, 하의와 신발 레이어를 골라 최근접 이웃
-방식으로 확대한다. 색상 변경을 지원하는 레이어만 결정적인 팔레트로 바꾸며 캐릭터 파츠를
-AI로 다시 그리지 않는다. 개발자 아이템 4종은 기존 프로젝트 생성 에셋을 캐릭터 오른쪽
-아래에 따로 배치한다.
-
-`public/avatar-parts`의 PNG 두 장은 2026-08-31에 이 프로젝트를 위해 OpenAI 이미지 생성
-도구로 만든 원본 에셋이다. v1 완성 캐릭터 아틀라스와 v2 파츠 콘셉트 기록이며, 현재
-런타임 캐릭터는 어느 PNG도 직접 표시하지 않는다.
-
-기존 아바타 URL API는 DiceBear의 `Pixel Art` 스타일로 SVG를 렌더링한다.
+참가자 아바타는 설치된 DiceBear 패키지로 서버 안에서 생성한다. 외부 아바타 API를 호출하지 않는다.
 
 - DiceBear Core: MIT License, https://github.com/dicebear/dicebear
-- DiceBear Pixel Art: CC0 1.0, https://www.dicebear.com/styles/pixel-art/
+- DiceBear Open Peeps: CC0 1.0, https://www.dicebear.com/styles/open-peeps/
+- Open Peeps 원작: Pablo Stanley, CC0 1.0, https://www.openpeeps.com/
 
-SVG API는 외부 아바타 API를 호출하지 않고 설치된 npm 패키지로 서버 안에서 생성한다.
-현재 화면에서 쓰는 레이어 조합과 자세한 카탈로그는 `public/avatar-parts/README.md`에 있다.
+`Bold Pop`은 Open Peeps에 적용하는 옵션 프리셋이며, 강한 채도의 배경 팔레트만 고정한다. 머리·표정·의상 등의 구성은 참가자별 seed로 결정된다.
+
+개발자 아이템 8종은 `public/avatar-items/bold-pop/`에 있는 이 프로젝트의 로컬 SVG다. 외부 아이콘 파일을 복사하지 않았으며, Open Peeps의 굵은 검은 선과 채색 방식에 맞춰 제작했다.
 
 ## 폰트
 

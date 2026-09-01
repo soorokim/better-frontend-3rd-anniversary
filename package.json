@@ -22,8 +22,7 @@
     "db:seed:demo": "tsx db/seed-demo.ts",
     "avatar:import": "tsx scripts/import-conversation-profiles.ts",
     "avatar:validate": "tsx scripts/validate-conversation-profiles.ts",
-    "avatar:assets:validate": "tsx scripts/validate-avatar-assets.ts",
-    "avatar:golden:build": "python scripts/build_golden_avatar_v4.py"
+    "avatar:assets:validate": "tsx scripts/validate-avatar-assets.ts"
   },
   "dependencies": {
     "@dicebear/core": "^10.7.0",

@@ -18,9 +18,9 @@ export default async function AdminAvatarReviewPage() {
       <Link className="memory-back-link mt-0" href="/admin">← 참가자 현황으로</Link>
     </nav>
     <GamePanel title="Avatar Quality Check">
-      <h1 className="text-2xl font-bold">픽셀 아바타 파일럿 검토</h1>
+      <h1 className="text-2xl font-bold">Open Peeps 아바타 검토</h1>
       <p className="mb-7 mt-2 text-[var(--muted)]">
-        네 캐릭터의 얼굴, 파츠 정렬, 아이템 식별성, 선명도와 잘림을 확인해 주세요.
+        네 캐릭터의 seed 일관성, Bold Pop 배경, 아이템 식별성, 선명도와 잘림을 확인해 주세요.
       </p>
       <AvatarReviewGrid mode="pilot" />
     </GamePanel>
