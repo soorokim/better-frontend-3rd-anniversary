@@ -42,7 +42,7 @@ export function PixelAvatar({ traits, nickname, size = 192 }: { traits: Traits; 
       sizes={`${size}px`}
       className="absolute inset-0 h-full w-full [image-rendering:pixelated]"
     />
-    {itemSrc ? <span aria-hidden="true" data-avatar-layer="item" data-avatar-part={parts.accessory} className="absolute bottom-[4%] right-[3%] h-[30%] w-[30%]">
+    {itemSrc ? <span aria-hidden="true" data-avatar-layer="item" data-avatar-part={parts.accessory} className="absolute left-[3%] top-[4%] h-[30%] w-[30%]">
       <Image alt="" src={itemSrc} fill unoptimized sizes={`${Math.max(16, Math.round(size * 0.3))}px`} className="object-contain" />
     </span> : null}
   </span>;

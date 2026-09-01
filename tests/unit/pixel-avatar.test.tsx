@@ -29,6 +29,7 @@ describe('PixelAvatar', () => {
     expect(diceBearImage).toHaveAttribute('src', '/avatars/pixel-art?body=warm&hair=short&outfit=hoodie&accessory=coffee&accent=mint&developerHash=7A3F-C921');
     const item = image.querySelector('[data-avatar-layer="item"]');
     expect(item).toHaveAttribute('data-avatar-part', 'duck');
+    expect(item).toHaveClass('left-[3%]', 'top-[4%]');
     expect(item?.querySelector('img')).toHaveAttribute('src', '/avatar-items/bold-pop/duck.svg');
   });
 });
