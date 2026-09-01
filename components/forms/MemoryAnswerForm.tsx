@@ -18,7 +18,7 @@ function readCookie(name: string) {
   return document.cookie.split('; ').find((entry) => entry.startsWith(`${name}=`))?.slice(name.length + 1);
 }
 
-export function MemoryAnswerForm({ questionId, initialContent = '' }: { questionId: string; initialContent?: string }) {
+export function MemoryAnswerForm({ questionId, initialContent = '', onSaved }: { questionId: string; initialContent?: string; onSaved?: (content: string) => void }) {
   const [draft, setDraft] = useState(initialContent);
   const [lastSaved, setLastSaved] = useState(initialContent);
   const [state, setState] = useState<SaveState>({ kind: 'idle' });
@@ -43,6 +43,7 @@ export function MemoryAnswerForm({ questionId, initialContent = '' }: { question
       }
       setLastSaved(body.content);
       setDraft(body.content);
+      onSaved?.(body.content);
       setState({ kind: 'success', message: '저장했어요.' });
     } catch {
       setState({ kind: 'error', message: '저장하지 못했어요. 작성 중인 내용은 그대로 남겨 두었습니다.' });

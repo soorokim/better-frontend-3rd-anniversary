@@ -23,7 +23,6 @@ test('360px participant registration, logout, and returning login', async ({ pag
 
   await page.getByRole('button', { name: '로그아웃' }).click();
   await expect(page).toHaveURL(/\/login/);
-  await page.getByLabel('초대 코드').fill(inviteCode);
   await page.getByLabel('닉네임').fill(nickname);
   await page.getByLabel('6자리 PIN').fill('123456');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();

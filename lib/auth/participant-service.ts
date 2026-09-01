@@ -31,7 +31,8 @@ import {
 import { normalizeNickname } from '@/lib/validation/nickname';
 import { issueSession } from './session';
 
-export type ParticipantAuthInput = { inviteCode: string; nickname: string; pin: string; ipAddress: string };
+export type ParticipantRegistrationInput = { inviteCode: string; nickname: string; pin: string; ipAddress: string };
+export type ParticipantLoginInput = { nickname: string; pin: string; ipAddress: string };
 
 function publicAvatar(avatar: NonNullable<Awaited<ReturnType<typeof findParticipantWithAvatar>>>['avatar']) {
   const statuses = (avatar.selectedTraits.developerStatuses ?? avatar.selectedTraits.developerStatus ?? '')
@@ -113,7 +114,7 @@ export async function verifyParticipantInvitation(input: { inviteCode: string; i
   return { verified: true as const };
 }
 
-export async function registerParticipant(input: ParticipantAuthInput) {
+export async function registerParticipant(input: ParticipantRegistrationInput) {
   const requestedNickname = normalizeNickname(input.nickname);
   const event = await verifyInvitationCode(input.inviteCode, input.ipAddress);
   if (!(await findActiveConversationProfileBatch(event.id))) {
@@ -194,9 +195,9 @@ export async function registerParticipant(input: ParticipantAuthInput) {
   }
 }
 
-export async function loginParticipant(input: ParticipantAuthInput) {
+export async function loginParticipant(input: ParticipantLoginInput) {
   const nickname = normalizeNickname(input.nickname);
-  const event = await verifyInvitationCode(input.inviteCode, input.ipAddress);
+  const event = await currentEvent();
   const subject = throttleSubject(event.id, nickname.key, input.ipAddress);
   const throttle = await readThrottle('participant_login', subject);
   if (throttle.blocked) throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, throttle.retryAfter);

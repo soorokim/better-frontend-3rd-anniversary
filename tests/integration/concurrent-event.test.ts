@@ -136,7 +136,6 @@ describe('30-participant concurrent event use', () => {
 
     const probe = loadParticipants[0];
     const repeatedLogin = await loginParticipant({
-      inviteCode: 'test-invite-code-1234',
       nickname: probe.nickname,
       pin: probe.pin,
       ipAddress: SHARED_IP,

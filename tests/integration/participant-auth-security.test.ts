@@ -64,7 +64,7 @@ describe('participant authentication security', () => {
     const { POST: login } = await import('@/app/api/participants/login/route');
     const failures = [];
     for (let index = 0; index < 4; index += 1) {
-      const bad = await login(new Request('http://localhost:3000/api/participants/login', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': '127.0.0.21' }, body: JSON.stringify({ inviteCode: 'test-invite-code-1234', nickname: '보안', pin: '000000' }) }));
+      const bad = await login(new Request('http://localhost:3000/api/participants/login', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': '127.0.0.21' }, body: JSON.stringify({ nickname: '보안', pin: '000000' }) }));
       failures.push({ status: bad.status, body: await bad.json(), retryAfter: bad.headers.get('retry-after') });
     }
     expect(failures.slice(0, 2).map(({ status }) => status)).toEqual([401, 401]);
@@ -126,7 +126,6 @@ describe('participant authentication security', () => {
           'x-forwarded-for': ip,
         },
         body: JSON.stringify({
-          inviteCode: 'test-invite-code-1234',
           nickname,
           pin: '123456',
         }),

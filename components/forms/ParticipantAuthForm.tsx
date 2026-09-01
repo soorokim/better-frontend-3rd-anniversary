@@ -11,6 +11,7 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
   const [state, setState] = useState<AuthState>({ kind: 'idle' });
   const registering = mode === 'register';
   const [inviteCode, setInviteCode] = useState('');
+  const [nickname, setNickname] = useState('');
   const [registrationStep, setRegistrationStep] = useState<'invitation' | 'details'>('invitation');
 
   async function verifyInvitation(event: FormEvent<HTMLFormElement>) {
@@ -30,6 +31,7 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
         return;
       }
       setInviteCode(candidate);
+      setNickname('');
       setRegistrationStep('details');
       setState({ kind: 'idle' });
     } catch {
@@ -41,7 +43,7 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
     event.preventDefault();
     setState({ kind: 'loading' });
     const data = new FormData(event.currentTarget);
-    const payload = { inviteCode: registering ? inviteCode : data.get('inviteCode'), nickname:data.get('nickname'), pin:data.get('pin'), ...(registering ? { pinConfirmation:data.get('pinConfirmation') } : {}) };
+    const payload = { ...(registering ? { inviteCode } : {}), nickname, pin:data.get('pin'), ...(registering ? { pinConfirmation:data.get('pinConfirmation') } : {}) };
     try {
       const response = await fetch(`/api/participants/${mode}`, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify(payload) });
       const body = await response.json() as ApiError;
@@ -64,14 +66,14 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
   </form>;
 
   return <form className="auth-form" onSubmit={submit} aria-busy={state.kind==='loading'}>
-    {!registering?<label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={16} autoComplete="off" /></label>:null}
-    <label className="game-field"><span>닉네임</span><input name="nickname" required maxLength={100} autoComplete="username" /></label>
+    {!registering ? <p className="text-sm text-[var(--muted)]">처음 가입할 때 만든 닉네임과 PIN으로 돌아올 수 있어요.</p> : null}
+    <label className="game-field"><span>닉네임</span><input key={registering ? 'register-nickname' : 'login-nickname'} name="nickname" value={nickname} onChange={(event) => setNickname(event.target.value)} required maxLength={100} autoComplete="username" /></label>
     <label className="game-field"><span>6자리 PIN</span><input name="pin" type="password" required inputMode="numeric" pattern="[0-9]{6}" autoComplete={registering?'new-password':'current-password'} /></label>
     {registering?<label className="game-field"><span>PIN 확인</span><input name="pinConfirmation" type="password" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="new-password" /></label>:null}
     <AuthStatus state={state} />
     <div className="auth-actions">
       <button className="game-button" type="submit" disabled={state.kind==='loading'}>{registering?'캐릭터 만나기':'로비로 돌아가기'}</button>
-      {registering?<button className="text-button" type="button" onClick={() => { setRegistrationStep('invitation'); setState({ kind: 'idle' }); }}>초대 코드 다시 입력</button>:null}
+      {registering?<button className="text-button" type="button" onClick={() => { setInviteCode(''); setNickname(''); setRegistrationStep('invitation'); setState({ kind: 'idle' }); }}>초대 코드 다시 입력</button>:null}
       <Link href={registering?'/login':'/join'}>{registering?'이미 참여했나요?':'처음 오셨나요?'}</Link>
       {!registering?<Link href="/reset-pin">PIN을 잊었나요?</Link>:null}
     </div>

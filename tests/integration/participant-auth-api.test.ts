@@ -62,13 +62,13 @@ describe('participant authentication API contract', () => {
 
     const { POST: login } = await import('@/app/api/participants/login/route');
     const loggedIn = await login(request('/api/participants/login', {
-      inviteCode: 'test-invite-code-1234', nickname: ' 예전프론트 ', pin: '123456',
+      nickname: ' 예전프론트 ', pin: '123456',
     }));
     expect(loggedIn.status).toBe(200);
     expect(await loggedIn.json()).toMatchObject({ id: currentBody.id, nickname: '프론트', avatar: currentBody.avatar });
 
     const canonicalLogin = await login(request('/api/participants/login', {
-      inviteCode: 'test-invite-code-1234', nickname: '프론트', pin: '123456',
+      nickname: '프론트', pin: '123456',
     }));
     expect(canonicalLogin.status).toBe(200);
     expect(await canonicalLogin.json()).toMatchObject({ id: currentBody.id, nickname: '프론트', avatar: currentBody.avatar });

@@ -38,7 +38,6 @@ async function submitExistingParticipantAnswer(browser: Browser, nickname: strin
   const context = await browser.newContext({ baseURL: appBaseUrl });
   const page = await context.newPage();
   await page.goto('/login');
-  await page.getByLabel('초대 코드').fill(inviteCode);
   await page.getByLabel('닉네임').fill(nickname);
   await page.getByLabel('6자리 PIN', { exact: true }).fill('123456');
   await page.getByRole('button', { name: '로비로 돌아가기' }).click();

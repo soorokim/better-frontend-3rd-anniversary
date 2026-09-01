@@ -9,7 +9,7 @@ export const registerSchema = z.object({
 }).strict().refine(({ pin, pinConfirmation }) => pin === pinConfirmation, { path: ['pinConfirmation'], message: 'PIN이 서로 다릅니다.' });
 
 export const loginSchema = z.object({
-  inviteCode: z.string().min(16), nickname: nicknameSchema, pin: pinSchema,
+  nickname: nicknameSchema, pin: pinSchema,
 }).strict();
 
 export const adminLoginSchema = z.object({ username: z.string().min(1).max(80), password: z.string().min(15) }).strict();
