@@ -5,8 +5,10 @@ import { MemoryAnswerForm } from './MemoryAnswerForm';
 
 type Question = { id: string; prompt: string };
 
-export function QuestionAnswerWorkspace({ questions, initialAnswers }: { questions: Question[]; initialAnswers: Record<string, string> }) {
-  const [selectedId, setSelectedId] = useState(questions[0]?.id ?? '');
+export function QuestionAnswerWorkspace({ questions, initialAnswers, initialQuestionId }: { questions: Question[]; initialAnswers: Record<string, string>; initialQuestionId?: string }) {
+  const [selectedId, setSelectedId] = useState(() => (
+    questions.some((question) => question.id === initialQuestionId) ? initialQuestionId ?? '' : questions[0]?.id ?? ''
+  ));
   const [savedAnswers, setSavedAnswers] = useState(initialAnswers);
   const selectedIndex = questions.findIndex((question) => question.id === selectedId);
   const selected = questions[selectedIndex] ?? questions[0];
