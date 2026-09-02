@@ -161,12 +161,12 @@ export function PresenterController() {
         </button>
         {view.progress.completed ? (
           <button
-            className="game-button ml-3"
+            className="game-button ml-3 secondary"
             type="button"
-            disabled={controlsDisabled || !canPublishArchive}
-            onClick={() => void sendCommand({ type: 'publish_archive' })}
+            disabled={controlsDisabled || (!view.archivePublished && !canPublishArchive)}
+            onClick={() => void sendCommand({ type: view.archivePublished ? 'unpublish_archive' : 'publish_archive' })}
           >
-            {view.archivePublished ? '전체 답변 공개 완료' : '모든 답 공개'}
+            {view.archivePublished ? '답안 공개 초기화' : '모든 답 공개'}
           </button>
         ) : null}
       </div>

@@ -183,6 +183,16 @@ describe('presenter controller API contract', () => {
     const archive = await getArchive();
     expect(archive.status).toBe(200);
     expect(JSON.stringify(await archive.json())).toContain(eventAnswers[0].content);
+
+    activeCookie = adminToken;
+    const reset = await POST(commandRequest({ type: 'unpublish_archive' }, adminCsrf));
+    expect(reset.status).toBe(200);
+    expect((await reset.json()).archivePublished).toBe(false);
+
+    activeCookie = participantToken;
+    const resetArchive = await getArchive();
+    expect(resetArchive.status).toBe(409);
+    expect(JSON.stringify(await resetArchive.json())).not.toContain(eventAnswers[0].content);
   });
 
   it('selects anonymously, reveals the exact author, and rejects another event answer as 404', async () => {

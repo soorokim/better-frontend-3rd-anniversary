@@ -12,6 +12,7 @@ import {
   completePresentationItem,
   moveToNextQuestion,
   publishAnswerArchive,
+  unpublishAnswerArchive,
 } from '@/lib/db/repositories/presentation';
 import { inTransaction, type Transaction } from '@/lib/db/transaction';
 import { AppError } from '@/lib/http/errors';
@@ -102,6 +103,10 @@ export async function commandPresentation(eventId: string, command: Presentation
           throw new AppError('presentation_incomplete', '네 질문의 발표를 모두 끝낸 뒤 전체 답변을 공개할 수 있습니다.', 409);
         }
         await publishAnswerArchive(eventId, executor);
+        break;
+      }
+      case 'unpublish_archive': {
+        await unpublishAnswerArchive(eventId, executor);
         break;
       }
       case 'advance_question': {

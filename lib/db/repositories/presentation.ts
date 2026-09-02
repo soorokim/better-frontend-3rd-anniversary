@@ -64,6 +64,14 @@ export async function publishAnswerArchive(eventId: string, executor: Transactio
   return event;
 }
 
+export async function unpublishAnswerArchive(eventId: string, executor: Transaction) {
+  const [event] = await executor.update(events).set({
+    answerArchivePublishedAt: null,
+    updatedAt: new Date(),
+  }).where(eq(events.id, eventId)).returning();
+  return event;
+}
+
 export async function findPresentationSession(
   eventId: string,
   questionId: string,

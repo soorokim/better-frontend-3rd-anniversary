@@ -8,6 +8,7 @@ const presentationCommandTypes = new Set([
   'restart',
   'advance_question',
   'publish_archive',
+  'unpublish_archive',
 ]);
 
 function sanitize(value: unknown): unknown {
