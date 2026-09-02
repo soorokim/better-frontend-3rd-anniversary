@@ -38,6 +38,7 @@ export type PresentationControllerView = {
     hasNextQuestion: boolean;
     completed: boolean;
   };
+  archivePublished: boolean;
   summary: { total: number; submitted: number; notSubmitted: number };
   session: {
     revision: number;
@@ -111,6 +112,7 @@ export function buildPresentationScreenView(
 type ControllerViewInput = {
   question: { id: string; prompt: string };
   progress?: PresentationControllerView['progress'];
+  archivePublished?: boolean;
   participantCount: number;
   session: {
     revision: number;
@@ -162,6 +164,7 @@ export function buildPresentationControllerView(input: ControllerViewInput): Pre
       hasNextQuestion: false,
       completed: false,
     },
+    archivePublished: input.archivePublished ?? false,
     summary: {
       total: input.participantCount,
       submitted,

@@ -25,6 +25,7 @@ const restartCommandSchema = z.object({
 }).strict();
 
 const advanceQuestionCommandSchema = z.object({ type: z.literal('advance_question') }).strict();
+const publishArchiveCommandSchema = z.object({ type: z.literal('publish_archive') }).strict();
 
 export const presentationCommandSchema = z.discriminatedUnion('type', [
   selectAnswerCommandSchema,
@@ -33,6 +34,7 @@ export const presentationCommandSchema = z.discriminatedUnion('type', [
   navigateCommandSchema,
   restartCommandSchema,
   advanceQuestionCommandSchema,
+  publishArchiveCommandSchema,
 ]);
 
 export type PresentationCommand = z.infer<typeof presentationCommandSchema>;

@@ -6,6 +6,8 @@ const presentationCommandTypes = new Set([
   'set_author_visibility',
   'navigate',
   'restart',
+  'advance_question',
+  'publish_archive',
 ]);
 
 function sanitize(value: unknown): unknown {

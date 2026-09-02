@@ -1,11 +1,14 @@
 import { asc, eq } from 'drizzle-orm';
-import { answers, avatarAssignments, participants, questionSequenceSessions, questions } from '@/db/schema';
+import { answers, avatarAssignments, events, participants, questions } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import { AppError } from '@/lib/http/errors';
 
 export async function participantArchive(eventId: string) {
-  const [sequence] = await db.select().from(questionSequenceSessions).where(eq(questionSequenceSessions.eventId, eventId)).limit(1);
-  if (!sequence || sequence.status !== 'completed') throw new AppError('archive_unavailable', '질답이 모두 끝난 뒤에 열람할 수 있습니다.', 409);
+  const [event] = await db.select({ answerArchivePublishedAt: events.answerArchivePublishedAt })
+    .from(events).where(eq(events.id, eventId)).limit(1);
+  if (!event?.answerArchivePublishedAt) {
+    throw new AppError('archive_unavailable', '운영자가 전체 답변을 공개한 뒤에 열람할 수 있습니다.', 409);
+  }
   const rows = await db.select({
     questionId: questions.id, prompt: questions.prompt, order: questions.displayOrder,
     content: answers.content, nickname: participants.nicknameDisplay,

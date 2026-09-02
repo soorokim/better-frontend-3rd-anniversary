@@ -91,6 +91,7 @@ export function PresenterController() {
   const revealLabel = currentSlide?.authorRevealed ? '작성자 공개됨' : '익명으로 공개 중';
   const controlsDisabled = busy;
   const canAdvanceQuestion = view.session.allPresented && !view.progress.completed;
+  const canPublishArchive = view.progress.completed && !view.archivePublished;
 
   return (
     <>
@@ -142,7 +143,9 @@ export function PresenterController() {
           {view.session.allPresented ? (
             <p className="mt-3 border-l-3 border-[var(--yellow)] pl-3 text-[var(--yellow)]">
               {view.progress.completed
-                ? '네 질문의 발표가 모두 끝났어요. 참여자 기록 화면에서 전체 답변을 다시 볼 수 있어요.'
+                ? view.archivePublished
+                  ? '전체 답변을 공개했어요. 참여자 기록 화면에서 다시 볼 수 있어요.'
+                  : '발표가 모두 끝났어요. 아래의 전체 답변 공개 버튼을 누르면 참여자 기록이 열려요.'
                 : view.progress.hasNextQuestion
                   ? '이 질문의 답변을 모두 공개했어요. 다음 질문으로 넘어갈 수 있어요.'
                   : '마지막 질문의 답변을 모두 공개했어요. 질답을 마무리할 수 있어요.'}
@@ -156,6 +159,16 @@ export function PresenterController() {
           onClick={() => void sendCommand({ type: 'advance_question' })}>
           {view.progress.hasNextQuestion ? '다음 질문 시작' : '질답 마무리'}
         </button>
+        {view.progress.completed ? (
+          <button
+            className="game-button ml-3"
+            type="button"
+            disabled={controlsDisabled || !canPublishArchive}
+            onClick={() => void sendCommand({ type: 'publish_archive' })}
+          >
+            {view.archivePublished ? '전체 답변 공개 완료' : '모든 답 공개'}
+          </button>
+        ) : null}
       </div>
 
       <GamePanel title="On Stage" aria-live="polite">

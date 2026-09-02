@@ -20,6 +20,7 @@ function controllerView(
       prompt: '기억에 남는 순간은?',
     },
     progress: { currentQuestion: 1, questionCount: 4, hasNextQuestion: true, completed: false },
+    archivePublished: false,
     summary: { total: 4, submitted: 3, notSubmitted: 1 },
     session: {
       revision: 0,

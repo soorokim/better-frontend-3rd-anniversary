@@ -56,6 +56,14 @@ export async function moveToNextQuestion(eventId: string, executor: Transaction)
   return { sequence: updated, question: next };
 }
 
+export async function publishAnswerArchive(eventId: string, executor: Transaction) {
+  const [event] = await executor.update(events).set({
+    answerArchivePublishedAt: new Date(),
+    updatedAt: new Date(),
+  }).where(eq(events.id, eventId)).returning();
+  return event;
+}
+
 export async function findPresentationSession(
   eventId: string,
   questionId: string,
@@ -330,6 +338,7 @@ export async function getPresentationControllerData(eventId: string, executor: E
       hasNextQuestion: questionIndex >= 0 && questionIndex < eventQuestions.length - 1,
       completed: boundary.sequence?.status === 'completed',
     },
+    archivePublished: Boolean(boundary.event.answerArchivePublishedAt),
     participantCount: participantTotal?.value ?? 0,
     session: session ? {
       revision: session.revision,

@@ -128,7 +128,8 @@ describe('presenter controller API contract', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-store, private');
-    expect(Object.keys(body).sort()).toEqual(['answers', 'currentSlide', 'question', 'session', 'summary']);
+    expect(Object.keys(body).sort()).toEqual(['answers', 'archivePublished', 'currentSlide', 'progress', 'question', 'session', 'summary']);
+    expect(body.archivePublished).toBe(false);
     expect(body.summary).toEqual({ total: 4, submitted: 3, notSubmitted: 1 });
     expect(body.currentSlide).toBeNull();
     expect(body.answers).toHaveLength(3);
@@ -151,6 +152,37 @@ describe('presenter controller API contract', () => {
     expect((await POST(commandRequest({ type: 'select_random' }, adminCsrf, 'https://attacker.example'))).status).toBe(403);
     expect((await POST(commandRequest({ type: 'select_random' }, 'wrong-csrf-token'))).status).toBe(403);
     expect((await POST(commandRequest({ type: 'select_random' }, adminCsrf))).status).toBe(200);
+  });
+
+  it('keeps the participant archive closed until the completed presentation is explicitly published', async () => {
+    activeCookie = adminToken;
+    const { POST } = await import('@/app/api/admin/presentation/commands/route');
+    const { GET: getArchive } = await import('@/app/api/answers/archive/route');
+
+    const early = await POST(commandRequest({ type: 'publish_archive' }, adminCsrf));
+    expect(early.status).toBe(409);
+    expect((await early.json()).error?.code).toBe('presentation_incomplete');
+
+    for (const answer of eventAnswers) {
+      expect((await POST(commandRequest({ type: 'select_answer', answerId: answer.id }, adminCsrf))).status).toBe(200);
+      expect((await POST(commandRequest({ type: 'set_author_visibility', revealed: true }, adminCsrf))).status).toBe(200);
+    }
+    expect((await POST(commandRequest({ type: 'advance_question' }, adminCsrf))).status).toBe(200);
+
+    activeCookie = participantToken;
+    const closedArchive = await getArchive();
+    expect(closedArchive.status).toBe(409);
+    expect(JSON.stringify(await closedArchive.json())).not.toContain(eventAnswers[0].content);
+
+    activeCookie = adminToken;
+    const published = await POST(commandRequest({ type: 'publish_archive' }, adminCsrf));
+    expect(published.status).toBe(200);
+    expect((await published.json()).archivePublished).toBe(true);
+
+    activeCookie = participantToken;
+    const archive = await getArchive();
+    expect(archive.status).toBe(200);
+    expect(JSON.stringify(await archive.json())).toContain(eventAnswers[0].content);
   });
 
   it('selects anonymously, reveals the exact author, and rejects another event answer as 404', async () => {

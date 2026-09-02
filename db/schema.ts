@@ -19,7 +19,8 @@ export const conversationProfileAliasKind = pgEnum('conversation_profile_alias_k
 
 export const events = pgTable('events', {
   id: uuid('id').defaultRandom().primaryKey(), slug: text('slug').notNull(), title: text('title').notNull(),
-  inviteCodeHash: text('invite_code_hash').notNull(), registrationOpen: boolean('registration_open').default(true).notNull(), ...timestamps,
+  inviteCodeHash: text('invite_code_hash').notNull(), registrationOpen: boolean('registration_open').default(true).notNull(),
+  answerArchivePublishedAt: timestamp('answer_archive_published_at', { withTimezone: true }), ...timestamps,
 }, (t) => [uniqueIndex('events_slug_uq').on(t.slug), check('events_title_length', sql`char_length(${t.title}) between 1 and 100`)]);
 
 export const participants = pgTable('participants', {
