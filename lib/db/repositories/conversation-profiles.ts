@@ -4,6 +4,7 @@ import {
   conversationProfileBatches,
   conversationProfiles,
   participants,
+  type ConversationProfileData,
 } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import type { Transaction } from '@/lib/db/transaction';
@@ -148,6 +149,19 @@ export async function previousFinalProfiles(eventId: string, executor: Executor 
       eq(conversationProfileBatches.status, 'active'),
     ));
   return new Map(rows.map((row) => [row.sourceDigest, row.profileData]));
+}
+
+export async function earliestConversationProfiles(eventId: string, executor: Executor = db) {
+  const rows = await executor.select({
+    sourceDigest: conversationProfiles.sourceDigest,
+    profileData: conversationProfiles.profileData,
+  }).from(conversationProfiles)
+    .innerJoin(conversationProfileBatches, eq(conversationProfiles.batchId, conversationProfileBatches.id))
+    .where(eq(conversationProfileBatches.eventId, eventId))
+    .orderBy(conversationProfileBatches.importedAt);
+  const first = new Map<string, ConversationProfileData>();
+  for (const row of rows) if (!first.has(row.sourceDigest)) first.set(row.sourceDigest, row.profileData);
+  return first;
 }
 
 export async function activeConversationProfiles(eventId: string, executor: Executor = db) {

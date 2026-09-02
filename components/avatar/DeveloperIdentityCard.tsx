@@ -37,6 +37,7 @@ function isDeveloperProfile(traits: Traits) {
 export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; traits: Traits }) {
   const [statusIndex, setStatusIndex] = useState(0);
   const [reasonOpen, setReasonOpen] = useState(false);
+  const [classGuideOpen, setClassGuideOpen] = useState(false);
   const statuses = useMemo(() => approvedStatuses(traits), [traits]);
   if (!isDeveloperProfile(traits)) return null;
 
@@ -66,6 +67,9 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
       <span className="developer-card-hint" aria-hidden="true">CLICK TO PING</span>
     </button>
     <div className="developer-item-reason">
+      <button type="button" className="developer-reason-button" onClick={() => setClassGuideOpen((open) => !open)} aria-expanded={classGuideOpen} aria-controls="developer-class-guide-detail">
+        {classGuideOpen ? '클래스 설명 닫기' : '클래스 설명'}
+      </button>
       <button
         type="button"
         className="developer-reason-button"
@@ -78,6 +82,7 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
       {reasonOpen ? <p id="developer-item-reason-detail" className="developer-reason-detail" aria-live="polite">
         {traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}
       </p> : null}
+      {classGuideOpen ? <p id="developer-class-guide-detail" className="developer-reason-detail">{classGuide.adjective} {classGuide.noun}</p> : null}
     </div>
     <aside id="developer-class-tooltip" className="developer-class-tooltip" role="tooltip">
       <p className="pixel-title">CLASS GUIDE</p>

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { ConversationProfileData } from '@/db/schema';
 import { generateAvatarFromDigest } from './generator';
 
-export const DEVELOPER_PROFILE_VERSION = 'developer-profile-v3';
+export const DEVELOPER_PROFILE_VERSION = 'developer-profile-v4';
 export const DEVELOPER_CATALOG_VERSION = 'developer-catalog-v1';
 
 export const developerItems = [
@@ -37,6 +37,8 @@ export type DeveloperProfile = {
   easterEggStatuses: string[];
   displayHash: string;
   generatorVersion: string;
+  avatarSeed?: string;
+  avatarOptions?: Record<string, string>;
 };
 
 type ProfileInput = {
@@ -140,8 +142,8 @@ export function generateDeveloperProfile(
 }
 
 /**
- * Keeps prior final profiles untouched, then gives new digests the first
- * deterministic class+item combination that is still free in this batch.
+ * Retains a participant's established identity while allowing only the item
+ * semantics to evolve with a newer profile version.
  */
 export function allocateDeveloperProfiles(
   inputs: ProfileInput[],
@@ -149,18 +151,19 @@ export function allocateDeveloperProfiles(
 ): Map<string, ConversationProfileData> {
   const result = new Map<string, ConversationProfileData>();
   const used = new Set<string>();
-  for (const input of inputs) {
-    const prior = previous.get(input.sourceDigest);
-    if (prior?.generatorVersion === DEVELOPER_PROFILE_VERSION) used.add(`${prior.className ?? '—'}\0${prior.item}`);
-  }
 
   for (const input of [...inputs].sort((a, b) => a.sourceDigest.localeCompare(b.sourceDigest))) {
     const prior = previous.get(input.sourceDigest);
     const candidates = profileCandidates(input);
-    const reusablePrior = prior?.generatorVersion === DEVELOPER_PROFILE_VERSION ? prior : undefined;
-    const selected = reusablePrior ?? candidates.find((candidate) => !used.has(`${candidate.className ?? '—'}\0${candidate.item}`)) ?? candidates[0];
+    const semantic = semanticItem(input);
+    const selected = prior ? {
+      ...prior,
+      item: semantic.item,
+      itemReason: semantic.reason,
+      generatorVersion: DEVELOPER_PROFILE_VERSION,
+    } : candidates.find((candidate) => !used.has(`${candidate.className ?? '—'}\0${candidate.item}`)) ?? candidates[0];
     used.add(`${selected.className ?? '—'}\0${selected.item}`);
-    const visual = generateAvatarFromDigest(input.sourceVersion, input.sourceDigest);
+    const visual = prior?.avatarOptions ? { traits: prior.avatarOptions } : generateAvatarFromDigest(input.sourceVersion, input.sourceDigest);
     result.set(input.sourceDigest, {
       adjectiveCandidates: uniqueCandidates(input.adjectiveCandidates, 3),
       nounCandidates: uniqueCandidates(input.nounCandidates, 6),

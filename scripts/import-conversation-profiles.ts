@@ -9,6 +9,7 @@ import {
   activateConversationProfileBatch,
   activeConversationProfiles,
   createConversationProfileBatch,
+  earliestConversationProfiles,
   releaseConversationProfileClaims,
 } from '@/lib/db/repositories/conversation-profiles';
 import { findEventBySlug } from '@/lib/db/repositories/participants';
@@ -29,6 +30,8 @@ function previousDeveloperProfile(value: import('@/db/schema').ConversationProfi
     easterEggStatuses: value.easterEggStatuses,
     displayHash: value.displayHash,
     generatorVersion: value.generatorVersion,
+    avatarSeed: value.avatarSeed,
+    avatarOptions: value.avatarOptions,
   };
 }
 
@@ -60,10 +63,8 @@ export async function importConversationProfiles(path: string) {
   }
 
   const previousRows = await activeConversationProfiles(event.id);
-  const previousProfiles = new Map(previousRows.map(({ conversation_profiles: profile }) => [
-    profile.sourceDigest,
-    previousDeveloperProfile(profile.profileData),
-  ]));
+  const historicalProfiles = await earliestConversationProfiles(event.id);
+  const previousProfiles = new Map([...historicalProfiles].map(([digest, profile]) => [digest, previousDeveloperProfile(profile)]));
   const previousByDigest = new Map(previousRows.map(({ conversation_profiles: profile }) => [profile.sourceDigest, profile]));
   const previousByNickname = new Map(previousRows.map(({ conversation_profiles: profile }) => [profile.nicknameKey, profile]));
   const allocated = allocateDeveloperProfiles(payload.profiles.map((profile) => ({
