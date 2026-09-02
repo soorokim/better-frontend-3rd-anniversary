@@ -38,14 +38,14 @@ export function DeveloperIdentityCard({
   nickname,
   traits,
   interactive = true,
-  showGuides = true,
+  guideControls = 'bottom',
 }: {
   nickname: string;
   traits: Traits;
   /** Roster cards keep the profile visible but do not cycle the private status easter egg. */
   interactive?: boolean;
-  /** The two explanation controls belong to the owner-facing lobby profile. */
-  showGuides?: boolean;
+  /** The owner uses full buttons below the card; public roster entries use compact question-mark controls. */
+  guideControls?: 'bottom' | 'icon' | 'none';
 }) {
   const [guide, setGuide] = useState<'class' | 'item' | null>(null);
   const [statusIndex, setStatusIndex] = useState(0);
@@ -89,16 +89,22 @@ export function DeveloperIdentityCard({
     <div className={`developer-card${interactive ? '' : ' developer-card-static'}`} {...cardInteraction}>
       <dl>
         <div><dt>PLAYER</dt><dd>{nickname}</dd></div>
-        <div><dt>CLASS</dt><dd className="developer-guide-field"><span>{developerClass}</span>{showGuides ? <button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'class')} aria-label="클래스 설명 보기" aria-expanded={guide === 'class'}>?</button> : null}
-          {guide === 'class' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">CLASS GUIDE</p><p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p><ul><li><strong>{adjectiveLabel}</strong>: {classGuide.adjective}</li><li><strong>{nounLabel}</strong>: {classGuide.noun}</li><li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li></ul><p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p></aside> : null}
+        <div><dt>CLASS</dt><dd className="developer-guide-field"><span>{developerClass}</span>{guideControls === 'icon' ? <button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'class')} aria-label="클래스 설명 보기" aria-expanded={guide === 'class'}>?</button> : null}
+          {guide === 'class' && guideControls === 'icon' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">CLASS GUIDE</p><p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p><ul><li><strong>{adjectiveLabel}</strong>: {classGuide.adjective}</li><li><strong>{nounLabel}</strong>: {classGuide.noun}</li><li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li></ul><p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p></aside> : null}
         </dd></div>
-        <div><dt>ITEM</dt><dd className="developer-guide-field"><span>{traits.developerItem}</span>{showGuides ? <button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'item')} aria-label="아이템 선정 이유 보기" aria-expanded={guide === 'item'}>?</button> : null}
-          {guide === 'item' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">ITEM GUIDE</p><p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p><p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p><p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p></aside> : null}
+        <div><dt>ITEM</dt><dd className="developer-guide-field"><span>{traits.developerItem}</span>{guideControls === 'icon' ? <button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'item')} aria-label="아이템 선정 이유 보기" aria-expanded={guide === 'item'}>?</button> : null}
+          {guide === 'item' && guideControls === 'icon' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">ITEM GUIDE</p><p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p><p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p><p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p></aside> : null}
         </dd></div>
         <div><dt>STATUS</dt><dd aria-live="polite" aria-atomic="true">{status}</dd></div>
         <div><dt>HASH</dt><dd>{traits.developerHash}</dd></div>
       </dl>
       {interactive ? <span className="developer-card-hint" aria-hidden="true">CLICK TO PING</span> : null}
     </div>
+    {guideControls === 'bottom' ? <div className="developer-guide-actions">
+      <button type="button" className="developer-guide-action" onClick={(event) => toggleGuide(event, 'class')} aria-label="클래스 설명 보기" aria-expanded={guide === 'class'}>CLASS 설명</button>
+      <button type="button" className="developer-guide-action" onClick={(event) => toggleGuide(event, 'item')} aria-label="아이템 선정 이유 보기" aria-expanded={guide === 'item'}>ITEM 설명</button>
+      {guide === 'class' ? <aside className="developer-guide-tooltip developer-guide-tooltip-bottom" role="tooltip"><p className="pixel-title">CLASS GUIDE</p><p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p><ul><li><strong>{adjectiveLabel}</strong>: {classGuide.adjective}</li><li><strong>{nounLabel}</strong>: {classGuide.noun}</li><li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li></ul><p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p></aside> : null}
+      {guide === 'item' ? <aside className="developer-guide-tooltip developer-guide-tooltip-bottom" role="tooltip"><p className="pixel-title">ITEM GUIDE</p><p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p><p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p><p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p></aside> : null}
+    </div> : null}
   </section>;
 }

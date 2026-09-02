@@ -20,7 +20,7 @@ export default async function AvatarRosterPage() {
             <p className="mt-3 text-[var(--muted)]">이번 모임에 함께하는 플레이어예요.</p>
           </div>
         </div>
-        <DeveloperIdentityCard nickname={player.nickname} traits={player.avatar.traits} interactive={false} showGuides={false} />
+        <DeveloperIdentityCard nickname={player.nickname} traits={player.avatar.traits} interactive={false} guideControls="icon" />
       </li>)}
     </ul>
     <Link className="memory-back-link" href="/lobby">로비로 돌아가기</Link>

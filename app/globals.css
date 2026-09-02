@@ -67,6 +67,10 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .developer-guide-button { display:grid; width:20px; height:20px; place-items:center; flex:0 0 auto; border:1px solid var(--pink); border-radius:50%; background:transparent; color:var(--pink); font:700 .72rem/1 'Courier New',monospace; cursor:pointer; }
 .developer-guide-button:hover,.developer-guide-button:focus-visible { border-color:var(--yellow); color:var(--yellow); outline:none; }
 .developer-guide-tooltip { position:absolute; z-index:10; right:0; top:calc(100% + 8px); width:min(310px,calc(100vw - 72px)); border:2px solid var(--pink); background:#10182ff5; box-shadow:4px 4px 0 #080d1d; padding:14px; color:var(--muted); font-size:.84rem; line-height:1.6; }
+.developer-guide-actions { position:relative; display:flex; flex-wrap:wrap; gap:8px; }
+.developer-guide-action { min-height:38px; border:2px solid var(--pink); background:#111a35; color:var(--pink); padding:6px 12px; font:700 .75rem/1 'Courier New',monospace; cursor:pointer; }
+.developer-guide-action:hover,.developer-guide-action:focus-visible { border-color:var(--yellow); color:var(--yellow); outline:none; }
+.developer-guide-tooltip-bottom { top:auto; bottom:calc(100% + 8px); }
 .developer-guide-tooltip .pixel-title { color:var(--pink); font-size:.72rem; }
 .developer-guide-tooltip>p { margin:7px 0 0; }
 .developer-guide-tooltip ul { display:grid; gap:3px; margin:8px 0 0; padding-left:18px; }
