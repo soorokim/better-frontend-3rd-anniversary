@@ -36,8 +36,7 @@ function isDeveloperProfile(traits: Traits) {
 
 export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; traits: Traits }) {
   const [statusIndex, setStatusIndex] = useState(0);
-  const [reasonOpen, setReasonOpen] = useState(false);
-  const [classGuideOpen, setClassGuideOpen] = useState(false);
+  const [guide, setGuide] = useState<'class' | 'item' | null>(null);
   const statuses = useMemo(() => approvedStatuses(traits), [traits]);
   if (!isDeveloperProfile(traits)) return null;
 
@@ -55,7 +54,6 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
       className="developer-card"
       onClick={() => setStatusIndex((index) => index + 1)}
       aria-label={`${nickname} 개발자 카드. 누르면 상태 메시지가 바뀝니다.`}
-      aria-describedby="developer-class-tooltip"
     >
       <dl>
         <div><dt>PLAYER</dt><dd>{nickname}</dd></div>
@@ -67,24 +65,20 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
       <span className="developer-card-hint" aria-hidden="true">CLICK TO PING</span>
     </button>
     <div className="developer-item-reason">
-      <button type="button" className="developer-reason-button" onClick={() => setClassGuideOpen((open) => !open)} aria-expanded={classGuideOpen} aria-controls="developer-class-guide-detail">
-        {classGuideOpen ? '클래스 설명 닫기' : '클래스 설명'}
+      <button type="button" className="developer-reason-button" onClick={() => setGuide((current) => current === 'class' ? null : 'class')} aria-expanded={guide === 'class'} aria-controls="developer-class-guide-detail">
+        클래스 설명
       </button>
       <button
         type="button"
         className="developer-reason-button"
-        onClick={() => setReasonOpen((open) => !open)}
-        aria-expanded={reasonOpen}
+        onClick={() => setGuide((current) => current === 'item' ? null : 'item')}
+        aria-expanded={guide === 'item'}
         aria-controls="developer-item-reason-detail"
       >
-        {reasonOpen ? '선정 이유 닫기' : '아이템 선정 이유'}
+        아이템 선정 이유
       </button>
-      {reasonOpen ? <p id="developer-item-reason-detail" className="developer-reason-detail" aria-live="polite">
-        {traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}
-      </p> : null}
-      {classGuideOpen ? <p id="developer-class-guide-detail" className="developer-reason-detail">{classGuide.adjective} {classGuide.noun}</p> : null}
     </div>
-    <aside id="developer-class-tooltip" className="developer-class-tooltip" role="tooltip">
+    {guide === 'class' ? <aside id="developer-class-guide-detail" className="developer-class-tooltip open" aria-live="polite">
       <p className="pixel-title">CLASS GUIDE</p>
       <p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p>
       <ul>
@@ -93,6 +87,12 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
         <li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li>
       </ul>
       <p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p>
-    </aside>
+    </aside> : null}
+    {guide === 'item' ? <aside id="developer-item-reason-detail" className="developer-class-tooltip open" aria-live="polite">
+      <p className="pixel-title">ITEM GUIDE</p>
+      <p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p>
+      <p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p>
+      <p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p>
+    </aside> : null}
   </section>;
 }
