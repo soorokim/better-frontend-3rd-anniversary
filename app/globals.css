@@ -42,7 +42,7 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .memory-back-link { display:inline-block; margin-top:24px; color:var(--muted); }
 .status { min-height:24px; color:var(--muted); } .status.error { color:var(--danger); } .status.success { color:var(--mint); }
 .lobby-grid { display:grid; grid-template-columns:208px 1fr; gap:24px; align-items:center; }
-.developer-profile { display:grid; gap:16px; margin-top:28px; }
+.developer-profile { position:relative; display:grid; gap:16px; margin-top:28px; }
 .terminal-reveal { overflow:hidden; margin-bottom:4px; border:2px solid #11162b; background:#070b16; padding:14px 16px; color:var(--muted); font:700 .78rem/1.7 'Courier New',monospace; }
 .terminal-line { margin:0; opacity:0; animation:terminal-line-in .35s steps(2,end) forwards; }
 .terminal-line:nth-child(2) { animation-delay:.3s; }
@@ -56,6 +56,12 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .developer-card dt { color:var(--pink); }
 .developer-card dd { margin:0; overflow-wrap:anywhere; }
 .developer-card-hint { display:block; margin-top:12px; color:var(--muted); font:700 .68rem/1 'Courier New',monospace; text-align:right; }
+.developer-class-tooltip { position:absolute; z-index:10; right:12px; bottom:12px; width:min(100% - 24px,480px); border:2px solid var(--pink); background:#10182ff5; box-shadow:4px 4px 0 #080d1d; padding:14px; color:var(--muted); font-size:.84rem; line-height:1.6; opacity:0; pointer-events:none; transform:translateY(6px); transition:opacity .14s ease,transform .14s ease; }
+.developer-card:hover + .developer-class-tooltip, .developer-card:focus-visible + .developer-class-tooltip { opacity:1; transform:translateY(0); }
+.developer-class-tooltip .pixel-title { color:var(--pink); font-size:.72rem; }
+.developer-class-tooltip>p { margin:7px 0 0; }
+.developer-class-tooltip ul { display:grid; gap:3px; margin:8px 0 0; padding-left:18px; }
+.developer-class-note { color:var(--mint); }
 @keyframes terminal-line-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 .avatar-reveal { min-width:0; }
 .avatar-reveal-shuffling [class*="image-rendering"] { animation:pixel-shuffle .36s steps(2,end) infinite; }
