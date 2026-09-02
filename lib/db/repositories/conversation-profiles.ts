@@ -61,7 +61,7 @@ export async function findConversationProfilesBySlashPrefix(
       eq(conversationProfiles.eventId, eventId),
       eq(conversationProfileBatches.status, 'active'),
       sql`position('/' in ${conversationProfiles.nicknameKey}) > 0`,
-      sql`split_part(${conversationProfiles.nicknameKey}, '/', 1) = ${nicknamePrefixKey}`,
+      sql`btrim(split_part(${conversationProfiles.nicknameKey}, '/', 1)) = ${nicknamePrefixKey}`,
     ))
     .limit(3);
 }

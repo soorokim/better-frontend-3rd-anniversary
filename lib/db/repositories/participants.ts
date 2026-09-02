@@ -154,6 +154,6 @@ export async function findParticipantsBySlashPrefix(eventId: string, nicknamePre
   }).from(participants).where(and(
     eq(participants.eventId, eventId),
     sql`position('/' in ${participants.nicknameKey}) > 0`,
-    sql`split_part(${participants.nicknameKey}, '/', 1) = ${nicknamePrefixKey}`,
+    sql`btrim(split_part(${participants.nicknameKey}, '/', 1)) = ${nicknamePrefixKey}`,
   )).limit(3);
 }

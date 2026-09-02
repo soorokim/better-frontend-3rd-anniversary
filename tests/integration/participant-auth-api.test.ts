@@ -35,6 +35,7 @@ describe('participant authentication API contract', () => {
       { nickname: '피카/React' },
       { nickname: '피카/Vue' },
       { nickname: '포포/React' },
+      { nickname: '한나 / Next,Nuxt,Nest' },
     ]);
     sessionCookie = undefined;
   });
@@ -87,6 +88,12 @@ describe('participant authentication API contract', () => {
     }));
     expect(uniqueRegistration.status).toBe(201);
     expect(await uniqueRegistration.json()).toMatchObject({ nickname: '포포/React' });
+
+    const spacedPrefixRegistration = await register(request('/api/participants/register', {
+      inviteCode: 'test-invite-code-1234', nickname: '한나', pin: '123456', pinConfirmation: '123456',
+    }));
+    expect(spacedPrefixRegistration.status).toBe(201);
+    expect(await spacedPrefixRegistration.json()).toMatchObject({ nickname: '한나 / Next,Nuxt,Nest' });
 
     const ambiguousRegistration = await register(request('/api/participants/register', {
       inviteCode: 'test-invite-code-1234', nickname: '피카', pin: '123456', pinConfirmation: '123456',
