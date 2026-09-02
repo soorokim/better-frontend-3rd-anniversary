@@ -57,7 +57,7 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
 
   if (registering && registrationStep === 'invitation') return <form className="auth-form" onSubmit={verifyInvitation} aria-busy={state.kind==='loading'}>
     <p className="text-sm text-[var(--muted)]">먼저 모임 초대 코드를 확인할게요. 확인되기 전에는 닉네임과 PIN을 받지 않습니다.</p>
-    <label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={16} autoComplete="off" /></label>
+    <label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={4} autoComplete="off" /></label>
     <AuthStatus state={state} />
     <div className="auth-actions">
       <button className="game-button" type="submit" disabled={state.kind==='loading'}>초대 코드 확인</button>

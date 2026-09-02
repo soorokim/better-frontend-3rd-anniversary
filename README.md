@@ -14,7 +14,7 @@ cd better-frontend-3rd-anniversary
 cp .env.example .env
 ```
 
-`.env`의 `change-me`, `replace-with-...` 값을 전부 바꾼다. 최소한 `NODE_ENV=production`, 접속 주소와 정확히 같은 `APP_ORIGIN`, PostgreSQL 비밀번호, 32자 이상의 `AUTH_PEPPER`·`SESSION_SECRET`, 16자 이상의 초대 코드, 15자 이상의 관리자 비밀번호, 행사 질문을 설정해야 한다.
+`.env`의 `change-me`, `replace-with-...` 값을 전부 바꾼다. 최소한 `NODE_ENV=production`, 접속 주소와 정확히 같은 `APP_ORIGIN`, PostgreSQL 비밀번호, 32자 이상의 `AUTH_PEPPER`·`SESSION_SECRET`, 4자 이상의 초대 코드, 15자 이상의 관리자 비밀번호, 행사 질문을 설정해야 한다.
 
 ```bash
 docker compose config --quiet

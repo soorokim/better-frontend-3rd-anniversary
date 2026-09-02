@@ -19,7 +19,7 @@ export function ResetPinForm() {
     } catch { setState({ kind: 'error', message: '연결을 확인하고 다시 시도해 주세요.' }); }
   }
   return <form className="auth-form" onSubmit={submit} aria-busy={state.kind === 'loading'}>
-    <label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={16} autoComplete="off" /></label>
+    <label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={4} autoComplete="off" /></label>
     <label className="game-field"><span>닉네임</span><input name="nickname" required maxLength={100} autoComplete="username" /></label>
     <label className="game-field"><span>초기화 코드</span><input name="resetCode" required inputMode="numeric" pattern="[0-9]{8}" autoComplete="one-time-code" /></label>
     <label className="game-field"><span>새 6자리 PIN</span><input name="newPin" type="password" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="new-password" /></label>

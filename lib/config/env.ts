@@ -10,7 +10,7 @@ const schema = z.object({
   EVENT_SLUG: z.string().min(1).max(80).default('frontend-chat-3rd'),
   EVENT_TITLE: z.string().min(1).max(100).default('프론트엔드 단톡방 3주년'),
   EVENT_QUESTION: z.string().trim().min(1).max(500),
-  INVITE_CODE: z.string().min(16),
+  INVITE_CODE: z.string().min(4),
   ADMIN_USERNAME: z.string().min(1).max(80),
   ADMIN_PASSWORD: z.string().min(15),
 });

@@ -38,7 +38,7 @@ chmod 600 .env
 | `DATABASE_URL` | Docker 밖의 개발 도구용 연결 문자열. Compose 서비스는 같은 항목을 내부 DB 주소로 덮어쓴다 |
 | `AUTH_PEPPER` | 32자 이상 무작위 값. PIN·초대 코드 등의 해시에 쓰므로 설치 뒤 보존한다 |
 | `SESSION_SECRET` | 32자 이상 무작위 값. 바꾸면 기존 세션이 유효하지 않게 된다 |
-| `INVITE_CODE` | 참가자에게만 공유할 16자 이상 코드 |
+| `INVITE_CODE` | 참가자에게만 공유할 4자 이상 코드 |
 | `ADMIN_USERNAME` | 최초 관리자 아이디 |
 | `ADMIN_PASSWORD` | 최초 관리자 비밀번호, 15자 이상 |
 | `EVENT_SLUG` | 행사 내부 식별자, 80자 이하. 운영 중 바꾸면 다른 행사로 취급될 수 있다 |
@@ -176,6 +176,12 @@ docker compose run --rm \
 import는 새 배치를 한 트랜잭션으로 저장한 뒤 활성화한다. 실패하면 이전 활성 배치를 그대로 사용한다. 성공 후 `/admin`에서 원본 사용자 행 수, 프로필 수, 승인 병합 별칭을 확인하고 승인 닉네임 하나로 가입·재로그인을 시험한다. 이전 DB 상태로 돌아가야 할 때는 volume을 지우지 말고 이 문서의 새 검증 DB 복구 절차로 직전 dump부터 확인한다. 자세한 분석 순서는 [대화 아바타 quickstart](../specs/003-conversation-avatar/quickstart.md)를 따른다.
 
 업데이트 전에 앱과 DB가 healthy인지 확인한다. 서버 checkout은 upstream이 연결된 브랜치에 있어야 하고, `.env`가 있어야 하며, Git 작업 트리는 추적되지 않은 파일까지 깨끗해야 한다. `.env`와 `backups/`는 원래 `.gitignore`에 포함되므로 작업 트리를 더럽히지 않는다.
+
+초대 코드를 바꿀 때는 `.env`의 `INVITE_CODE`만 수정해서는 기존 행사 DB의 해시가 바뀌지 않는다. 새 코드가 든 `.env`로 배포한 뒤 아래 명령을 한 번 실행한다. 명령은 `EVENT_SLUG` 행사 하나의 초대 코드 해시만 바꾸며, 코드 원문을 로그에 출력하지 않는다.
+
+```bash
+docker compose run --rm migrate sh -c 'npm ci --include=dev && npm run db:invite:rotate'
+```
 
 ```bash
 sh scripts/deploy.sh
