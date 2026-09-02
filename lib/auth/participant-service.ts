@@ -75,7 +75,7 @@ async function participantWithBestAvatar(participant: { id: string; eventId: str
     const current = await findParticipantWithAvatar(participant.id, tx);
     if (!current) return undefined;
     const profile = await findConversationProfile(participant.eventId, participant.nicknameKey, tx);
-    if (current.avatar.sourceKind === 'conversation' && (!profile || current.avatar.sourceDigest === profile.sourceDigest)) return current;
+    if (current.avatar.sourceKind === 'conversation' && (!profile || current.avatar.conversationProfileId === profile.id)) return current;
     if (!profile || (profile.claimedParticipantId && profile.claimedParticipantId !== participant.id)) return current;
     if (!profile.claimedParticipantId && !(await claimConversationProfile(profile.id, participant.id, tx))) return current;
     await assignConversationAvatar({

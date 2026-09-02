@@ -90,11 +90,17 @@ export async function assignConversationAvatar(input: {
     supersedesId: input.supersedesId,
   }).onConflictDoNothing().returning();
 
-  const avatar = created ?? (await executor.select().from(avatarAssignments).where(and(
+  const [avatar] = created ? [created] : await executor.update(avatarAssignments).set({
+    sourceVersion: input.sourceVersion,
+    generatorVersion: input.generatorVersion,
+    catalogVersion: input.catalogVersion,
+    selectedTraits: input.traits,
+    conversationProfileId: input.conversationProfileId,
+  }).where(and(
     eq(avatarAssignments.participantId, input.participantId),
     eq(avatarAssignments.sourceKind, 'conversation'),
     eq(avatarAssignments.sourceDigest, input.sourceDigest),
-  )).limit(1))[0];
+  )).returning();
   if (!avatar) throw new Error('대화 기반 캐릭터를 저장하지 못했습니다.');
 
   await executor.update(participants).set({ currentAvatarId: avatar.id, updatedAt: new Date() })
