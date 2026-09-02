@@ -82,7 +82,22 @@ describe('participant authentication API contract', () => {
   it('accepts a unique slash nickname prefix and asks the participant to choose when it collides', async () => {
     const { POST: register } = await import('@/app/api/participants/register/route');
     const { POST: login } = await import('@/app/api/participants/login/route');
-    for (const nickname of ['피카/React', '피카/Vue', '포포/React']) {
+    const uniqueRegistration = await register(request('/api/participants/register', {
+      inviteCode: 'test-invite-code-1234', nickname: '포포', pin: '123456', pinConfirmation: '123456',
+    }));
+    expect(uniqueRegistration.status).toBe(201);
+    expect(await uniqueRegistration.json()).toMatchObject({ nickname: '포포/React' });
+
+    const ambiguousRegistration = await register(request('/api/participants/register', {
+      inviteCode: 'test-invite-code-1234', nickname: '피카', pin: '123456', pinConfirmation: '123456',
+    }));
+    expect(ambiguousRegistration.status).toBe(409);
+    expect(await ambiguousRegistration.json()).toEqual(expect.objectContaining({
+      error: expect.objectContaining({ code: 'nickname_ambiguous' }),
+      candidates: ['피카/React', '피카/Vue'],
+    }));
+
+    for (const nickname of ['피카/React', '피카/Vue']) {
       expect((await register(request('/api/participants/register', {
         inviteCode: 'test-invite-code-1234', nickname, pin: '123456', pinConfirmation: '123456',
       }))).status).toBe(201);

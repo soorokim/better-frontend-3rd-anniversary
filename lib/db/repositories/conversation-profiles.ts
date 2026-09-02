@@ -1,4 +1,4 @@
-import { and, eq, isNull, ne } from 'drizzle-orm';
+import { and, eq, isNull, ne, sql } from 'drizzle-orm';
 import {
   conversationProfileAliases,
   conversationProfileBatches,
@@ -42,6 +42,28 @@ export async function findConversationProfile(
     ))
     .limit(1);
   return row?.profile;
+}
+
+/** Finds canonical active profiles whose nickname starts with the supplied slash prefix. */
+export async function findConversationProfilesBySlashPrefix(
+  eventId: string,
+  nicknamePrefixKey: string,
+  executor: Executor = db,
+) {
+  return executor.select({ profile: conversationProfiles })
+    .from(conversationProfiles)
+    .innerJoin(conversationProfileBatches, and(
+      eq(conversationProfiles.batchId, conversationProfileBatches.id),
+      eq(conversationProfiles.eventId, conversationProfileBatches.eventId),
+    ))
+    .where(and(
+      eq(conversationProfileBatches.eventId, eventId),
+      eq(conversationProfiles.eventId, eventId),
+      eq(conversationProfileBatches.status, 'active'),
+      sql`position('/' in ${conversationProfiles.nicknameKey}) > 0`,
+      sql`split_part(${conversationProfiles.nicknameKey}, '/', 1) = ${nicknamePrefixKey}`,
+    ))
+    .limit(3);
 }
 
 export type ParticipantNameResolution =

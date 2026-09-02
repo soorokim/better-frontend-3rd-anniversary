@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 :root { --space:#080d1d; --panel:#202f57; --panel-light:#30416f; --border:#817a9c; --ink:#f5f1ea; --muted:#c2bfd1; --yellow:#ffe95c; --pink:#e779a9; --mint:#65d4a0; --sky:#62b7e8; --danger:#ff91a4; }
-.pin-entry { -webkit-text-security: disc; text-security: disc; letter-spacing: .18em; }
+.pin-entry { -webkit-text-security: disc !important; text-security: disc; letter-spacing: .18em; }
 * { box-sizing: border-box; }
 html { background: var(--space); }
 body { min-height:100vh; margin:0; color:var(--ink); background:radial-gradient(circle at 12% 18%,#7181c4 0 1px,transparent 2px),radial-gradient(circle at 81% 27%,#7181c4 0 1px,transparent 2px),radial-gradient(circle at 58% 72%,#506099 0 1px,transparent 2px),linear-gradient(#101831,#050812 72%); background-size:190px 160px,260px 210px,310px 250px,auto; font-family:Pretendard,'Noto Sans KR',system-ui,sans-serif; }

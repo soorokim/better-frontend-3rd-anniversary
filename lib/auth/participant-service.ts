@@ -16,6 +16,7 @@ import {
   claimConversationProfile,
   findActiveConversationProfileBatch,
   findConversationProfile,
+  findConversationProfilesBySlashPrefix,
   resolveParticipantName,
 } from '@/lib/db/repositories/conversation-profiles';
 import { inTransaction } from '@/lib/db/transaction';
@@ -37,6 +38,12 @@ export type ParticipantLoginInput = { nickname: string; pin: string; ipAddress: 
 export type ParticipantLoginResult =
   | { kind: 'authenticated'; view: ReturnType<typeof participantView>; session: Awaited<ReturnType<typeof issueSession>> }
   | { kind: 'ambiguous'; candidates: string[] };
+
+export class NicknameAmbiguousError extends AppError {
+  constructor(public candidates: string[]) {
+    super('nickname_ambiguous', '같은 앞부분의 닉네임이 있어 전체 닉네임을 골라 주세요.', 409, 'nickname');
+  }
+}
 
 function publicAvatar(avatar: NonNullable<Awaited<ReturnType<typeof findParticipantWithAvatar>>>['avatar']) {
   const statuses = (avatar.selectedTraits.developerStatuses ?? avatar.selectedTraits.developerStatus ?? '')
@@ -131,7 +138,12 @@ export async function registerParticipant(input: ParticipantRegistrationInput) {
     throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, currentThrottle.retryAfter);
   }
 
-  const initialProfile = await findConversationProfile(event.id, requestedNickname.key);
+  let initialProfile = await findConversationProfile(event.id, requestedNickname.key);
+  if (!initialProfile) {
+    const candidates = await findConversationProfilesBySlashPrefix(event.id, requestedNickname.key);
+    if (candidates.length > 1) throw new NicknameAmbiguousError(candidates.map(({ profile }) => profile.nicknameDisplay));
+    initialProfile = candidates[0]?.profile;
+  }
   if (!initialProfile) {
     const attempt = await consumeRegistrationAttempt(subject);
     if (attempt.blocked) {
@@ -165,7 +177,11 @@ export async function registerParticipant(input: ParticipantRegistrationInput) {
       if (!(await findActiveConversationProfileBatch(event.id, tx))) {
         throw new AppError('profile_batch_not_ready', '대화 프로필을 준비하고 있어요. 잠시 뒤 다시 입장해 주세요.', 503);
       }
-      const profile = await findConversationProfile(event.id, requestedNickname.key, tx);
+      let profile = await findConversationProfile(event.id, requestedNickname.key, tx);
+      if (!profile) {
+        const candidates = await findConversationProfilesBySlashPrefix(event.id, requestedNickname.key, tx);
+        profile = candidates[0]?.profile;
+      }
       if (!profile) throw new AppError('nickname_not_invited', '단톡방에서 사용한 닉네임인지 확인해 주세요.', 403, 'nickname');
       if (profile.claimedParticipantId) throw new AppError('nickname_taken', '이미 등록된 닉네임입니다. 재입장해 주세요.', 409, 'nickname');
       const [requestedNameOwner, canonicalNameOwner] = await Promise.all([

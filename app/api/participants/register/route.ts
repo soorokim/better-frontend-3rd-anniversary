@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authCookiePolicy } from '@/lib/auth/cookies';
-import { registerParticipant } from '@/lib/auth/participant-service';
+import { NicknameAmbiguousError, registerParticipant } from '@/lib/auth/participant-service';
 import { AppError, errorResponse } from '@/lib/http/errors';
 import { clientIp } from '@/lib/http/request';
 import { registerSchema } from '@/lib/validation/auth';
@@ -22,6 +22,12 @@ export async function POST(request: Request) {
     response.cookies.set(cookies.names.participantCsrf, result.session.csrfToken, cookies.csrf(result.session.csrfToken, result.session.expiresAt));
     return response;
   } catch (error) {
+    if (error instanceof NicknameAmbiguousError) {
+      return NextResponse.json({
+        error: { code: error.code, message: error.message, field: error.field },
+        candidates: error.candidates,
+      }, { status: error.status, headers: { 'Cache-Control': 'no-store' } });
+    }
     const response = errorResponse(error);
     response.headers.set('Cache-Control', 'no-store');
     return response;
