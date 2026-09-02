@@ -42,4 +42,11 @@ describe('DeveloperIdentityCard', () => {
     fireEvent.pointerDown(document.body);
     expect(screen.queryByText(/궁금한 것을 함께/)).not.toBeInTheDocument();
   });
+
+  it('explains a pixel sculptor as a frontend topic candidate, not a literal activity claim', () => {
+    render(<DeveloperIdentityCard nickname="프론트엔드러" traits={{ ...traits, developerNoun: '픽셀 조각가' }} />);
+    fireEvent.click(screen.getByRole('button', { name: '클래스 설명 보기' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('프론트엔드');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('실제로 픽셀 작업을 했다는 뜻은 아니에요.');
+  });
 });
