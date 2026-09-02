@@ -16,7 +16,7 @@ export default async function LobbyPage({ searchParams }: { searchParams: Promis
     ...question,
     answer: await findOwnedAnswer(participant.id, question.id),
   })));
-  return <main className="game-shell"><GamePanel title="Party Lobby"><AvatarReveal nickname={lobby.nickname} traits={lobby.avatar.traits} reveal={reveal} /></GamePanel><GamePanel title="Quest Log">
+  return <main className="game-shell"><GamePanel><AvatarReveal nickname={lobby.nickname} traits={lobby.avatar.traits} reveal={reveal} /></GamePanel><GamePanel title="Quest Log">
     {questItems.length === 0
       ? <p className="text-[var(--muted)]">질문이 공개되면 이곳에 퀘스트가 열립니다.</p>
       : <ol className="quest-log-list" aria-label="3주년 질문 퀘스트">

@@ -48,7 +48,9 @@ describe('AvatarReveal', () => {
 
   it('replays the local animation without changing the final stored profile', async () => {
     render(<AvatarReveal nickname="테스터" traits={traits} reveal={false} />);
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     fireEvent.click(screen.getByRole('button', { name: '생성 애니메이션 다시 보기' }));
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
     expect(screen.getByText('$ initializing player...')).toBeInTheDocument();
     await act(async () => { vi.advanceTimersByTime(5000); });
     expect(screen.getAllByText('꾸준한 TYPE GUARDIAN').length).toBeGreaterThan(0);

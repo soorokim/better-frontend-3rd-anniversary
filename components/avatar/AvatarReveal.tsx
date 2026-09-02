@@ -48,12 +48,17 @@ export function AvatarReveal({
   const message = shuffling ? revealMessages[frame % revealMessages.length] : '✓ PLAYER READY';
 
   function replayAnimation() {
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     setFrame(0);
     setStage('shuffling');
     setReplayCount((count) => count + 1);
   }
 
   return <section className={`avatar-reveal avatar-reveal-${stage}`} aria-label={`${nickname}의 캐릭터 공개`}>
+    <div className="lobby-heading">
+      <h1 className="pixel-title text-xl text-[var(--yellow)]">Party Lobby</h1>
+      <button className="lobby-replay-button" type="button" onClick={replayAnimation} disabled={shuffling} aria-label="생성 애니메이션 다시 보기" title="생성 애니메이션 다시 보기">↻</button>
+    </div>
     {(reveal || shuffling) ? <div className="terminal-reveal" aria-live="polite" aria-atomic="true">
       <p className="terminal-line">$ initializing player...</p>
       <p className="terminal-line">$ resolving developer traits...</p>
@@ -68,10 +73,5 @@ export function AvatarReveal({
       </div>
     </div>
     <DeveloperIdentityCard nickname={nickname} traits={visibleTraits} />
-    <div className="mt-4">
-      <button className="game-button secondary" type="button" onClick={replayAnimation} disabled={shuffling}>
-        생성 애니메이션 다시 보기
-      </button>
-    </div>
   </section>;
 }
