@@ -36,6 +36,7 @@ function isDeveloperProfile(traits: Traits) {
 
 export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; traits: Traits }) {
   const [statusIndex, setStatusIndex] = useState(0);
+  const [reasonOpen, setReasonOpen] = useState(false);
   const statuses = useMemo(() => approvedStatuses(traits), [traits]);
   if (!isDeveloperProfile(traits)) return null;
 
@@ -64,6 +65,20 @@ export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; 
       </dl>
       <span className="developer-card-hint" aria-hidden="true">CLICK TO PING</span>
     </button>
+    <div className="developer-item-reason">
+      <button
+        type="button"
+        className="developer-reason-button"
+        onClick={() => setReasonOpen((open) => !open)}
+        aria-expanded={reasonOpen}
+        aria-controls="developer-item-reason-detail"
+      >
+        {reasonOpen ? '선정 이유 닫기' : '아이템 선정 이유'}
+      </button>
+      {reasonOpen ? <p id="developer-item-reason-detail" className="developer-reason-detail" aria-live="polite">
+        {traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}
+      </p> : null}
+    </div>
     <aside id="developer-class-tooltip" className="developer-class-tooltip" role="tooltip">
       <p className="pixel-title">CLASS GUIDE</p>
       <p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p>

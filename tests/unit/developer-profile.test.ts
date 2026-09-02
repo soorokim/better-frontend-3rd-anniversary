@@ -20,6 +20,18 @@ describe('conversation developer profile', () => {
     expect(generateDeveloperProfile(digest, [], ['타입 수호자']).className).toBeNull();
   });
 
+  it('selects a meaningful item from a dominant technical topic', () => {
+    const profile = generateDeveloperProfile(digest, ['꾸준한'], ['브라우저 조련사'], {}, { frontend: 8, backend: 1 });
+    expect(profile.item).toBe('ENDLESS BROWSER TABS');
+    expect(profile.itemReason).toMatch(/브라우저/);
+  });
+
+  it('uses a positive conversation role when technical topics are mixed', () => {
+    const profile = generateDeveloperProfile(digest, ['유쾌한'], ['도구 수집가'], { cheer: .9 }, { frontend: 1, backend: 1, tools: 1 });
+    expect(profile.item).toBe('LAPTOP');
+    expect(profile.itemReason).toMatch(/여러 관심사/);
+  });
+
   it('avoids duplicate class+item combinations and preserves prior final profiles', () => {
     const inputs = ['a', 'b', 'c'].map((letter) => ({
       sourceVersion: 'v1', sourceDigest: letter.repeat(64),

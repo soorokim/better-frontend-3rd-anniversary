@@ -24,6 +24,7 @@ function previousDeveloperProfile(value: import('@/db/schema').ConversationProfi
     selectedNoun: value.selectedNoun,
     className: value.className,
     item: value.item,
+    itemReason: value.itemReason ?? '',
     defaultStatus: value.defaultStatus,
     easterEggStatuses: value.easterEggStatuses,
     displayHash: value.displayHash,
@@ -69,6 +70,7 @@ export async function importConversationProfiles(path: string) {
     adjectiveCandidates: profile.adjective_candidates,
     nounCandidates: profile.noun_candidates,
     signals: profile.signals,
+    topicRates: profile.topic_rates_per_10k_chars,
   })), previousProfiles);
   const mergedSourceRowCount = payload.profiles.reduce(
     (sum, profile) => sum + (profile.source_row_count > 1 ? profile.source_row_count : 0),

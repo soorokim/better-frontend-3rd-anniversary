@@ -37,6 +37,7 @@ export type ConversationProfileData = {
   selectedNoun: string | null;
   className: string | null;
   item: string;
+  itemReason: string;
   defaultStatus: string;
   easterEggStatuses: string[];
   displayHash: string;

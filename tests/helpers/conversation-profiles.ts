@@ -27,6 +27,7 @@ export async function conversationProfileBatchFactory(
     adjectiveCandidates: ['꾸준한', '호기심 많은'],
     nounCandidates: ['타입 수호자', '버그 사냥꾼'],
     signals: { volume: .5 },
+    topicRates: {},
   })));
   const sourceUserCount = prepared.reduce((sum, input) => sum + (input.sourceRowCount ?? 1), 0);
   const [batch] = await db.insert(conversationProfileBatches).values({

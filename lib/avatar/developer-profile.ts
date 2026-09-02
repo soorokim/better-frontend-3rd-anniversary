@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { ConversationProfileData } from '@/db/schema';
 import { generateAvatarFromDigest } from './generator';
 
-export const DEVELOPER_PROFILE_VERSION = 'developer-profile-v2';
+export const DEVELOPER_PROFILE_VERSION = 'developer-profile-v3';
 export const DEVELOPER_CATALOG_VERSION = 'developer-catalog-v1';
 
 export const developerItems = [
@@ -32,6 +32,7 @@ export type DeveloperProfile = {
   selectedNoun: string | null;
   className: string | null;
   item: string;
+  itemReason: string;
   defaultStatus: string;
   easterEggStatuses: string[];
   displayHash: string;
@@ -44,7 +45,32 @@ type ProfileInput = {
   adjectiveCandidates: string[];
   nounCandidates: string[];
   signals: Record<string, number>;
+  topicRates?: Record<string, number>;
 };
+
+const topicItem: Record<string, { item: typeof developerItems[number]; reason: string }> = {
+  frontend: { item: 'ENDLESS BROWSER TABS', reason: '프론트엔드와 브라우저 관련 주제가 특히 자주 보여서 골랐어요.' },
+  backend: { item: 'LAPTOP', reason: 'API·서버·데이터를 연결하는 대화가 두드러져서 골랐어요.' },
+  infra: { item: 'UNKNOWN USB', reason: '배포와 실행 환경을 챙기는 대화가 두드러져서 골랐어요.' },
+  quality: { item: 'GREEN TEST CHECK', reason: '테스트와 문제 해결을 꼼꼼히 챙기는 대화가 두드러져서 골랐어요.' },
+  design: { item: 'LAPTOP', reason: '화면과 사용 경험을 함께 다듬는 대화가 두드러져서 골랐어요.' },
+  tools: { item: 'MECHANICAL KEYBOARD', reason: '도구와 작업 흐름을 가꾸는 대화가 두드러져서 골랐어요.' },
+};
+
+function semanticItem(input: ProfileInput) {
+  const topics = Object.entries(input.topicRates ?? {}).filter(([, rate]) => rate > 0).sort(([, a], [, b]) => b - a);
+  const [top, runnerUp] = topics;
+  if (top && top[1] >= 2 && (!runnerUp || top[1] >= runnerUp[1] * 1.4) && topicItem[top[0]]) return topicItem[top[0]];
+
+  const signal = (name: string) => input.signals[name] ?? 0;
+  if (topics.length >= 3) return { item: 'LAPTOP' as const, reason: '여러 관심사를 두루 오가며 대화를 풍성하게 만든 모습이 보여서 골랐어요.' };
+  if (signal('links') >= .7 || signal('attachments') >= .7) return { item: 'ENDLESS BROWSER TABS' as const, reason: '발견한 자료와 이야깃거리를 자주 나누는 모습이 보여서 골랐어요.' };
+  if (signal('cheer') >= .7) return { item: 'COFFEE' as const, reason: '편안한 반응과 웃음으로 대화에 온기를 더하는 모습이 보여서 골랐어요.' };
+  if (signal('curiosity') >= .7) return { item: 'RUBBER DUCK' as const, reason: '궁금한 것을 함께 풀어 가는 질문이 돋보여서 골랐어요.' };
+  if (signal('consistency') >= .7) return { item: 'MECHANICAL KEYBOARD' as const, reason: '꾸준히 대화에 함께하며 흐름을 이어 가는 모습이 보여서 골랐어요.' };
+  if (signal('story') >= .7) return { item: 'LAPTOP' as const, reason: '생각과 이야기를 차분히 나누는 모습이 보여서 골랐어요.' };
+  return { item: 'COFFEE' as const, reason: '단톡방에 편안하게 함께해 준 감초 같은 존재감을 담아 골랐어요.' };
+}
 
 function hash(namespace: string, digest: string): Buffer {
   return createHash('sha256')
@@ -71,7 +97,8 @@ function profileCandidates(input: ProfileInput): DeveloperProfile[] {
   const nouns = uniqueCandidates(input.nounCandidates, 6);
   const adjectiveOrder = rotated(adjectives, adjectives.length ? indexFor('adjective', input.sourceDigest, adjectives.length) : 0);
   const nounOrder = rotated(nouns, nouns.length ? indexFor('noun', input.sourceDigest, nouns.length) : 0);
-  const itemOrder = rotated(developerItems, indexFor('item', input.sourceDigest, developerItems.length));
+  const semantic = semanticItem(input);
+  const itemOrder = [semantic.item, ...rotated(developerItems.filter((item) => item !== semantic.item), indexFor('item', input.sourceDigest, developerItems.length - 1))];
   const classPairs = adjectiveOrder.length && nounOrder.length
     ? adjectiveOrder.flatMap((adjective) => nounOrder.map((noun) => ({ adjective, noun })))
     : [{ adjective: null, noun: null }];
@@ -87,6 +114,7 @@ function profileCandidates(input: ProfileInput): DeveloperProfile[] {
     selectedNoun: noun,
     className: adjective && noun ? `${adjective} ${noun}` : null,
     item,
+    itemReason: item === semantic.item ? semantic.reason : '대화에서 보인 여러 특징과 팀 안의 조합을 함께 고려해 골랐어요.',
     defaultStatus,
     easterEggStatuses,
     displayHash: `${shortHash.slice(0, 4)}-${shortHash.slice(4)}`,
@@ -98,13 +126,16 @@ export function generateDeveloperProfile(
   sourceDigest: string,
   adjectiveCandidates: string[],
   nounCandidates: string[],
+  signals: Record<string, number> = {},
+  topicRates: Record<string, number> = {},
 ): DeveloperProfile {
   return profileCandidates({
     sourceVersion: 'conversation',
     sourceDigest,
     adjectiveCandidates,
     nounCandidates,
-    signals: {},
+    signals,
+    topicRates,
   })[0];
 }
 
@@ -120,19 +151,20 @@ export function allocateDeveloperProfiles(
   const used = new Set<string>();
   for (const input of inputs) {
     const prior = previous.get(input.sourceDigest);
-    if (prior) used.add(`${prior.className ?? '—'}\0${prior.item}`);
+    if (prior?.generatorVersion === DEVELOPER_PROFILE_VERSION) used.add(`${prior.className ?? '—'}\0${prior.item}`);
   }
 
   for (const input of [...inputs].sort((a, b) => a.sourceDigest.localeCompare(b.sourceDigest))) {
     const prior = previous.get(input.sourceDigest);
     const candidates = profileCandidates(input);
-    const selected = prior ?? candidates.find((candidate) => !used.has(`${candidate.className ?? '—'}\0${candidate.item}`)) ?? candidates[0];
+    const reusablePrior = prior?.generatorVersion === DEVELOPER_PROFILE_VERSION ? prior : undefined;
+    const selected = reusablePrior ?? candidates.find((candidate) => !used.has(`${candidate.className ?? '—'}\0${candidate.item}`)) ?? candidates[0];
     used.add(`${selected.className ?? '—'}\0${selected.item}`);
     const visual = generateAvatarFromDigest(input.sourceVersion, input.sourceDigest);
     result.set(input.sourceDigest, {
       adjectiveCandidates: uniqueCandidates(input.adjectiveCandidates, 3),
       nounCandidates: uniqueCandidates(input.nounCandidates, 6),
-      signals: input.signals,
+    signals: input.signals,
       ...selected,
       avatarSeed: input.sourceDigest,
       avatarOptions: visual.traits,
@@ -147,6 +179,7 @@ export function developerTraits(profile: ConversationProfileData): Record<string
     ...(profile.selectedAdjective ? { developerAdjective: profile.selectedAdjective } : {}),
     ...(profile.selectedNoun ? { developerNoun: profile.selectedNoun } : {}),
     developerItem: profile.item,
+    developerItemReason: profile.itemReason,
     developerStatus: profile.defaultStatus,
     developerStatuses: [profile.defaultStatus, ...profile.easterEggStatuses].join('\n'),
     developerHash: profile.displayHash,
