@@ -64,14 +64,6 @@ export async function publishAnswerArchive(eventId: string, executor: Transactio
   return event;
 }
 
-export async function unpublishAnswerArchive(eventId: string, executor: Transaction) {
-  const [event] = await executor.update(events).set({
-    answerArchivePublishedAt: null,
-    updatedAt: new Date(),
-  }).where(eq(events.id, eventId)).returning();
-  return event;
-}
-
 export async function findPresentationSession(
   eventId: string,
   questionId: string,
@@ -283,6 +275,22 @@ export async function restartPresentationSession(sessionId: string, executor: Tr
   await executor.delete(presentationItems)
     .where(eq(presentationItems.presentationSessionId, sessionId));
   return session;
+}
+
+export async function restartEventPresentation(eventId: string, executor: Transaction) {
+  await executor.delete(presentationSessions).where(eq(presentationSessions.eventId, eventId));
+  await executor.update(questionSequenceSessions).set({
+    currentQuestionId: null,
+    status: 'waiting',
+    completedAt: null,
+    revision: sql`${questionSequenceSessions.revision} + 1`,
+    updatedAt: new Date(),
+  }).where(eq(questionSequenceSessions.eventId, eventId));
+  const [event] = await executor.update(events).set({
+    answerArchivePublishedAt: null,
+    updatedAt: new Date(),
+  }).where(eq(events.id, eventId)).returning();
+  return event;
 }
 
 export async function getPresentationControllerData(eventId: string, executor: Executor = db) {

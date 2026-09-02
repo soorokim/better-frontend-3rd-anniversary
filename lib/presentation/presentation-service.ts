@@ -12,7 +12,7 @@ import {
   completePresentationItem,
   moveToNextQuestion,
   publishAnswerArchive,
-  unpublishAnswerArchive,
+  restartEventPresentation,
 } from '@/lib/db/repositories/presentation';
 import { inTransaction, type Transaction } from '@/lib/db/transaction';
 import { AppError } from '@/lib/http/errors';
@@ -105,8 +105,8 @@ export async function commandPresentation(eventId: string, command: Presentation
         await publishAnswerArchive(eventId, executor);
         break;
       }
-      case 'unpublish_archive': {
-        await unpublishAnswerArchive(eventId, executor);
+      case 'restart_event': {
+        await restartEventPresentation(eventId, executor);
         break;
       }
       case 'advance_question': {

@@ -185,9 +185,16 @@ describe('presenter controller API contract', () => {
     expect(JSON.stringify(await archive.json())).toContain(eventAnswers[0].content);
 
     activeCookie = adminToken;
-    const reset = await POST(commandRequest({ type: 'unpublish_archive' }, adminCsrf));
+    const unconfirmedReset = await POST(commandRequest({ type: 'restart_event', confirmed: false }, adminCsrf));
+    expect(unconfirmedReset.status).toBe(400);
+
+    const reset = await POST(commandRequest({ type: 'restart_event', confirmed: true }, adminCsrf));
     expect(reset.status).toBe(200);
-    expect((await reset.json()).archivePublished).toBe(false);
+    expect((await reset.json())).toMatchObject({
+      archivePublished: false,
+      progress: { currentQuestion: 1, completed: false },
+      currentSlide: null,
+    });
 
     activeCookie = participantToken;
     const resetArchive = await getArchive();

@@ -163,12 +163,24 @@ export function PresenterController() {
           <button
             className="game-button ml-3 secondary"
             type="button"
-            disabled={controlsDisabled || (!view.archivePublished && !canPublishArchive)}
-            onClick={() => void sendCommand({ type: view.archivePublished ? 'unpublish_archive' : 'publish_archive' })}
+            disabled={controlsDisabled || !canPublishArchive}
+            onClick={() => void sendCommand({ type: 'publish_archive' })}
           >
-            {view.archivePublished ? '답안 공개 초기화' : '모든 답 공개'}
+            {view.archivePublished ? '모든 답 공개 완료' : '모든 답 공개'}
           </button>
         ) : null}
+        <button
+          className="game-button ml-3 secondary"
+          type="button"
+          disabled={controlsDisabled}
+          onClick={() => {
+            if (window.confirm('발표 이력과 질문 진행을 처음으로 되돌릴까요? 참가자 답변은 유지됩니다.')) {
+              void sendCommand({ type: 'restart_event', confirmed: true });
+            }
+          }}
+        >
+          리허설 초기화
+        </button>
       </div>
 
       <GamePanel title="On Stage" aria-live="polite">
