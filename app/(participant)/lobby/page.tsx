@@ -34,6 +34,6 @@ export default async function LobbyPage({ searchParams }: { searchParams: Promis
           </li>;
         })}
       </ol>}
-    <Link className="memory-back-link mt-4" href="/answers">질답 기록 보기</Link>
+    <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2"><Link className="memory-back-link !mt-0" href="/answers">질답 기록 보기</Link><Link className="memory-back-link !mt-0" href="/avatars">모두의 아바타 보기</Link></div>
     <div className="mt-6"><LogoutButton /></div></GamePanel></main>;
 }

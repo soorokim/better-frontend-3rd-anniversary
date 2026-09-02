@@ -136,6 +136,17 @@ export function isNicknameConflict(error: unknown): boolean {
   return false;
 }
 
+export async function listParticipantRoster(eventId: string, executor: Executor = db) {
+  return executor.select({
+    id: participants.id,
+    nickname: participants.nicknameDisplay,
+    avatar: { generatorVersion: avatarAssignments.generatorVersion, catalogVersion: avatarAssignments.catalogVersion, traits: avatarAssignments.selectedTraits },
+  }).from(participants)
+    .innerJoin(avatarAssignments, eq(participants.currentAvatarId, avatarAssignments.id))
+    .where(eq(participants.eventId, eventId))
+    .orderBy(participants.createdAt);
+}
+
 export async function findParticipantsBySlashPrefix(eventId: string, nicknamePrefixKey: string, executor: Executor = db) {
   return executor.select({
     id: participants.id,

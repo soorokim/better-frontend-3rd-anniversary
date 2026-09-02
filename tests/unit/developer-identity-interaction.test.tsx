@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DeveloperIdentityCard } from '@/components/avatar/DeveloperIdentityCard';
 
@@ -12,21 +11,14 @@ const traits = {
 describe('developer identity interaction', () => {
   afterEach(cleanup);
 
-  it('uses the native button for pointer, Enter, and Space while announcing only approved values', async () => {
-    const user = userEvent.setup();
+  it('keeps the card easter egg while opening each guide from its matching question-mark button', () => {
     render(<DeveloperIdentityCard nickname="키보드유저" traits={traits} />);
     const card = screen.getByRole('button', { name: /개발자 카드/ });
-    const live = screen.getByText('BUILD PASSING');
-    expect(live).toHaveAttribute('aria-live', 'polite');
-    await user.click(card);
-    expect(live).toHaveTextContent('TESTS PASSED');
-    card.focus();
-    await user.keyboard('{Enter}');
-    expect(live).toHaveTextContent('LGTM');
-    await user.keyboard(' ');
-    expect(live).toHaveTextContent('BUILD PASSING');
     fireEvent.click(card);
-    expect(['BUILD PASSING', 'TESTS PASSED', 'LGTM']).toContain(live.textContent);
-    expect(screen.queryByText('WORKS ON MY MACHINE')).not.toBeInTheDocument();
+    expect(screen.getByText('TESTS PASSED')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '클래스 설명 보기' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('BUG HUNTER');
+    fireEvent.click(screen.getByRole('button', { name: '아이템 선정 이유 보기' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('COFFEE');
   });
 });

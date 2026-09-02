@@ -61,14 +61,13 @@ a { color:inherit; } button,input { font:inherit; } button,a { touch-action:mani
 .developer-card dt { color:var(--pink); }
 .developer-card dd { margin:0; overflow-wrap:anywhere; }
 .developer-card-hint { display:block; margin-top:12px; color:var(--muted); font:700 .68rem/1 'Courier New',monospace; text-align:right; }
-.developer-item-reason { display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; }
-.developer-reason-button { border:2px solid var(--pink); background:transparent; color:var(--pink); padding:6px 8px; font:700 .7rem/1 'Courier New',monospace; cursor:pointer; }
-.developer-reason-button:hover,.developer-reason-button:focus-visible { border-color:var(--yellow); color:var(--yellow); outline:none; }
-.developer-class-tooltip { position:absolute; z-index:10; right:12px; bottom:42px; width:min(100% - 24px,480px); border:2px solid var(--pink); background:#10182ff5; box-shadow:4px 4px 0 #080d1d; padding:14px; color:var(--muted); font-size:.84rem; line-height:1.6; opacity:0; pointer-events:none; transform:translateY(6px); transition:opacity .14s ease,transform .14s ease; }
-.developer-class-tooltip.open { opacity:1; pointer-events:auto; transform:translateY(0); }
-.developer-class-tooltip .pixel-title { color:var(--pink); font-size:.72rem; }
-.developer-class-tooltip>p { margin:7px 0 0; }
-.developer-class-tooltip ul { display:grid; gap:3px; margin:8px 0 0; padding-left:18px; }
+.developer-guide-field { position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.developer-guide-button { display:grid; width:20px; height:20px; place-items:center; flex:0 0 auto; border:1px solid var(--pink); border-radius:50%; background:transparent; color:var(--pink); font:700 .72rem/1 'Courier New',monospace; cursor:pointer; }
+.developer-guide-button:hover,.developer-guide-button:focus-visible { border-color:var(--yellow); color:var(--yellow); outline:none; }
+.developer-guide-tooltip { position:absolute; z-index:10; right:0; top:calc(100% + 8px); width:min(310px,calc(100vw - 72px)); border:2px solid var(--pink); background:#10182ff5; box-shadow:4px 4px 0 #080d1d; padding:14px; color:var(--muted); font-size:.84rem; line-height:1.6; }
+.developer-guide-tooltip .pixel-title { color:var(--pink); font-size:.72rem; }
+.developer-guide-tooltip>p { margin:7px 0 0; }
+.developer-guide-tooltip ul { display:grid; gap:3px; margin:8px 0 0; padding-left:18px; }
 .developer-class-note { color:var(--mint); }
 @keyframes terminal-line-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 .avatar-reveal { min-width:0; }

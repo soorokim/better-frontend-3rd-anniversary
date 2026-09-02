@@ -18,15 +18,14 @@ describe('DeveloperIdentityCard', () => {
     expect(container).not.toHaveTextContent('messages');
   });
 
-  it('cycles only stored approved statuses with click, Enter and Space', () => {
+  it('cycles stored statuses from the player card and opens the item guide only from its question-mark button', () => {
     render(<DeveloperIdentityCard nickname="테스터" traits={traits} />);
-    const card = screen.getByRole('button', { name: /개발자 카드/ });
-    fireEvent.click(card);
+    expect(screen.getByText('BUILD PASSING')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /개발자 카드/ }));
     expect(screen.getByText('TESTS PASSED')).toBeInTheDocument();
-    fireEvent.keyDown(card, { key: 'Enter' });
-    fireEvent.click(card);
-    expect(screen.getByText('LGTM')).toBeInTheDocument();
-    expect(screen.queryByText('WORKS ON MY MACHINE')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '아이템 선정 이유 보기' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('RUBBER DUCK');
+    expect(screen.getByText('TESTS PASSED')).toBeInTheDocument();
   });
 
   it('shows an empty class as a dash instead of making one up', () => {
@@ -35,11 +34,12 @@ describe('DeveloperIdentityCard', () => {
     expect(screen.getAllByText('—')).not.toHaveLength(0);
   });
 
-  it('opens the item reason only from its small dedicated button', () => {
+  it('closes a guide when the user taps elsewhere', () => {
     render(<DeveloperIdentityCard nickname="테스터" traits={traits} />);
     expect(screen.queryByText(/궁금한 것을 함께/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: '아이템 선정 이유' }));
+    fireEvent.click(screen.getByRole('button', { name: '아이템 선정 이유 보기' }));
     expect(screen.getByText(/궁금한 것을 함께/)).toBeInTheDocument();
-    expect(screen.getByText('BUILD PASSING')).toBeInTheDocument();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByText(/궁금한 것을 함께/)).not.toBeInTheDocument();
   });
 });

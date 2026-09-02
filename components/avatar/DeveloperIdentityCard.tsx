@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { approvedStatuses } from '@/lib/avatar/presentation';
 
 type Traits = Record<string, string>;
@@ -35,64 +35,50 @@ function isDeveloperProfile(traits: Traits) {
 }
 
 export function DeveloperIdentityCard({ nickname, traits }: { nickname: string; traits: Traits }) {
-  const [statusIndex, setStatusIndex] = useState(0);
   const [guide, setGuide] = useState<'class' | 'item' | null>(null);
+  const [statusIndex, setStatusIndex] = useState(0);
+  const cardRef = useRef<HTMLElement>(null);
   const statuses = useMemo(() => approvedStatuses(traits), [traits]);
+  useEffect(() => {
+    if (!guide) return;
+    const closeOnOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !cardRef.current?.contains(event.target)) setGuide(null);
+    };
+    document.addEventListener('pointerdown', closeOnOutside);
+    return () => document.removeEventListener('pointerdown', closeOnOutside);
+  }, [guide]);
   if (!isDeveloperProfile(traits)) return null;
 
   const developerClass = traits.developerAdjective && traits.developerNoun
     ? `${traits.developerAdjective} ${traits.developerNoun}`
     : '—';
-  const status = statuses[statusIndex % statuses.length] ?? traits.developerStatus;
   const classGuide = guideFor(traits.developerAdjective, traits.developerNoun);
+  const status = statuses[statusIndex % statuses.length] ?? traits.developerStatus;
   const adjectiveLabel = traits.developerAdjective ?? '작업 스타일';
   const nounLabel = traits.developerNoun ?? '역할 키워드';
 
-  return <section className="developer-profile" aria-label={`${nickname}의 개발자 프로필`}>
-    <button
-      type="button"
-      className="developer-card"
-      onClick={() => setStatusIndex((index) => index + 1)}
-      aria-label={`${nickname} 개발자 카드. 누르면 상태 메시지가 바뀝니다.`}
-    >
+  function toggleGuide(event: React.MouseEvent<HTMLButtonElement>, nextGuide: 'class' | 'item') {
+    event.stopPropagation();
+    setGuide((current) => current === nextGuide ? null : nextGuide);
+  }
+
+  return <section ref={cardRef} className="developer-profile" aria-label={`${nickname}의 개발자 프로필`}>
+    <div className="developer-card" role="button" tabIndex={0} onClick={() => setStatusIndex((index) => index + 1)} onKeyDown={(event) => {
+      if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault(); setStatusIndex((index) => index + 1);
+    }} aria-label={`${nickname} 개발자 카드. 누르면 상태 메시지가 바뀝니다.`}>
       <dl>
         <div><dt>PLAYER</dt><dd>{nickname}</dd></div>
-        <div><dt>CLASS</dt><dd>{developerClass}</dd></div>
-        <div><dt>ITEM</dt><dd>{traits.developerItem}</dd></div>
+        <div><dt>CLASS</dt><dd className="developer-guide-field"><span>{developerClass}</span><button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'class')} aria-label="클래스 설명 보기" aria-expanded={guide === 'class'}>?</button>
+          {guide === 'class' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">CLASS GUIDE</p><p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p><ul><li><strong>{adjectiveLabel}</strong>: {classGuide.adjective}</li><li><strong>{nounLabel}</strong>: {classGuide.noun}</li><li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li></ul><p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p></aside> : null}
+        </dd></div>
+        <div><dt>ITEM</dt><dd className="developer-guide-field"><span>{traits.developerItem}</span><button type="button" className="developer-guide-button" onClick={(event) => toggleGuide(event, 'item')} aria-label="아이템 선정 이유 보기" aria-expanded={guide === 'item'}>?</button>
+          {guide === 'item' ? <aside className="developer-guide-tooltip" role="tooltip"><p className="pixel-title">ITEM GUIDE</p><p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p><p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p><p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p></aside> : null}
+        </dd></div>
         <div><dt>STATUS</dt><dd aria-live="polite" aria-atomic="true">{status}</dd></div>
         <div><dt>HASH</dt><dd>{traits.developerHash}</dd></div>
       </dl>
       <span className="developer-card-hint" aria-hidden="true">CLICK TO PING</span>
-    </button>
-    <div className="developer-item-reason">
-      <button type="button" className="developer-reason-button" onClick={() => setGuide((current) => current === 'class' ? null : 'class')} aria-expanded={guide === 'class'} aria-controls="developer-class-guide-detail">
-        클래스 설명
-      </button>
-      <button
-        type="button"
-        className="developer-reason-button"
-        onClick={() => setGuide((current) => current === 'item' ? null : 'item')}
-        aria-expanded={guide === 'item'}
-        aria-controls="developer-item-reason-detail"
-      >
-        아이템 선정 이유
-      </button>
     </div>
-    {guide === 'class' ? <aside id="developer-class-guide-detail" className="developer-class-tooltip open" aria-live="polite">
-      <p className="pixel-title">CLASS GUIDE</p>
-      <p><strong>{developerClass}</strong>는 단톡방 대화에서 정리한 키워드를 조합한 별명이에요.</p>
-      <ul>
-        <li><strong>{adjectiveLabel}</strong>: {classGuide.adjective}</li>
-        <li><strong>{nounLabel}</strong>: {classGuide.noun}</li>
-        <li>후보 중 하나를 프로필 해시로 고정해, 다시 입장해도 같은 클래스가 유지돼요.</li>
-      </ul>
-      <p className="developer-class-note">활동량 순위나 실력 평가와는 관계없어요.</p>
-    </aside> : null}
-    {guide === 'item' ? <aside id="developer-item-reason-detail" className="developer-class-tooltip open" aria-live="polite">
-      <p className="pixel-title">ITEM GUIDE</p>
-      <p><strong>{traits.developerItem}</strong>은(는) 이 플레이어의 대화 흐름에서 찾은 장비예요.</p>
-      <p>{traits.developerItemReason ?? '대화에서 보인 여러 특징을 바탕으로 고른 아이템이에요.'}</p>
-      <p className="developer-class-note">대화 원문이나 활동량 순위는 공개하지 않아요.</p>
-    </aside> : null}
   </section>;
 }
