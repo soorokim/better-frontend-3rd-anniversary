@@ -22,8 +22,8 @@ export function ResetPinForm() {
     <label className="game-field"><span>초대 코드</span><input name="inviteCode" type="password" required minLength={4} autoComplete="off" /></label>
     <label className="game-field"><span>닉네임</span><input name="nickname" required maxLength={100} autoComplete="username" /></label>
     <label className="game-field"><span>초기화 코드</span><input name="resetCode" required inputMode="numeric" pattern="[0-9]{8}" autoComplete="one-time-code" /></label>
-    <label className="game-field"><span>새 6자리 PIN</span><input name="newPin" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
-    <label className="game-field"><span>새 PIN 확인</span><input name="newPinConfirmation" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
+    <label className="game-field"><span>새 6자리 PIN</span><input className="pin-entry" name="newPin" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
+    <label className="game-field"><span>새 PIN 확인</span><input className="pin-entry" name="newPinConfirmation" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
     <AuthStatus state={state} /><div className="auth-actions"><button className="game-button" type="submit" disabled={state.kind === 'loading'}>새 PIN 설정</button><Link href="/login">로그인으로 돌아가기</Link></div>
   </form>;
 }

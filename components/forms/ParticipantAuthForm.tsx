@@ -75,8 +75,8 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
   return <form className="auth-form" onSubmit={submit} aria-busy={state.kind==='loading'} autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
     {!registering ? <p className="text-sm text-[var(--muted)]">닉네임에 `/`가 있으면 앞부분만 입력해도 돼요. 같은 이름이 있으면 전체 닉네임을 골라 주세요.</p> : null}
     <label className="game-field"><span>닉네임</span><input key={registering ? 'register-nickname' : 'login-nickname'} name="nickname" value={nickname} onChange={(event) => setNickname(event.target.value)} required maxLength={100} autoComplete="username" /></label>
-    <label className="game-field"><span>6자리 PIN</span><input name="pin" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
-    {registering?<label className="game-field"><span>PIN 확인</span><input name="pinConfirmation" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>:null}
+    <label className="game-field"><span>6자리 PIN</span><input className="pin-entry" name="pin" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
+    {registering?<label className="game-field"><span>PIN 확인</span><input className="pin-entry" name="pinConfirmation" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>:null}
     <AuthStatus state={state} />
     {!registering && nicknameCandidates.length > 0 ? <div className="mt-3 grid gap-2" aria-label="닉네임 선택">
       <p className="text-sm text-[var(--yellow)]">같은 이름의 플레이어가 있어요. 내 전체 닉네임을 골라 주세요.</p>
