@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { conversationProfileAliases, conversationProfiles } from '@/db/schema';
-import { allocateDeveloperProfiles, type DeveloperProfile } from '@/lib/avatar/developer-profile';
+import { allocateDeveloperProfiles, DEVELOPER_PROFILE_VERSION, type DeveloperProfile } from '@/lib/avatar/developer-profile';
 import { closeDatabase } from '@/lib/db/client';
 import {
   activateConversationProfileBatch,
@@ -35,7 +35,9 @@ function previousDeveloperProfile(value: import('@/db/schema').ConversationProfi
 export async function importConversationProfiles(path: string) {
   const raw = await readFile(resolve(path), 'utf8');
   const payload = cleanConversationAnalysisSchema.parse(JSON.parse(raw));
-  const payloadDigest = createHash('sha256').update(raw, 'utf8').digest('hex');
+  // A rule version is part of the derived profile. This permits a reviewed
+  // re-import after the derivation rules change, while identical imports stay idempotent.
+  const payloadDigest = createHash('sha256').update(`${DEVELOPER_PROFILE_VERSION}\0${raw}`, 'utf8').digest('hex');
   const eventSlug = process.env.EVENT_SLUG ?? 'frontend-chat-3rd';
   const event = await findEventBySlug(eventSlug);
   if (!event) throw new Error(`행사를 찾지 못했습니다: ${eventSlug}`);
