@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { adminAccounts } from '@/db/schema';
 import { findEventBySlug } from '@/lib/db/repositories/participants';
 import { closeDatabase, db } from '@/lib/db/client';
@@ -12,7 +12,7 @@ async function main() {
 
   const [updated] = await db.update(adminAccounts).set({
     passwordHash: await hashSecret(env.ADMIN_PASSWORD),
-    authVersion: adminAccounts.authVersion + 1,
+    authVersion: sql`${adminAccounts.authVersion} + 1`,
     updatedAt: new Date(),
   }).where(and(
     eq(adminAccounts.eventId, event.id),
