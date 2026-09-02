@@ -19,6 +19,7 @@ function controllerView(
       id: '11111111-1111-4111-8111-111111111111',
       prompt: '기억에 남는 순간은?',
     },
+    progress: { currentQuestion: 1, questionCount: 4, hasNextQuestion: true, completed: false },
     summary: { total: 4, submitted: 3, notSubmitted: 1 },
     session: {
       revision: 0,
@@ -76,6 +77,21 @@ describe('projector presentation DTO', () => {
       slide: { kind: 'waiting' },
     });
     expect(Object.keys(screen).sort()).toEqual(['question', 'revision', 'slide', 'updatedAt']);
+  });
+
+  it('returns a completion slide after the final question is closed', () => {
+    const screen = buildPresentationScreenView(controllerView({
+      progress: { currentQuestion: 4, questionCount: 4, hasNextQuestion: false, completed: true },
+      session: {
+        revision: 12,
+        currentItemId: null,
+        authorRevealed: false,
+        allPresented: true,
+        updatedAt: '2026-09-02T10:00:00.000Z',
+      },
+    }));
+
+    expect(screen.slide).toEqual({ kind: 'completed' });
   });
 
   it('omits the author key itself and every controller-only field while anonymous', () => {

@@ -30,7 +30,12 @@ describe('participant authentication API contract', () => {
   beforeEach(async () => {
     await database.reset();
     const event = await eventFactory(database.db, { slug: 'frontend-chat-3rd' });
-    await conversationProfileBatchFactory(database.db, event.id, [{ nickname: '프론트', aliases: ['예전프론트'] }]);
+    await conversationProfileBatchFactory(database.db, event.id, [
+      { nickname: '프론트', aliases: ['예전프론트'] },
+      { nickname: '피카/React' },
+      { nickname: '피카/Vue' },
+      { nickname: '포포/React' },
+    ]);
     sessionCookie = undefined;
   });
   afterAll(async () => database?.close());
@@ -72,5 +77,30 @@ describe('participant authentication API contract', () => {
     }));
     expect(canonicalLogin.status).toBe(200);
     expect(await canonicalLogin.json()).toMatchObject({ id: currentBody.id, nickname: '프론트', avatar: currentBody.avatar });
+  });
+
+  it('accepts a unique slash nickname prefix and asks the participant to choose when it collides', async () => {
+    const { POST: register } = await import('@/app/api/participants/register/route');
+    const { POST: login } = await import('@/app/api/participants/login/route');
+    for (const nickname of ['피카/React', '피카/Vue', '포포/React']) {
+      expect((await register(request('/api/participants/register', {
+        inviteCode: 'test-invite-code-1234', nickname, pin: '123456', pinConfirmation: '123456',
+      }))).status).toBe(201);
+    }
+
+    const unique = await login(request('/api/participants/login', { nickname: '포포', pin: '123456' }));
+    expect(unique.status).toBe(200);
+    expect(await unique.json()).toMatchObject({ nickname: '포포/React' });
+
+    const ambiguous = await login(request('/api/participants/login', { nickname: '피카', pin: '123456' }));
+    expect(ambiguous.status).toBe(409);
+    expect(await ambiguous.json()).toEqual(expect.objectContaining({
+      error: expect.objectContaining({ code: 'nickname_ambiguous' }),
+      candidates: ['피카/React', '피카/Vue'],
+    }));
+
+    const selected = await login(request('/api/participants/login', { nickname: '피카/Vue', pin: '123456' }));
+    expect(selected.status).toBe(200);
+    expect(await selected.json()).toMatchObject({ nickname: '피카/Vue' });
   });
 });

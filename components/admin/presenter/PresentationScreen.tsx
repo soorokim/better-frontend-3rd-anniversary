@@ -17,6 +17,8 @@ export function PresentationScreen() {
   const [retryKey, setRetryKey] = useState(0);
   const latestRevision = useRef(-1);
   const latestQuestionId = useRef<string | undefined>(undefined);
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [questionTransitioning, setQuestionTransitioning] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -71,6 +73,12 @@ export function PresentationScreen() {
         if (!active) return;
 
         failureCount = 0;
+        const questionChanged = Boolean(latestQuestionId.current && body.question.id !== latestQuestionId.current);
+        if (questionChanged && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          setQuestionTransitioning(true);
+          if (transitionTimer.current) clearTimeout(transitionTimer.current);
+          transitionTimer.current = setTimeout(() => setQuestionTransitioning(false), 900);
+        }
         if (body.question.id !== latestQuestionId.current
           || body.revision >= latestRevision.current) {
           latestQuestionId.current = body.question.id;
@@ -106,6 +114,7 @@ export function PresentationScreen() {
       active = false;
       controller.abort();
       if (timer) clearTimeout(timer);
+      if (transitionTimer.current) clearTimeout(transitionTimer.current);
       window.removeEventListener('online', requestImmediatePoll);
       document.removeEventListener('visibilitychange', pollWhenVisible);
     };
@@ -167,12 +176,19 @@ export function PresentationScreen() {
         </button>
       </header>
 
-      <section className="presentation-slide" aria-live="polite" data-testid="presentation-screen-slide">
+      <section className={`presentation-slide${questionTransitioning ? ' presentation-slide-transitioning' : ''}`} aria-live="polite" data-testid="presentation-screen-slide">
+        {questionTransitioning ? <div className="presentation-question-transition" aria-hidden="true"><span>NEXT QUESTION</span></div> : null}
         {slide.kind === 'waiting' ? (
           <div className="presentation-waiting">
             <p className="pixel-title">Ready?</p>
             <h2>다음 이야기를 기다리고 있어요.</h2>
             <p>진행자가 답변을 고르면 이곳에 나타납니다.</p>
+          </div>
+        ) : slide.kind === 'completed' ? (
+          <div className="presentation-waiting">
+            <p className="pixel-title">Quest Complete</p>
+            <h2>모든 질문을 함께 나눴어요.</h2>
+            <p>참여해 준 모든 플레이어에게 고마워요.</p>
           </div>
         ) : (
           <div className="presentation-answer-layout">

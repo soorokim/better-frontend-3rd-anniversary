@@ -32,6 +32,12 @@ export type ControllerSlideView = {
 
 export type PresentationControllerView = {
   question: { id: string; prompt: string };
+  progress: {
+    currentQuestion: number;
+    questionCount: number;
+    hasNextQuestion: boolean;
+    completed: boolean;
+  };
   summary: { total: number; submitted: number; notSubmitted: number };
   session: {
     revision: number;
@@ -45,6 +51,7 @@ export type PresentationControllerView = {
 };
 
 export type WaitingScreenSlide = { kind: 'waiting' };
+export type CompletedScreenSlide = { kind: 'completed' };
 export type AnonymousAnswerScreenSlide = { kind: 'answer'; content: string };
 export type RevealedAnswerScreenSlide = AnonymousAnswerScreenSlide & { author: AnswerAuthorView };
 
@@ -52,7 +59,7 @@ export type PresentationScreenView = {
   question: { id: string; prompt: string };
   revision: number;
   updatedAt: string | null;
-  slide: WaitingScreenSlide | AnonymousAnswerScreenSlide | RevealedAnswerScreenSlide;
+  slide: WaitingScreenSlide | CompletedScreenSlide | AnonymousAnswerScreenSlide | RevealedAnswerScreenSlide;
 };
 
 export function buildPresentationScreenView(
@@ -70,7 +77,7 @@ export function buildPresentationScreenView(
   if (!controller.currentSlide) {
     return {
       ...base,
-      slide: { kind: 'waiting' },
+      slide: controller.progress.completed ? { kind: 'completed' } : { kind: 'waiting' },
     };
   }
 
@@ -103,6 +110,7 @@ export function buildPresentationScreenView(
 
 type ControllerViewInput = {
   question: { id: string; prompt: string };
+  progress?: PresentationControllerView['progress'];
   participantCount: number;
   session: {
     revision: number;
@@ -148,6 +156,12 @@ export function buildPresentationControllerView(input: ControllerViewInput): Pre
 
   return {
     question: { id: input.question.id, prompt: input.question.prompt },
+    progress: input.progress ?? {
+      currentQuestion: 1,
+      questionCount: 1,
+      hasNextQuestion: false,
+      completed: false,
+    },
     summary: {
       total: input.participantCount,
       submitted,
@@ -157,7 +171,7 @@ export function buildPresentationControllerView(input: ControllerViewInput): Pre
       revision: input.session?.revision ?? 0,
       currentItemId,
       authorRevealed,
-      allPresented: submitted > 0 && input.answers.every((answer) => answer.presentationItemId !== null),
+      allPresented: input.answers.every((answer) => answer.presentationItemId !== null),
       updatedAt: input.session?.updatedAt.toISOString() ?? null,
     },
     currentSlide,

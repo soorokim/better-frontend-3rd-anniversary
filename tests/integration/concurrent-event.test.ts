@@ -140,6 +140,8 @@ describe('30-participant concurrent event use', () => {
       pin: probe.pin,
       ipAddress: SHARED_IP,
     });
+    expect(repeatedLogin.kind).toBe('authenticated');
+    if (repeatedLogin.kind !== 'authenticated') throw new Error('expected an authenticated participant login');
     expect(repeatedLogin.view.id).toBe(results[0].registration.view.id);
   }, 180_000);
 });

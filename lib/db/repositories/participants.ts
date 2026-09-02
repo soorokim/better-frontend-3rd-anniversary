@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { answers, avatarAssignments, events, participants, questions } from '@/db/schema';
 import { db } from '@/lib/db/client';
 import type { Transaction } from '@/lib/db/transaction';
@@ -128,4 +128,15 @@ export function isNicknameConflict(error: unknown): boolean {
     current = candidate.cause;
   }
   return false;
+}
+
+export async function findParticipantsBySlashPrefix(eventId: string, nicknamePrefixKey: string, executor: Executor = db) {
+  return executor.select({
+    id: participants.id,
+    nicknameDisplay: participants.nicknameDisplay,
+  }).from(participants).where(and(
+    eq(participants.eventId, eventId),
+    sql`position('/' in ${participants.nicknameKey}) > 0`,
+    sql`split_part(${participants.nicknameKey}, '/', 1) = ${nicknamePrefixKey}`,
+  )).limit(3);
 }

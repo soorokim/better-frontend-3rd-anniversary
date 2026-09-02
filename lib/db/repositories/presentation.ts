@@ -22,10 +22,10 @@ export async function findPresentationBoundary(eventId: string, executor: Execut
   const [sequence] = await executor.select().from(questionSequenceSessions).where(eq(questionSequenceSessions.eventId, eventId)).limit(1);
   const [event] = await executor.select().from(events).where(eq(events.id, eventId)).limit(1);
   if (!event) return undefined;
-  const [question] = sequence.currentQuestionId
+  const [question] = sequence?.currentQuestionId
     ? await executor.select().from(questions).where(eq(questions.id, sequence.currentQuestionId)).limit(1)
     : await executor.select().from(questions).where(eq(questions.eventId, eventId)).orderBy(asc(questions.displayOrder)).limit(1);
-  return question ? { event, question } : undefined;
+  return question ? { event, question, sequence } : undefined;
 }
 
 export async function getOrCreateSequence(eventId: string, executor: Executor = db) {
@@ -275,7 +275,7 @@ export async function getPresentationControllerData(eventId: string, executor: E
 
   const session = await findPresentationSession(eventId, boundary.question.id, executor);
   const sessionId = session?.id ?? missingSessionId;
-  const [[participantTotal], answerRows, currentRows] = await Promise.all([
+  const [[participantTotal], answerRows, currentRows, eventQuestions] = await Promise.all([
     executor.select({ value: count() }).from(participants).where(eq(participants.eventId, eventId)),
     executor.select({
       id: answers.id,
@@ -315,10 +315,21 @@ export async function getPresentationControllerData(eventId: string, executor: E
         eq(presentationItems.presentationSessionId, session.id),
       )).limit(1)
       : Promise.resolve([]),
+    executor.select({ id: questions.id }).from(questions)
+      .where(eq(questions.eventId, eventId))
+      .orderBy(asc(questions.displayOrder)),
   ]);
+
+  const questionIndex = eventQuestions.findIndex((question) => question.id === boundary.question.id);
 
   return {
     question: { id: boundary.question.id, prompt: boundary.question.prompt },
+    progress: {
+      currentQuestion: questionIndex + 1,
+      questionCount: eventQuestions.length,
+      hasNextQuestion: questionIndex >= 0 && questionIndex < eventQuestions.length - 1,
+      completed: boundary.sequence?.status === 'completed',
+    },
     participantCount: participantTotal?.value ?? 0,
     session: session ? {
       revision: session.revision,

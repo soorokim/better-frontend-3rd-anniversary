@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AvatarReveal } from '@/components/avatar/AvatarReveal';
 
@@ -26,7 +26,7 @@ describe('AvatarReveal', () => {
     await act(async () => { vi.advanceTimersByTime(1200); });
     expect(screen.getAllByText(/장비 슬롯|러버덕|픽셀|대화의 온도|개발자 클래스/).length).toBeGreaterThanOrEqual(1);
     await act(async () => { vi.advanceTimersByTime(4000); });
-    expect(screen.getByText('꾸준한 TYPE GUARDIAN')).toBeInTheDocument();
+    expect(screen.getAllByText('꾸준한 TYPE GUARDIAN').length).toBeGreaterThan(0);
     expect(screen.getByText('7A3F-C921')).toBeInTheDocument();
     expect(screen.getByText(/✓ PLAYER READY/)).toBeInTheDocument();
   });
@@ -35,7 +35,7 @@ describe('AvatarReveal', () => {
     motion(true);
     render(<AvatarReveal nickname="테스터" traits={traits} reveal />);
     await act(async () => { vi.advanceTimersByTime(0); });
-    expect(screen.getByText('꾸준한 TYPE GUARDIAN')).toBeInTheDocument();
+    expect(screen.getAllByText('꾸준한 TYPE GUARDIAN').length).toBeGreaterThan(0);
     expect(screen.getByText(/✓ PLAYER READY/)).toBeInTheDocument();
     expect(vi.getTimerCount()).toBe(0);
   });
@@ -43,6 +43,15 @@ describe('AvatarReveal', () => {
   it('does not start the reveal again on ordinary lobby visits', () => {
     render(<AvatarReveal nickname="테스터" traits={traits} reveal={false} />);
     expect(screen.queryByText('$ initializing player...')).not.toBeInTheDocument();
-    expect(screen.getByText('꾸준한 TYPE GUARDIAN')).toBeInTheDocument();
+    expect(screen.getAllByText('꾸준한 TYPE GUARDIAN').length).toBeGreaterThan(0);
+  });
+
+  it('replays the local animation without changing the final stored profile', async () => {
+    render(<AvatarReveal nickname="테스터" traits={traits} reveal={false} />);
+    fireEvent.click(screen.getByRole('button', { name: '생성 애니메이션 다시 보기' }));
+    expect(screen.getByText('$ initializing player...')).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(5000); });
+    expect(screen.getAllByText('꾸준한 TYPE GUARDIAN').length).toBeGreaterThan(0);
+    expect(screen.getByText('7A3F-C921')).toBeInTheDocument();
   });
 });

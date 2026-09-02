@@ -8,6 +8,7 @@ import {
   findEventBySlug,
   findParticipantById,
   findParticipantByNickname,
+  findParticipantsBySlashPrefix,
   findParticipantWithAvatar,
   isNicknameConflict,
 } from '@/lib/db/repositories/participants';
@@ -33,6 +34,9 @@ import { issueSession } from './session';
 
 export type ParticipantRegistrationInput = { inviteCode: string; nickname: string; pin: string; ipAddress: string };
 export type ParticipantLoginInput = { nickname: string; pin: string; ipAddress: string };
+export type ParticipantLoginResult =
+  | { kind: 'authenticated'; view: ReturnType<typeof participantView>; session: Awaited<ReturnType<typeof issueSession>> }
+  | { kind: 'ambiguous'; candidates: string[] };
 
 function publicAvatar(avatar: NonNullable<Awaited<ReturnType<typeof findParticipantWithAvatar>>>['avatar']) {
   const statuses = (avatar.selectedTraits.developerStatuses ?? avatar.selectedTraits.developerStatus ?? '')
@@ -202,9 +206,14 @@ export async function loginParticipant(input: ParticipantLoginInput) {
   const throttle = await readThrottle('participant_login', subject);
   if (throttle.blocked) throw new AppError('rate_limited', '잠시 기다린 뒤 다시 시도해 주세요.', 429, undefined, throttle.retryAfter);
   const resolution = await resolveParticipantName(event.id, nickname.key);
-  const participant = resolution.status === 'resolved'
+  let participant = resolution.status === 'resolved'
     ? await findParticipantById(resolution.participantId)
     : undefined;
+  if (!participant && resolution.status === 'not_found') {
+    const candidates = await findParticipantsBySlashPrefix(event.id, nickname.key);
+    if (candidates.length > 1) return { kind: 'ambiguous' as const, candidates: candidates.map(({ nicknameDisplay }) => nicknameDisplay) };
+    if (candidates.length === 1) participant = await findParticipantById(candidates[0].id);
+  }
   if (!participant || !(await verifySecret(participant.pinHash, input.pin))) {
     const failure = await recordFailure('participant_login', subject);
     throw new AppError('invalid_credentials', failure.blocked ? '잠시 기다린 뒤 다시 시도해 주세요.' : '입장 정보를 확인해 주세요.', failure.blocked ? 429 : 401, undefined, failure.retryAfter || undefined);
@@ -213,7 +222,7 @@ export async function loginParticipant(input: ParticipantLoginInput) {
   const row = await participantWithBestAvatar(participant);
   if (!row) throw new UnauthorizedError();
   const session = await issueSession('participant', participant.id, participant.authVersion);
-  return { view: participantView(row), session };
+  return { kind: 'authenticated' as const, view: participantView(row), session };
 }
 
 export async function lobbyView(participantId: string) {

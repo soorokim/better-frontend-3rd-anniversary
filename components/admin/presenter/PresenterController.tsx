@@ -90,19 +90,21 @@ export function PresenterController() {
   const { currentSlide } = view;
   const revealLabel = currentSlide?.authorRevealed ? '작성자 공개됨' : '익명으로 공개 중';
   const controlsDisabled = busy;
+  const canAdvanceQuestion = view.session.allPresented && !view.progress.completed;
 
   return (
     <>
       <GamePanel title="Presenter Status">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">답변 발표 진행</h1>
+            <h1 className="text-2xl font-bold">{view.progress.completed ? '질답 진행 완료' : '답변 발표 진행'}</h1>
+            <p className="pixel-title mt-2 text-sm text-[var(--yellow)]">QUESTION {view.progress.currentQuestion} / {view.progress.questionCount}</p>
             <p className="mt-2 text-[var(--muted)]">{view.question.prompt}</p>
           </div>
           <button
             className="game-button"
             type="button"
-            disabled={controlsDisabled || view.answers.length === 0 || view.session.allPresented}
+            disabled={controlsDisabled || view.answers.length === 0 || view.session.allPresented || view.progress.completed}
             onClick={() => void sendCommand({ type: 'select_random' })}
           >
             무작위 답변 공개
@@ -139,15 +141,21 @@ export function PresenterController() {
           ) : null}
           {view.session.allPresented ? (
             <p className="mt-3 border-l-3 border-[var(--yellow)] pl-3 text-[var(--yellow)]">
-              이 질문의 답변을 모두 공개했어요. 다음 질문으로 넘어갈 수 있어요.
+              {view.progress.completed
+                ? '네 질문의 발표가 모두 끝났어요. 참여자 기록 화면에서 전체 답변을 다시 볼 수 있어요.'
+                : view.progress.hasNextQuestion
+                  ? '이 질문의 답변을 모두 공개했어요. 다음 질문으로 넘어갈 수 있어요.'
+                  : '마지막 질문의 답변을 모두 공개했어요. 질답을 마무리할 수 있어요.'}
             </p>
           ) : null}
         </div>
       </GamePanel>
 
       <div className="mx-auto max-w-4xl px-4">
-        <button className="game-button secondary" type="button" disabled={controlsDisabled || !view.session.allPresented}
-          onClick={() => void sendCommand({ type: 'advance_question' })}>다음 질문 시작</button>
+        <button className="game-button secondary" type="button" disabled={controlsDisabled || !canAdvanceQuestion}
+          onClick={() => void sendCommand({ type: 'advance_question' })}>
+          {view.progress.hasNextQuestion ? '다음 질문 시작' : '질답 마무리'}
+        </button>
       </div>
 
       <GamePanel title="On Stage" aria-live="polite">

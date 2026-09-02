@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { authCookieNames } from '@/lib/auth/cookie-names';
 import { AuthStatus, authMessage, type AuthState } from './AuthStatus';
 
-type ApiError = { error?: { code?: string; message?: string; field?: string } };
+type ApiError = { error?: { code?: string; message?: string; field?: string }; candidates?: string[] };
 
 export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
   const [state, setState] = useState<AuthState>({ kind: 'idle' });
@@ -13,10 +13,12 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
   const [inviteCode, setInviteCode] = useState('');
   const [nickname, setNickname] = useState('');
   const [registrationStep, setRegistrationStep] = useState<'invitation' | 'details'>('invitation');
+  const [nicknameCandidates, setNicknameCandidates] = useState<string[]>([]);
 
   async function verifyInvitation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState({ kind: 'loading' });
+    setNicknameCandidates([]);
     const data = new FormData(event.currentTarget);
     const candidate = String(data.get('inviteCode') ?? '');
     try {
@@ -47,7 +49,12 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
     try {
       const response = await fetch(`/api/participants/${mode}`, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify(payload) });
       const body = await response.json() as ApiError;
-      if (!response.ok) { setState({ kind:'error', message:authMessage(body.error?.code, body.error?.message) }); return; }
+      if (!response.ok) {
+        if (!registering && body.error?.code === 'nickname_ambiguous' && body.candidates?.length) {
+          setNicknameCandidates(body.candidates);
+        }
+        setState({ kind:'error', message:authMessage(body.error?.code, body.error?.message) }); return;
+      }
       setState({ kind:'success', message:'입장 완료! 로비로 이동합니다.' });
       window.location.assign(registering ? '/lobby?reveal=1' : '/lobby');
     } catch {
@@ -65,12 +72,16 @@ export function ParticipantAuthForm({ mode }: { mode: 'register' | 'login' }) {
     </div>
   </form>;
 
-  return <form className="auth-form" onSubmit={submit} aria-busy={state.kind==='loading'}>
-    {!registering ? <p className="text-sm text-[var(--muted)]">처음 가입할 때 만든 닉네임과 PIN으로 돌아올 수 있어요.</p> : null}
+  return <form className="auth-form" onSubmit={submit} aria-busy={state.kind==='loading'} autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
+    {!registering ? <p className="text-sm text-[var(--muted)]">닉네임에 `/`가 있으면 앞부분만 입력해도 돼요. 같은 이름이 있으면 전체 닉네임을 골라 주세요.</p> : null}
     <label className="game-field"><span>닉네임</span><input key={registering ? 'register-nickname' : 'login-nickname'} name="nickname" value={nickname} onChange={(event) => setNickname(event.target.value)} required maxLength={100} autoComplete="username" /></label>
-    <label className="game-field"><span>6자리 PIN</span><input name="pin" type="password" required inputMode="numeric" pattern="[0-9]{6}" autoComplete={registering?'new-password':'current-password'} /></label>
-    {registering?<label className="game-field"><span>PIN 확인</span><input name="pinConfirmation" type="password" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="new-password" /></label>:null}
+    <label className="game-field"><span>6자리 PIN</span><input name="pin" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>
+    {registering?<label className="game-field"><span>PIN 확인</span><input name="pinConfirmation" type="text" required inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" /></label>:null}
     <AuthStatus state={state} />
+    {!registering && nicknameCandidates.length > 0 ? <div className="mt-3 grid gap-2" aria-label="닉네임 선택">
+      <p className="text-sm text-[var(--yellow)]">같은 이름의 플레이어가 있어요. 내 전체 닉네임을 골라 주세요.</p>
+      {nicknameCandidates.map((candidate) => <button className="game-button secondary text-left" type="button" key={candidate} onClick={() => { setNickname(candidate); setNicknameCandidates([]); setState({ kind: 'idle' }); }}>{candidate}</button>)}
+    </div> : null}
     <div className="auth-actions">
       <button className="game-button" type="submit" disabled={state.kind==='loading'}>{registering?'캐릭터 만나기':'로비로 돌아가기'}</button>
       {registering?<button className="text-button" type="button" onClick={() => { setInviteCode(''); setNickname(''); setRegistrationStep('invitation'); setState({ kind: 'idle' }); }}>초대 코드 다시 입력</button>:null}

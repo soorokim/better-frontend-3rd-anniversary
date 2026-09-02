@@ -18,10 +18,13 @@ export function AvatarReveal({
 }) {
   const [stage, setStage] = useState<Stage>(reveal ? 'shuffling' : 'ready');
   const [frame, setFrame] = useState(0);
+  const [replayCount, setReplayCount] = useState(0);
 
   useEffect(() => {
-    if (!reveal) return;
-    window.history.replaceState(window.history.state, '', '/lobby');
+    if (!reveal && replayCount === 0) return;
+    if (reveal) window.history.replaceState(window.history.state, '', '/lobby');
+    setStage('shuffling');
+    setFrame(0);
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (media.matches) {
       const reducedMotionTimeout = window.setTimeout(() => setStage('reduced-motion-ready'), 0);
@@ -38,14 +41,20 @@ export function AvatarReveal({
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [reveal]);
+  }, [replayCount, reveal]);
 
   const shuffling = stage === 'shuffling';
   const visibleTraits = shuffling ? temporaryRevealTraits(frame) : traits;
   const message = shuffling ? revealMessages[frame % revealMessages.length] : '✓ PLAYER READY';
 
+  function replayAnimation() {
+    setFrame(0);
+    setStage('shuffling');
+    setReplayCount((count) => count + 1);
+  }
+
   return <section className={`avatar-reveal avatar-reveal-${stage}`} aria-label={`${nickname}의 캐릭터 공개`}>
-    {reveal ? <div className="terminal-reveal" aria-live="polite" aria-atomic="true">
+    {(reveal || shuffling) ? <div className="terminal-reveal" aria-live="polite" aria-atomic="true">
       <p className="terminal-line">$ initializing player...</p>
       <p className="terminal-line">$ resolving developer traits...</p>
       <p className="terminal-line">$ {message}</p>
@@ -59,5 +68,10 @@ export function AvatarReveal({
       </div>
     </div>
     <DeveloperIdentityCard nickname={nickname} traits={visibleTraits} />
+    <div className="mt-4">
+      <button className="game-button secondary" type="button" onClick={replayAnimation} disabled={shuffling}>
+        생성 애니메이션 다시 보기
+      </button>
+    </div>
   </section>;
 }

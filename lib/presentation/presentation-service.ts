@@ -105,6 +105,13 @@ export async function commandPresentation(eventId: string, command: Presentation
         }
         const moved = await moveToNextQuestion(eventId, executor);
         if (!moved) throw questionUnavailable();
+        if (!moved.question) {
+          await updatePresentationSession({
+            sessionId: session.id,
+            currentItemId: null,
+            authorRevealed: false,
+          }, executor);
+        }
         return controllerView(eventId, executor);
       }
       case 'select_answer':
